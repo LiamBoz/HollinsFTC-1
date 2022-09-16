@@ -55,8 +55,7 @@ public class PIDTest extends LinearOpMode {
 
         double output = (error * kP) + (derivative * kD) + (integralSum * kI);
         // Convert to 0-1 for motort control
-        double motor_out =  output / max_angle + dropping_limit_power; 
 
-        return motor_out;
+        return output / max_angle + dropping_limit_power;
     }
 }
