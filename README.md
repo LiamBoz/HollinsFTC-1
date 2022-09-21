@@ -38,7 +38,7 @@ Note that the online documentation is an "evergreen" document that is constantly
 ### Javadoc Reference Material
 The Javadoc reference documentation for the FTC SDK is now available online.  Click on the following link to view the FTC SDK Javadoc documentation as a live website:
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[FTC Javadoc Documentation](https://javadoc.io/doc/org.hollins.ftc)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[FTC Javadoc Documentation](https://javadoc.io/doc/org.firstinspires.ftc)
 
 ### Online User Forum
 For technical questions regarding the Control System or the FTC SDK, please visit the FTC Technology forum:
@@ -180,8 +180,8 @@ The readme.md file located in the [/TeamCode/src/main/java/org/firstinspires/ftc
     * External libraries can include .so files for native code.
     * External libraries can be used from OnBotJava op modes.
     * External libraries that use the following annotations can be used from Blocks op modes.
-      * org.hollins.ftc.robotcore.external.ExportClassToBlocks
-      * org.hollins.ftc.robotcore.external.ExportToBlocks
+      * org.firstinspires.ftc.robotcore.external.ExportClassToBlocks
+      * org.firstinspires.ftc.robotcore.external.ExportToBlocks
     * External libraries that use the following annotations can add new hardware devices:
       * com.qualcomm.robotcore.hardware.configuration.annotations.AnalogSensorType
       * com.qualcomm.robotcore.hardware.configuration.annotations.DeviceProperties
@@ -190,11 +190,11 @@ The readme.md file located in the [/TeamCode/src/main/java/org/firstinspires/ftc
       * com.qualcomm.robotcore.hardware.configuration.annotations.MotorType
       * com.qualcomm.robotcore.hardware.configuration.annotations.ServoType
     * External libraries that use the following annotations can add new functionality to the Robot Controller:
-      * org.hollins.ftc.ftccommon.external.OnCreate
-      * org.hollins.ftc.ftccommon.external.OnCreateEventLoop
-      * org.hollins.ftc.ftccommon.external.OnCreateMenu
-      * org.hollins.ftc.ftccommon.external.OnDestroy
-      * org.hollins.ftc.ftccommon.external.WebHandlerRegistrar
+      * org.firstinspires.ftc.ftccommon.external.OnCreate
+      * org.firstinspires.ftc.ftccommon.external.OnCreateEventLoop
+      * org.firstinspires.ftc.ftccommon.external.OnCreateMenu
+      * org.firstinspires.ftc.ftccommon.external.OnDestroy
+      * org.firstinspires.ftc.ftccommon.external.WebHandlerRegistrar
 * Adds support for REV Robotics Driver Hub.
 * Adds fully custom userspace USB gamepad driver to Driver Station (see "Advanced Gamepad Features" menu in DS settings).
     * Allows gamepads to work on devices without native Linux kernel support (e.g. some Romanian Motorola devices).
@@ -338,11 +338,11 @@ Version 5.5 requires Android Studio 4.0 or later.
 
 ### New features
 * Adds support for calling custom Java classes from Blocks OpModes (fixes [SkyStone issue #161](https://github.com/FIRST-Tech-Challenge/SkyStone/issues/161)).
-    * Classes must be in the org.hollins.ftc.teamcode package.
+    * Classes must be in the org.firstinspires.ftc.teamcode package.
     * To have easy access to the opMode, hardwareMap, telemetry, gamepad1, and gamepad2, classes can
-      extends org.hollins.ftc.robotcore.external.BlocksOpModeCompanion.
+      extends org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion.
     * Methods must be public static and have no more than 21 parameters.
-    * Methods must be annotated with org.hollins.ftc.robotcore.external.ExportToBlocks.
+    * Methods must be annotated with org.firstinspires.ftc.robotcore.external.ExportToBlocks.
     * Parameters declared as OpMode, LinearOpMode, Telemetry, and HardwareMap are supported and the
       argument is provided automatically, regardless of the order of the parameters. On the block,
       the sockets for those parameters are automatically filled in.
