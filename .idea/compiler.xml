@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <bytecodeTargetLevel target="1.8">
+      <module name="HollinsFTC.FtcRobotController" target="11" />
+      <module name="HollinsFTC.libs.road-runner" target="11" />
+      <module name="HollinsFTC.libs.road-runner.main" target="11" />
+      <module name="HollinsFTC.libs.road-runner.test" target="11" />
+      <module name="HollinsFTC.road-runner" target="11" />
+      <module name="HollinsFTC.road-runner.main" target="11" />
+      <module name="HollinsFTC.road-runner.test" target="11" />
+      <module name="HollinsFTC.TeamCode" target="11" />
+    </bytecodeTargetLevel>
+  </component>
+</project>

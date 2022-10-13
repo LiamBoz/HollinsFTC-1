@@ -1,5 +1,7 @@
+
 plugins {
     id 'java-library'
+
 }
 repositories {
     maven { url 'https://jitpack.io' }
@@ -11,5 +13,7 @@ java {
 }
 
 dependencies {
-    implementation 'com.github.NoahBres:MeepMeep:2.0.1'
+    implementation project(':libs:MeepMeep')
+    implementation project(':libs:road-runner')
 }
+
