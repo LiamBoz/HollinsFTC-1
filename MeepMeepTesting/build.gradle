@@ -11,5 +11,6 @@ java {
 }
 
 dependencies {
-    implementation 'com.github.NoahBres:MeepMeep:2.0.1'
+    //implementation 'com.github.NoahBres:MeepMeep:2.0.1'
+    implementation project(':MeepMeep')
 }
