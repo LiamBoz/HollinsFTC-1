@@ -8,6 +8,8 @@ import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.teamcode.PidArm;
+
 @Disabled
 @TeleOp(name="LiamCode")
 public class LiamCode extends OpMode {
@@ -15,10 +17,11 @@ public class LiamCode extends OpMode {
     DcMotor leftmotor;
     DcMotor rightmotor;
     DcMotor armrotate;
-    DcMotor armlift;
+    //DcMotor armlift;
     CRServo intake;
     Servo servolift;
     CRServo servospin;
+    PidArm armlift;
 
     double integralSum = 0;
     double kP, kI, kD = 0;
@@ -29,16 +32,19 @@ public class LiamCode extends OpMode {
     int[] mecPositions = new int[]{70, 180, 330};
 
 
-
     @Override
     public void init() {
         leftmotor = hardwareMap.get(DcMotor.class,"leftmotor");
         rightmotor = hardwareMap.get(DcMotor.class,"rightmotor");
         armrotate = hardwareMap.get(DcMotor.class,"armrotate");
-        armlift = hardwareMap.get(DcMotor.class,"armlift");
+        //armlift = hardwareMap.get(DcMotor.class,"armlift");
         rightmotor.setDirection(DcMotor.Direction.REVERSE);
-
-
+        try {
+            armlift.setup();
+        }
+        catch(Exception p_exception) {
+            armlift = null;
+        }
 
         try {
             intake = hardwareMap.get(CRServo.class, "intake");
@@ -72,7 +78,7 @@ public class LiamCode extends OpMode {
     public void loop(){
         leftmotor.setPower(-gamepad2.left_stick_y);
         rightmotor.setPower(-gamepad2.right_stick_y);
-        armlift.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        armlift.checkPower();
         armrotate.setPower(-gamepad1.right_stick_x);
         if (gamepad1.a)
             intake.setPower(1);
@@ -81,11 +87,11 @@ public class LiamCode extends OpMode {
         else
             intake.setPower(0);
         if (gamepad1.dpad_up)
-            armlift.setPower(1);
+            armlift.setArmAngle(60);
         else if (gamepad1.dpad_down)
-            armlift.setPower(-1);
+            armlift.setArmAngle(25);
         else
-            armlift.setPower(0);
+            armlift.setArmAngle(0);
 
 
 
