@@ -1,4 +1,4 @@
-package org.hollins.ftc.teamcode;
+package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
@@ -8,7 +8,7 @@ import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.teamcode.PidArm;
+import org.firstinspires.ftc.teamcode.Robot.PidArm;
 
 @Disabled
 @TeleOp(name="LiamCode")
@@ -78,7 +78,7 @@ public class LiamCode extends OpMode {
     public void loop(){
         leftmotor.setPower(-gamepad2.left_stick_y);
         rightmotor.setPower(-gamepad2.right_stick_y);
-        armlift.checkPower();
+        armlift.subsystemLoop();
         armrotate.setPower(-gamepad1.right_stick_x);
         if (gamepad1.a)
             intake.setPower(1);

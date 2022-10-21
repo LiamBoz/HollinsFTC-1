@@ -1,12 +1,14 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.Robot;
 
 import static org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion.hardwareMap;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-public class PidArm {
+@Config
+public class PidArm extends Subsystem {
     DcMotorEx motor;
 
     double integralSum = 0;
@@ -34,9 +36,12 @@ public class PidArm {
         motor.setDirection(DcMotor.Direction.REVERSE);
         motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }
-    public void checkPower(){
+
+    @Override
+    public void subsystemLoop() {
         motor.setPower(PIDControl(commanded_position, motor.getCurrentPosition())/encoder_ticks_per_degreee);
     }
+
 
     public double PIDControl(double reference, double state) {
         double error = reference - state;
