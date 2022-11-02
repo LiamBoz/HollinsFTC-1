@@ -1,8 +1,8 @@
-package org.hollins.ftc.teamcode.trajectorysequence;
+package org.firstinspires.ftc.teamcode.trajectorysequence;
 
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 
-import org.hollins.ftc.teamcode.trajectorysequence.sequencesegment.SequenceSegment;
+import org.firstinspires.ftc.teamcode.trajectorysequence.sequencesegment.SequenceSegment;
 
 import java.util.Collections;
 import java.util.List;
