@@ -105,7 +105,7 @@ public class FSMAutoShortPole extends OpMode {
 
     // TODO: find encoder values for rotation
     final int ROTATE_COLLECT = -2235;
-    final int ROTATE_DROP = -1213;
+    final int ROTATE_DROP = -1170;
 
     //public TrajectorySequence VariablePath;
 
@@ -340,6 +340,7 @@ public class FSMAutoShortPole extends OpMode {
 
                     drive.followTrajectorySequence(BlueOnRedGoLeft);
 
+
                 }
                 else if (tagOfInterest.id == RIGHT){
 
@@ -357,7 +358,7 @@ public class FSMAutoShortPole extends OpMode {
 
     // mecanum drive code goes here
     // But since none of the stuff in the switch case stops
-    // the robot, this will always run
+    // the robot, this will always run!
     //updateDrive(gamepad1, gamepad2);
 
     void tagToTelemetry(AprilTagDetection detection)
