@@ -98,7 +98,7 @@ public class FSMAutoShortPoleExtendable extends OpMode {
 
     // TODO: find encoder values for tilt
     final int TILT_LOW = 100;
-    final int TILT_HIGH = 400;
+    final int TILT_HIGH = 450;
 
     // TODO: find encoder values for rotation
     final int ROTATE_COLLECT = -2235;
@@ -111,7 +111,7 @@ public class FSMAutoShortPoleExtendable extends OpMode {
 
         drive = new SampleMecanumDrive(hardwareMap);
 
-        drive.setPoseEstimate(new Pose2d(36, 65, Math.toRadians(270)));
+        drive.setPoseEstimate(new Pose2d(36, 63, Math.toRadians(270)));
         slide_extension = hardwareMap.get(DcMotorEx.class,"slide_extension");
         tilt_arm = hardwareMap.get(DcMotorEx.class,"tilt_arm");
         rotate_arm = hardwareMap.get(DcMotorEx.class,"rotate_arm");
@@ -241,7 +241,7 @@ public class FSMAutoShortPoleExtendable extends OpMode {
                 .back(24)
                 .build();
 
-        TrajectorySequence BlueOnRedGoCycle = drive.trajectorySequenceBuilder(new Pose2d(36, 65, Math.toRadians(270)))
+        TrajectorySequence BlueOnRedGoCycle = drive.trajectorySequenceBuilder(new Pose2d(36, 63, Math.toRadians(270)))
                 .lineTo(new Vector2d(36,60))
                 .addDisplacementMarker(() -> switchvar = true)
                 .lineTo(new Vector2d(36,24))
@@ -313,9 +313,7 @@ public class FSMAutoShortPoleExtendable extends OpMode {
                                         if (claw.getPosition() >= 0.19)
                                                 tilt_claw.setPosition(CLAWTILT_COLLECT);
                                                     if (tilt_claw.getPosition() <= 0.51)
-                                                        slide_extension.setTargetPosition(SLIDE_LOW);
-                                                            if (slide_extension.getCurrentPosition() <= 20)
-                                                                liftState = LiftState.LIFT_DROP;
+                                                            liftState = LiftState.LIFT_GETNEWRETRACT;
                                 }
                         }
                     liftTimer.reset();
@@ -327,17 +325,18 @@ public class FSMAutoShortPoleExtendable extends OpMode {
                     rotate_arm.setTargetPosition(ROTATE_DROP);
                 if (tilt_arm.getCurrentPosition() - TILT_HIGH <= 5) {
                             slide_extension.setTargetPosition(SLIDE_DROPOFF);
-                                if (Math.abs(slide_extension.getCurrentPosition() - SLIDE_DROPOFF) <= 8){
+                                if (Math.abs(slide_extension.getCurrentPosition() - SLIDE_DROPOFF) <= 8) {
                                     claw.setPosition(CLAW_DEPOSIT);
                                     cones_dropped += 1;
-                                    if (cones_dropped >= CONES_DESIRED){
-                                        liftState = LiftState.PARKING_STATE;
+                                    if (claw.getPosition() <= 0.02) {
+                                        if (cones_dropped >= CONES_DESIRED) {
+                                            liftState = LiftState.PARKING_STATE;
+                                        } else if (cones_dropped < CONES_DESIRED) {
+                                            liftState = LiftState.LIFT_GETNEWRETRACT;
+                                            liftTimer.reset();
+                                        }
                                     }
-                                    else if (cones_dropped < CONES_DESIRED) {
-                                        liftState = LiftState.LIFT_GETNEWRETRACT;
-                                        liftTimer.reset();
-                                    }
-                            }
+                                }
                     }
 
             case LIFT_GETNEWRETRACT:
