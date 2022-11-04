@@ -92,17 +92,17 @@ public class FSMAutoShortPoleExtendable extends OpMode {
     final double EXTENSION_TIME = 0.6; // e amount of time it takes to extend from 0 to 2250 on the slide
 
     final int SLIDE_LOW = 0; // the low encoder position for the lift
-    final int SLIDE_COLLECT = 1405; // the high encoder position for the lift
+    final int SLIDE_COLLECT = 1435; // the high encoder position for the lift
     final int SLIDE_DROPOFF = 1370;
     final int SLIDE_MOVEMENT = 1125; // the slide retraction for when rotating
 
     // TODO: find encoder values for tilt
-    final int TILT_LOW = 80;
+    final int TILT_LOW = 100;
     final int TILT_HIGH = 400;
 
     // TODO: find encoder values for rotation
     final int ROTATE_COLLECT = -2235;
-    final int ROTATE_DROP = -1170;
+    final int ROTATE_DROP = -1200;
 
     //public TrajectorySequence VariablePath;
 
@@ -285,10 +285,10 @@ public class FSMAutoShortPoleExtendable extends OpMode {
                     rotate_arm.setPower(0.5);
                     rotate_arm.setTargetPosition(ROTATE_DROP);
                     tilt_claw.setPosition(CLAWTILT_DEPOSIT);
-                    if (Math.abs(rotate_arm.getCurrentPosition() - ROTATE_DROP) <= 3) {
+                    if (Math.abs(rotate_arm.getCurrentPosition() - ROTATE_DROP) <= 5) {
                             slide_extension.setPower(1);
                             slide_extension.setTargetPosition(SLIDE_DROPOFF);
-                            if (Math.abs(slide_extension.getCurrentPosition() - SLIDE_DROPOFF) <= 5) {
+                            if (Math.abs(slide_extension.getCurrentPosition() - SLIDE_DROPOFF) <= 10) {
                                 liftState = LiftState.LIFT_DROP;
                             }
                         }
@@ -303,20 +303,19 @@ public class FSMAutoShortPoleExtendable extends OpMode {
                     // set the slide to extend
                 if (slide_extension.getCurrentPosition() <= 5)
                     rotate_arm.setTargetPosition(ROTATE_COLLECT);
+                    tilt_arm.setTargetPosition(TILT_LOW);
                     tilt_claw.setPosition(CLAWTILT_COLLECT);
                         if (Math.abs(rotate_arm.getCurrentPosition() - ROTATE_COLLECT) <= 3){
-                            tilt_arm.setTargetPosition(TILT_LOW);
                             slide_extension.setTargetPosition(SLIDE_COLLECT);
                             liftTimer.reset();
-                                if (Math.abs(slide_extension.getCurrentPosition() - SLIDE_COLLECT) <= 4){
+                                if (Math.abs(slide_extension.getCurrentPosition() - SLIDE_COLLECT) <= 5){
                                     claw.setPosition(CLAW_HOLD);
-                                    liftTimer.reset();
-                                        if (liftTimer.seconds() >= DUMP_TIME)
+                                        if (claw.getPosition() >= 0.19)
                                                 tilt_claw.setPosition(CLAWTILT_COLLECT);
-                                                liftTimer.reset();
-                                                    if (liftTimer.seconds() >= DUMP_TIME)
+                                                    if (tilt_claw.getPosition() <= 0.51)
                                                         slide_extension.setTargetPosition(SLIDE_LOW);
-                                                        liftState = LiftState.LIFT_DROP;
+                                                            if (slide_extension.getCurrentPosition() <= 20)
+                                                                liftState = LiftState.LIFT_DROP;
                                 }
                         }
                     liftTimer.reset();
@@ -325,27 +324,24 @@ public class FSMAutoShortPoleExtendable extends OpMode {
                 break;
             case LIFT_DROP:
                     tilt_arm.setTargetPosition(TILT_HIGH);
-                    if (tilt_arm.getCurrentPosition() - TILT_HIGH <= 3) {
-                            rotate_arm.setTargetPosition(ROTATE_DROP);
+                    rotate_arm.setTargetPosition(ROTATE_DROP);
+                if (tilt_arm.getCurrentPosition() - TILT_HIGH <= 5) {
                             slide_extension.setTargetPosition(SLIDE_DROPOFF);
-                      if (Math.abs(rotate_arm.getCurrentPosition() - ROTATE_DROP) <= 3 && slide_extension.getCurrentPosition() >= (SLIDE_DROPOFF-5)) {
-                          claw.setPosition(CLAW_DEPOSIT);
-                          cones_dropped += 1;
-                          liftTimer.reset();
-                            if (liftTimer.seconds() >= DUMP_TIME)
-                                if (cones_dropped >= CONES_DESIRED){
+                                if (Math.abs(slide_extension.getCurrentPosition() - SLIDE_DROPOFF) <= 8)
+                                    claw.setPosition(CLAW_DEPOSIT);
+                                    cones_dropped += 1;
+                                    if (cones_dropped >= CONES_DESIRED){
                                         liftState = LiftState.PARKING_STATE;
                                     }
-                                else if (cones_dropped < CONES_DESIRED){
+                                    else if (cones_dropped < CONES_DESIRED){
                                         liftState = LiftState.LIFT_GETNEWRETRACT;
-                                    }
-                                }
-                    liftTimer.reset();
-                }
-                break;
+                                        liftTimer.reset();
+                            }
+                    }
+
             case LIFT_GETNEWRETRACT:
                 slide_extension.setTargetPosition(SLIDE_LOW);
-                    if (slide_extension.getCurrentPosition() >= 5)
+                    if (slide_extension.getCurrentPosition() <= 10)
                         liftState = LiftState.LIFT_GETNEW;
             case PARKING_STATE:
                 if (tagOfInterest == null || tagOfInterest.id == LEFT){
