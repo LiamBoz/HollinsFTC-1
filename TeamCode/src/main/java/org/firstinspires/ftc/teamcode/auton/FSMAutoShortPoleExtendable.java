@@ -284,7 +284,7 @@ public class FSMAutoShortPoleExtendable extends OpMode {
                     tilt_arm.setTargetPosition(TILT_HIGH);
                     rotate_arm.setPower(0.5);
                     rotate_arm.setTargetPosition(ROTATE_DROP);
-                    tilt_claw.setPosition(CLAWTILT_DEPOSIT);
+                    tilt_claw.setPosition(CLAWTILT_DEPOSIT );
                     if (Math.abs(rotate_arm.getCurrentPosition() - ROTATE_DROP) <= 5) {
                             slide_extension.setPower(1);
                             slide_extension.setTargetPosition(SLIDE_DROPOFF);
@@ -327,15 +327,16 @@ public class FSMAutoShortPoleExtendable extends OpMode {
                     rotate_arm.setTargetPosition(ROTATE_DROP);
                 if (tilt_arm.getCurrentPosition() - TILT_HIGH <= 5) {
                             slide_extension.setTargetPosition(SLIDE_DROPOFF);
-                                if (Math.abs(slide_extension.getCurrentPosition() - SLIDE_DROPOFF) <= 8)
+                                if (Math.abs(slide_extension.getCurrentPosition() - SLIDE_DROPOFF) <= 8){
                                     claw.setPosition(CLAW_DEPOSIT);
                                     cones_dropped += 1;
                                     if (cones_dropped >= CONES_DESIRED){
                                         liftState = LiftState.PARKING_STATE;
                                     }
-                                    else if (cones_dropped < CONES_DESIRED){
+                                    else if (cones_dropped < CONES_DESIRED) {
                                         liftState = LiftState.LIFT_GETNEWRETRACT;
                                         liftTimer.reset();
+                                    }
                             }
                     }
 
