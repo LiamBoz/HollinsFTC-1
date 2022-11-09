@@ -107,7 +107,7 @@ public class teleoppowerplay2 extends OpMode {
         telemetry.addData("lifttimer", liftTimer.seconds());
         telemetry.addData("stuff", Math.abs(slide_extension.getCurrentPosition() - slide_collect));
         rotate_arm.setPower(1);
-        tilt_arm.setPower(0.1);
+        tilt_arm.setPower(0.5);
         slide_extension.setPower(1);
 
         switch (liftState) {
@@ -149,10 +149,12 @@ public class teleoppowerplay2 extends OpMode {
             case LIFT_EXTENDSLIDE:
                 slide_extension.setTargetPosition(1540);
                 if (slide_extension.getCurrentPosition() >= 1530){
+                    claw.setPosition(CLAW_DEPOSIT);
 
                 }
-
+                break;
         }
+
 
 
         //power = (power + (power-(gamepad2.right_stick_y))/10)*gamepad2.right_stick_y;

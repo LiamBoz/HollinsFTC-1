@@ -257,7 +257,7 @@ public class FSMAutoShortPole extends OpMode {
                 .splineToConstantHeading(new Vector2d(42,12), Math.toRadians(270))
                 .build();
 
-        //drive.followTrajectorySequenceAsync(BlueOnRedGoCycle);
+        drive.followTrajectorySequenceAsync(BlueOnRedGoCycle);
         //drive2.followTrajectorySequenceAsync(VariablePath);
 
 
@@ -267,7 +267,7 @@ public class FSMAutoShortPole extends OpMode {
 
     public void loop() {
 
-        //drive.update();
+        drive.update();
 
         Pose2d poseEstimate = drive.getPoseEstimate();
 
@@ -319,6 +319,7 @@ public class FSMAutoShortPole extends OpMode {
                                     slide_extension.setTargetPosition(SLIDE_COLLECT);
                                         if (slide_extension.getCurrentPosition() >= (SLIDE_COLLECT-8)) {
                                             claw.setPosition(CLAW_HOLD);
+                                            liftState = LiftState.PARKING_STATE;
                                             if (liftTimer.seconds() >= 5) {
                                                 liftTimer.reset();
                                                 liftState = LiftState.LIFT_DROP;
@@ -355,18 +356,18 @@ public class FSMAutoShortPole extends OpMode {
             case PARKING_STATE:
                 if (tagOfInterest == null || tagOfInterest.id == LEFT){
 
-                    drive.followTrajectorySequence(BlueOnRedGoLeft);
+                    drive.followTrajectorySequenceAsync(BlueOnRedGoLeft);
 
 
                 }
                 else if (tagOfInterest.id == RIGHT){
 
-                    drive.followTrajectorySequence(BlueOnRedGoRight);
+                    drive.followTrajectorySequenceAsync(BlueOnRedGoRight);
 
                 }
                 else if (tagOfInterest.id == MIDDLE){
 
-                    drive.followTrajectorySequence(BlueOnRedGoMiddle);
+                    drive.followTrajectorySequenceAsync(BlueOnRedGoMiddle);
                 }
 
 
