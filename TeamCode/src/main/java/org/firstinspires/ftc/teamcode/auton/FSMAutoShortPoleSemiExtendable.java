@@ -22,8 +22,8 @@ import org.openftc.easyopencv.OpenCvCameraRotation;
 
 import java.util.ArrayList;
 
-@Autonomous(name="FSM AUTO SHORT POLE EXTENDABLE")
-public class FSMAutoShortPoleExtendable extends OpMode {
+@Autonomous(name="FSM AUTO SHORT POLE SEMI EXTENDABLE")
+public class FSMAutoShortPoleSemiExtendable extends OpMode {
 
     public enum LiftState {
         LIFT_STARTDROP,
@@ -78,7 +78,7 @@ public class FSMAutoShortPoleExtendable extends OpMode {
     int cones_dropped = 0;
     int CONES_DESIRED = 3;
 
-    boolean switchvar = true;
+    boolean switchvar = false;
 
     final double CLAW_HOLD = 0.2; // the idle position for the dump servo
     final double CLAW_DEPOSIT = 0.0; // the dumping position for the dump servo
@@ -248,7 +248,7 @@ public class FSMAutoShortPoleExtendable extends OpMode {
                 .splineToConstantHeading(new Vector2d(42,12), Math.toRadians(270))
                 .build();
 
-        //drive.followTrajectorySequenceAsync(BlueOnRedGoCycle);
+        drive.followTrajectorySequenceAsync(BlueOnRedGoCycle);
         //drive2.followTrajectorySequenceAsync(VariablePath);
 
 
@@ -258,7 +258,7 @@ public class FSMAutoShortPoleExtendable extends OpMode {
 
     public void loop() {
 
-        //drive.update();
+        drive.update();
 
         Pose2d poseEstimate = drive.getPoseEstimate();
 
@@ -284,7 +284,7 @@ public class FSMAutoShortPoleExtendable extends OpMode {
                     tilt_arm.setTargetPosition(TILT_HIGH);
                     rotate_arm.setPower(0.5);
                     rotate_arm.setTargetPosition(ROTATE_DROP);
-                    tilt_claw.setPosition(CLAWTILT_DEPOSIT);
+                    tilt_claw.setPosition(CLAWTILT_DEPOSIT );
                     if (Math.abs(rotate_arm.getCurrentPosition() - ROTATE_DROP) <= 5) {
                             slide_extension.setPower(1);
                             slide_extension.setTargetPosition(SLIDE_DROPOFF);
@@ -305,7 +305,7 @@ public class FSMAutoShortPoleExtendable extends OpMode {
                     rotate_arm.setTargetPosition(ROTATE_COLLECT);
                     tilt_arm.setTargetPosition(TILT_LOW);
                     tilt_claw.setPosition(CLAWTILT_COLLECT);
-                        if (Math.abs(tilt_arm.getCurrentPosition() - TILT_LOW) <= 3){
+                        if (Math.abs(rotate_arm.getCurrentPosition() - ROTATE_COLLECT) <= 3){
                             slide_extension.setTargetPosition(SLIDE_COLLECT);
                             liftTimer.reset();
                                 if (Math.abs(slide_extension.getCurrentPosition() - SLIDE_COLLECT) <= 5){
@@ -325,18 +325,25 @@ public class FSMAutoShortPoleExtendable extends OpMode {
                     rotate_arm.setTargetPosition(ROTATE_DROP);
                 if (tilt_arm.getCurrentPosition() - TILT_HIGH <= 5) {
                             slide_extension.setTargetPosition(SLIDE_DROPOFF);
-                    if (Math.abs(rotate_arm.getCurrentPosition() - ROTATE_DROP) <= 3){
-                        claw.setPosition(CLAW_DEPOSIT);
-                        cones_dropped += 1;
-                        break;
+                                if (Math.abs(slide_extension.getCurrentPosition() - SLIDE_DROPOFF) <= 8) {
+                                    claw.setPosition(CLAW_DEPOSIT);
+                                    cones_dropped += 1;
+                                    liftTimer.reset();
+                                    if (liftTimer.seconds() >= 2) {
+                                        if (cones_dropped >= CONES_DESIRED) {
+                                            liftState = LiftState.PARKING_STATE;
+                                        } else if (cones_dropped < CONES_DESIRED) {
+                                            liftState = LiftState.LIFT_GETNEWRETRACT;
+                                            liftTimer.reset();
+                                        }
+                                    }
+                                }
                     }
-                }
 
             case LIFT_GETNEWRETRACT:
                 slide_extension.setTargetPosition(SLIDE_LOW);
-                    if (slide_extension.getCurrentPosition() <= 10) {
+                    if (slide_extension.getCurrentPosition() <= 10)
                         liftState = LiftState.LIFT_GETNEW;
-                    }
             case PARKING_STATE:
                 if (tagOfInterest == null || tagOfInterest.id == LEFT){
 

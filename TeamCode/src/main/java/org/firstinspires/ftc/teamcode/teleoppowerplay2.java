@@ -1,13 +1,29 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.outoftheboxrobotics.photoncore.PhotonCore;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.ElapsedTime;
+
+import org.firstinspires.ftc.teamcode.auton.FSMAutoShortPole;
 
 @TeleOp(name="teleoppowerplay2", group="Iterative Opmode")
 public class teleoppowerplay2 extends OpMode {
+
+    public enum LiftState {
+        LIFT_GRABNEW,
+        LIFT_CLAWCLOSE,
+        LIFT_DROPCONE,
+        LIFT_EXTENDSLIDE,
+        LIFT_CLAWOPEN
+    }
+
+    ElapsedTime liftTimer = new ElapsedTime();
+
+    LiftState liftState = LiftState.LIFT_GRABNEW;
 
     private DcMotor front_left  = null;
     private DcMotor front_right = null;
@@ -17,6 +33,18 @@ public class teleoppowerplay2 extends OpMode {
     private static DcMotor slide_extension;
     private DcMotor rotate_arm;
 
+    public int rotate_collect = 885;
+    public int tilt_collect = 0;
+    public int slide_collect = 1400;
+    public int rotate_drop = -320;
+    public int tilt_drop = 570;
+    public int slide_drop = 1480;
+    public int slide_var = 0;
+    public double CLAW_HOLD = 0.2;
+    public double CLAW_DEPOSIT = 0.0;
+    final double CLAWTILT_COLLECT = 0.5;
+    final double CLAWTILT_DEPOSIT = 0.6;
+
     public int ZeroDegreeTiltTicks = 30;
     public int SixtyDegreeTiltTicks = 250;
     public int EightyFiveDegreeTiltTicks = 280;
@@ -25,11 +53,14 @@ public class teleoppowerplay2 extends OpMode {
     public double changing_tilt_ticks = 0;
     public int rotation_ticks = 0;
     private Servo claw = null;
-    static int MaxPositionTicks = 2250;
+    private Servo tilt_claw = null;
+    static int MaxPositionTicks = 1400;
     int MinPositionTicks = 0;
 
     @Override
     public void init() {
+
+        PhotonCore.enable();
 
         front_left   = hardwareMap.get(DcMotor.class, "front_left");
         front_right  = hardwareMap.get(DcMotor.class, "front_right");
@@ -38,6 +69,7 @@ public class teleoppowerplay2 extends OpMode {
         slide_extension  = hardwareMap.get(DcMotor.class,"slide_extension");
         tilt_arm = hardwareMap.get(DcMotor.class,"tilt_arm");
         claw = hardwareMap.get(Servo.class,"claw");
+        tilt_claw = hardwareMap.get(Servo.class,"tilt_claw");
         rotate_arm = hardwareMap.get(DcMotor.class,"rotate_arm");
         slide_extension.setDirection(DcMotor.Direction.REVERSE);
 
@@ -51,6 +83,9 @@ public class teleoppowerplay2 extends OpMode {
         tilt_arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         rotate_arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
+        claw.setPosition(CLAW_DEPOSIT);
+        tilt_claw.setPosition(CLAWTILT_COLLECT);
+
 
         //claw         = hardwareMap.get(Servo.class,"claw");
 
@@ -61,22 +96,70 @@ public class teleoppowerplay2 extends OpMode {
     @Override
     public void loop() {
 
-        //tilt_arm.setPower(-gamepad2.right_stick_y);
-        rotate_arm.setPower(gamepad2.left_stick_x);
         tilt_ticks = tilt_arm.getCurrentPosition();
         extension_ticks = slide_extension.getCurrentPosition();
         rotation_ticks = rotate_arm.getCurrentPosition();
         changing_tilt_ticks = changing_tilt_ticks + (0.5*(-gamepad2.right_stick_y));
         telemetry.addData("changing tilt ticks:",changing_tilt_ticks);
         telemetry.addData("changing rotation ticks", rotation_ticks);
-        tilt_arm.setPower(1);
-        tilt_arm.setTargetPosition((int)(changing_tilt_ticks));
+        telemetry.addData("current state", liftState);
+        telemetry.addData("claw position", claw.getPosition());
+        telemetry.addData("lifttimer", liftTimer.seconds());
+        telemetry.addData("stuff", Math.abs(slide_extension.getCurrentPosition() - slide_collect));
+        rotate_arm.setPower(1);
+        tilt_arm.setPower(0.1);
+        slide_extension.setPower(1);
+
+        switch (liftState) {
+            case LIFT_GRABNEW:
+                tilt_claw.setPosition(CLAWTILT_COLLECT);
+                slide_var = 0;
+                if (gamepad1.x){
+                    rotate_arm.setTargetPosition(rotate_collect);
+                    tilt_arm.setTargetPosition(tilt_collect);
+                        if (Math.abs(rotate_arm.getCurrentPosition() - rotate_collect) <= 5){
+                            slide_extension.setTargetPosition(slide_collect);
+                            if (Math.abs(slide_extension.getCurrentPosition() - slide_collect) <= 5) {
+                                claw.setPosition(CLAW_HOLD);
+                                liftTimer.reset();
+                                liftState = LiftState.LIFT_CLAWCLOSE;
+
+                            }
+                        }
+                }
+                break;
+
+            case LIFT_CLAWCLOSE:
+                if (liftTimer.seconds() >= 0.5) {
+                    liftState = LiftState.LIFT_DROPCONE;
+                }
+                break;
+
+            case LIFT_DROPCONE:
+                slide_extension.setTargetPosition(0);
+                if (slide_extension.getCurrentPosition() <= 100) {
+                    tilt_arm.setTargetPosition(tilt_drop);
+                    rotate_arm.setTargetPosition(rotate_drop);
+                    tilt_claw.setPosition(CLAWTILT_DEPOSIT);
+                    if (Math.abs(tilt_arm.getCurrentPosition() - tilt_drop) <= 5 && Math.abs(rotate_arm.getCurrentPosition() - rotate_drop) <= 5) {
+                        liftState = LiftState.LIFT_EXTENDSLIDE;
+                    }
+                }
+                    break;
+            case LIFT_EXTENDSLIDE:
+                slide_extension.setTargetPosition(1540);
+                if (slide_extension.getCurrentPosition() >= 1530){
+
+                }
+
+        }
+
 
         //power = (power + (power-(gamepad2.right_stick_y))/10)*gamepad2.right_stick_y;
         //power = ((1/(gamepad2.right_stick_y))*0.08)*gamepad2.right_stick_y;
         //power = ((gamepad2.right_stick_y)+(gamepad2.right_stick_y/Math.abs(gamepad2.right_stick_y))*Math.abs((0.5)*gamepad2.right_stick_y-power));
 
-        if (gamepad2.y) {
+/*        if (gamepad2.y) {
             slide_extension.setPower(1);
             slide_extension.setTargetPosition(MaxPositionTicks);
         }
@@ -85,9 +168,9 @@ public class teleoppowerplay2 extends OpMode {
             slide_extension.setTargetPosition(MinPositionTicks);
         }
         else {
-        }
+        }*/
 
-        if (gamepad2.dpad_right){
+/*        if (gamepad2.dpad_right){
             tilt_arm.setPower(1);
             changing_tilt_ticks = 30;
         }
@@ -101,7 +184,7 @@ public class teleoppowerplay2 extends OpMode {
         }
         else{
 
-        }
+        }*/
 
         //claw.setPower(gamepad2.right_trigger-gamepad2.left_trigger);
 
