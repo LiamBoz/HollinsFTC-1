@@ -37,6 +37,7 @@ public class FSMAutoShortPole extends OpMode {
         LIFT_GETNEW,
         LIFT_RETRACTSLIDE,
         LIFT_DROP,
+        LIFT_INC,
         PARKING_STATE
     }
 
@@ -121,6 +122,7 @@ public class FSMAutoShortPole extends OpMode {
         drive = new SampleMecanumDrive(hardwareMap);
 
         drive.setPoseEstimate(new Pose2d(36, 65, Math.toRadians(270)));
+
         slide_extension = hardwareMap.get(DcMotorEx.class,"slide_extension");
         tilt_arm = hardwareMap.get(DcMotorEx.class,"tilt_arm");
         rotate_arm = hardwareMap.get(DcMotorEx.class,"rotate_arm");
@@ -237,15 +239,15 @@ public class FSMAutoShortPole extends OpMode {
             telemetry.update();
         }
 
-        TrajectorySequence BlueOnRedGoMiddle = drive.trajectorySequenceBuilder(new Pose2d(39,12, Math.toRadians(270)))
+        BlueOnRedGoMiddle = drive.trajectorySequenceBuilder(new Pose2d(39,12, Math.toRadians(270)))
                 .strafeRight(4)
                 .back(24)
                 .build();
-        TrajectorySequence BlueOnRedGoRight = drive.trajectorySequenceBuilder(new Pose2d(39,12, Math.toRadians(270)))
+        BlueOnRedGoRight = drive.trajectorySequenceBuilder(new Pose2d(39,12, Math.toRadians(270)))
                 .strafeRight(28)
                 .back(24)
                 .build();
-        TrajectorySequence BlueOnRedGoLeft = drive.trajectorySequenceBuilder(new Pose2d(39,12, Math.toRadians(270)))
+        BlueOnRedGoLeft = drive.trajectorySequenceBuilder(new Pose2d(39,12, Math.toRadians(270)))
                 .strafeLeft(20)
                 .back(24)
                 .build();
@@ -282,7 +284,8 @@ public class FSMAutoShortPole extends OpMode {
         telemetry.addData("timer",liftTimer.seconds());
         telemetry.addData("liftstate", liftState);
         telemetry.addData("cones dropped", cones_dropped);
-        telemetry.addData("tag location", tagOfInterest);
+        telemetry.addData("tag location", tagOfInterest.id);
+
         //telemetry.update();
 
         switch (liftState) {
@@ -293,16 +296,16 @@ public class FSMAutoShortPole extends OpMode {
                     tilt_arm.setTargetPosition(TILT_HIGH);
                     rotate_arm.setPower(0.5);
                     rotate_arm.setTargetPosition(ROTATE_DROP);
-                        if (Math.abs(rotate_arm.getCurrentPosition() - ROTATE_DROP) <= 5) {
-                            slide_extension.setPower(1);
-                            slide_extension.setTargetPosition(SLIDE_DROPOFF);
-                            tilt_claw.setPosition(CLAWTILT_DEPOSIT);
-                            if (Math.abs(slide_extension.getCurrentPosition() - SLIDE_DROPOFF) <= 5) {
-                                liftTimer.reset();
-                                liftState = LiftState.LIFT_DROP;
-                            }
+                    if (Math.abs(rotate_arm.getCurrentPosition() - ROTATE_DROP) <= 5) {
+                        slide_extension.setPower(1);
+                        slide_extension.setTargetPosition(SLIDE_DROPOFF);
+                        tilt_claw.setPosition(CLAWTILT_DEPOSIT);
+                        if (Math.abs(slide_extension.getCurrentPosition() - SLIDE_DROPOFF) <= 5) {
+                            claw.setPosition(CLAW_DEPOSIT);
+                            liftTimer.reset();
+                            liftState = LiftState.LIFT_INC;
                         }
-                    liftTimer.reset();
+                    }
                 }
                 break;
             case LIFT_GETNEW:
@@ -319,7 +322,6 @@ public class FSMAutoShortPole extends OpMode {
                                     slide_extension.setTargetPosition(SLIDE_COLLECT);
                                         if (slide_extension.getCurrentPosition() >= (SLIDE_COLLECT-8)) {
                                             claw.setPosition(CLAW_HOLD);
-                                            liftState = LiftState.PARKING_STATE;
                                             if (liftTimer.seconds() >= 5) {
                                                 liftTimer.reset();
                                                 liftState = LiftState.LIFT_DROP;
@@ -330,26 +332,21 @@ public class FSMAutoShortPole extends OpMode {
 
                 //}
                 break;
-            case LIFT_DROP:
-                    tilt_arm.setTargetPosition(TILT_HIGH);
-                if (tilt_arm.getCurrentPosition() - TILT_HIGH <= 6 && liftTimer.seconds() > 3) {
-                            rotate_arm.setTargetPosition(ROTATE_DROP);
-                            slide_extension.setTargetPosition(SLIDE_DROPOFF);
-                    if (Math.abs(rotate_arm.getCurrentPosition() - ROTATE_DROP) <= 3){
-                                    claw.setPosition(CLAW_DEPOSIT);
-                        if (cones_dropped >= CONES_DESIRED){
-                                        liftState = LiftState.PARKING_STATE;
-                                    }
-                            else if (cones_dropped < CONES_DESIRED && liftTimer.seconds() >= 3){
-                                        liftTimer.reset();
-                                        liftState = LiftState.LIFT_RETRACTSLIDE;
-                                    }
-                                }
+
+            case LIFT_INC:
+                if (cones_dropped < CONES_DESIRED) {
+                    cones_dropped += 1;
+                    liftTimer.reset();
+                    liftState = LiftState.LIFT_RETRACTSLIDE;
+                }
+                else {
+                    liftState = LiftState.PARKING_STATE;
+
                 }
                 break;
             case LIFT_RETRACTSLIDE:
                 slide_extension.setTargetPosition(SLIDE_LOW);
-                    if (slide_extension.getCurrentPosition() <= SLIDE_LOW) {
+                    if (slide_extension.getCurrentPosition() <= 200) {
                         liftTimer.reset();
                         liftState = LiftState.LIFT_GETNEW;
                     }
@@ -364,10 +361,12 @@ public class FSMAutoShortPole extends OpMode {
 
                     drive.followTrajectorySequenceAsync(BlueOnRedGoRight);
 
+
                 }
                 else if (tagOfInterest.id == MIDDLE){
 
                     drive.followTrajectorySequenceAsync(BlueOnRedGoMiddle);
+
                 }
 
 

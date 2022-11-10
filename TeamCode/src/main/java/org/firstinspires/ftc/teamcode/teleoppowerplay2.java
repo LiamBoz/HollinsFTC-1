@@ -18,6 +18,7 @@ public class teleoppowerplay2 extends OpMode {
         LIFT_CLAWCLOSE,
         LIFT_DROPCONE,
         LIFT_EXTENDSLIDE,
+        LIFT_RETRACTSLIDE,
         LIFT_CLAWOPEN
     }
 
@@ -33,9 +34,9 @@ public class teleoppowerplay2 extends OpMode {
     private static DcMotor slide_extension;
     private DcMotor rotate_arm;
 
-    public int rotate_collect = 885;
+    public int rotate_collect = 895;
     public int tilt_collect = 0;
-    public int slide_collect = 1400;
+    public int slide_collect = 1350;
     public int rotate_drop = -320;
     public int tilt_drop = 570;
     public int slide_drop = 1480;
@@ -82,6 +83,10 @@ public class teleoppowerplay2 extends OpMode {
         slide_extension.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         tilt_arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         rotate_arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        front_left.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        front_right.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        back_left.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        back_right.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         claw.setPosition(CLAW_DEPOSIT);
         tilt_claw.setPosition(CLAWTILT_COLLECT);
@@ -114,12 +119,12 @@ public class teleoppowerplay2 extends OpMode {
             case LIFT_GRABNEW:
                 tilt_claw.setPosition(CLAWTILT_COLLECT);
                 slide_var = 0;
-                if (gamepad1.x){
+                if (gamepad1.a){
                     rotate_arm.setTargetPosition(rotate_collect);
                     tilt_arm.setTargetPosition(tilt_collect);
-                        if (Math.abs(rotate_arm.getCurrentPosition() - rotate_collect) <= 5){
+                        if (Math.abs(rotate_arm.getCurrentPosition() - rotate_collect) <= 8){
                             slide_extension.setTargetPosition(slide_collect);
-                            if (Math.abs(slide_extension.getCurrentPosition() - slide_collect) <= 5) {
+                            if (Math.abs(slide_extension.getCurrentPosition() - slide_collect) <= 8) {
                                 claw.setPosition(CLAW_HOLD);
                                 liftTimer.reset();
                                 liftState = LiftState.LIFT_CLAWCLOSE;
@@ -130,7 +135,7 @@ public class teleoppowerplay2 extends OpMode {
                 break;
 
             case LIFT_CLAWCLOSE:
-                if (liftTimer.seconds() >= 0.5) {
+                if (liftTimer.seconds() >= 0.4) {
                     liftState = LiftState.LIFT_DROPCONE;
                 }
                 break;
@@ -147,13 +152,24 @@ public class teleoppowerplay2 extends OpMode {
                 }
                     break;
             case LIFT_EXTENDSLIDE:
-                slide_extension.setTargetPosition(1540);
-                if (slide_extension.getCurrentPosition() >= 1530){
+                slide_extension.setTargetPosition(1400);
+                if (slide_extension.getCurrentPosition() >= 1390){
                     claw.setPosition(CLAW_DEPOSIT);
+                    if (gamepad1.y){
+                        liftState = LiftState.LIFT_RETRACTSLIDE;
+                    }
 
                 }
                 break;
+            case LIFT_RETRACTSLIDE:
+                slide_extension.setTargetPosition(0);
+                if (slide_extension.getCurrentPosition() <= 200){
+                    liftState = LiftState.LIFT_GRABNEW;
+                }
+                break;
         }
+
+
 
 
 
@@ -205,7 +221,7 @@ public class teleoppowerplay2 extends OpMode {
         //slide_extension.setPower(gamepad2.left_stick_y);
 
         double drive  = gamepad1.left_stick_y;
-        double strafe = gamepad1.left_stick_x;
+        double strafe = -gamepad1.left_stick_x;
         double twist  = -gamepad1.right_stick_x;
 
         double[] speeds = {
