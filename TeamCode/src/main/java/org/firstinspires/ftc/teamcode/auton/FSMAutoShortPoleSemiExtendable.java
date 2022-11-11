@@ -228,15 +228,15 @@ public class FSMAutoShortPoleSemiExtendable extends OpMode {
             telemetry.update();
         }
 
-        TrajectorySequence BlueOnRedGoMiddle = drive.trajectorySequenceBuilder(new Pose2d(39,12, Math.toRadians(270)))
+        BlueOnRedGoMiddle = drive.trajectorySequenceBuilder(new Pose2d(39,12, Math.toRadians(270)))
                 .strafeRight(4)
                 .back(24)
                 .build();
-        TrajectorySequence BlueOnRedGoRight = drive.trajectorySequenceBuilder(new Pose2d(39,12, Math.toRadians(270)))
+        BlueOnRedGoRight = drive.trajectorySequenceBuilder(new Pose2d(39,12, Math.toRadians(270)))
                 .strafeRight(28)
                 .back(24)
                 .build();
-        TrajectorySequence BlueOnRedGoLeft = drive.trajectorySequenceBuilder(new Pose2d(39,12, Math.toRadians(270)))
+        BlueOnRedGoLeft = drive.trajectorySequenceBuilder(new Pose2d(39,12, Math.toRadians(270)))
                 .strafeLeft(20)
                 .back(24)
                 .build();
@@ -310,10 +310,11 @@ public class FSMAutoShortPoleSemiExtendable extends OpMode {
                             liftTimer.reset();
                                 if (Math.abs(slide_extension.getCurrentPosition() - SLIDE_COLLECT) <= 5){
                                     claw.setPosition(CLAW_HOLD);
-                                        if (claw.getPosition() >= 0.19)
-                                                tilt_claw.setPosition(CLAWTILT_COLLECT);
+                                        if (claw.getPosition() >= 0.19) {
+                                            tilt_claw.setPosition(CLAWTILT_COLLECT);
+                                        }
                                                     if (tilt_claw.getPosition() <= 0.51)
-                                                            liftState = LiftState.LIFT_GETNEWRETRACT;
+                                                            liftState = LiftState.PARKING_STATE;
                                 }
                         }
                     liftTimer.reset();
@@ -339,11 +340,13 @@ public class FSMAutoShortPoleSemiExtendable extends OpMode {
                                     }
                                 }
                     }
+                break;
 
             case LIFT_GETNEWRETRACT:
                 slide_extension.setTargetPosition(SLIDE_LOW);
                     if (slide_extension.getCurrentPosition() <= 10)
                         liftState = LiftState.LIFT_GETNEW;
+                    break;
             case PARKING_STATE:
                 if (tagOfInterest == null || tagOfInterest.id == LEFT){
 
@@ -359,6 +362,7 @@ public class FSMAutoShortPoleSemiExtendable extends OpMode {
 
                     drive.followTrajectorySequence(BlueOnRedGoMiddle);
                 }
+                break;
 
 
         }

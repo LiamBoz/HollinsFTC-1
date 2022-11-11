@@ -228,15 +228,15 @@ public class FSMAutoShortPoleExtendable extends OpMode {
             telemetry.update();
         }
 
-        TrajectorySequence BlueOnRedGoMiddle = drive.trajectorySequenceBuilder(new Pose2d(39,12, Math.toRadians(270)))
+        BlueOnRedGoMiddle = drive.trajectorySequenceBuilder(new Pose2d(39,12, Math.toRadians(270)))
                 .strafeRight(4)
                 .back(24)
                 .build();
-        TrajectorySequence BlueOnRedGoRight = drive.trajectorySequenceBuilder(new Pose2d(39,12, Math.toRadians(270)))
+        BlueOnRedGoRight = drive.trajectorySequenceBuilder(new Pose2d(39,12, Math.toRadians(270)))
                 .strafeRight(28)
                 .back(24)
                 .build();
-        TrajectorySequence BlueOnRedGoLeft = drive.trajectorySequenceBuilder(new Pose2d(39,12, Math.toRadians(270)))
+        BlueOnRedGoLeft = drive.trajectorySequenceBuilder(new Pose2d(39,12, Math.toRadians(270)))
                 .strafeLeft(20)
                 .back(24)
                 .build();
@@ -258,7 +258,7 @@ public class FSMAutoShortPoleExtendable extends OpMode {
 
     public void loop() {
 
-        //drive.update();
+        drive.update();
 
         Pose2d poseEstimate = drive.getPoseEstimate();
 

@@ -36,7 +36,7 @@ public class FSMAutoShortPole extends OpMode {
         LIFT_STARTDROP,
         LIFT_GETNEW,
         LIFT_RETRACTSLIDE,
-        LIFT_DROP,
+        LIFT_HOLD,
         LIFT_INC,
         PARKING_STATE
     }
@@ -121,7 +121,7 @@ public class FSMAutoShortPole extends OpMode {
 
         drive = new SampleMecanumDrive(hardwareMap);
 
-        drive.setPoseEstimate(new Pose2d(36, 65, Math.toRadians(270)));
+        drive.setPoseEstimate(new Pose2d(36, 64, Math.toRadians(270)));
 
         slide_extension = hardwareMap.get(DcMotorEx.class,"slide_extension");
         tilt_arm = hardwareMap.get(DcMotorEx.class,"tilt_arm");
@@ -252,18 +252,14 @@ public class FSMAutoShortPole extends OpMode {
                 .back(24)
                 .build();
 
-        TrajectorySequence BlueOnRedGoCycle = drive.trajectorySequenceBuilder(new Pose2d(36, 65, Math.toRadians(270)))
+        TrajectorySequence BlueOnRedGoCycle = drive.trajectorySequenceBuilder(new Pose2d(36, 64, Math.toRadians(270)))
                 .lineTo(new Vector2d(36,60))
                 .addDisplacementMarker(() -> switchvar = true)
                 .lineTo(new Vector2d(36,24))
-                .splineToConstantHeading(new Vector2d(42,12), Math.toRadians(270))
+                .splineToConstantHeading(new Vector2d(42,14), Math.toRadians(270))
                 .build();
 
         drive.followTrajectorySequenceAsync(BlueOnRedGoCycle);
-        //drive2.followTrajectorySequenceAsync(VariablePath);
-
-
-
 
     }
 
@@ -285,6 +281,12 @@ public class FSMAutoShortPole extends OpMode {
         telemetry.addData("liftstate", liftState);
         telemetry.addData("cones dropped", cones_dropped);
         telemetry.addData("tag location", tagOfInterest.id);
+        telemetry.addData("drive", drive.isBusy());
+
+        tilt_arm.setPower(1);
+        rotate_arm.setPower(0.5);
+        slide_extension.setPower(1);
+
 
         //telemetry.update();
 
@@ -292,18 +294,16 @@ public class FSMAutoShortPole extends OpMode {
             case LIFT_STARTDROP:
                 if (switchvar) {
                     // if liftstate is called, start extending
-                    tilt_arm.setPower(1);
                     tilt_arm.setTargetPosition(TILT_HIGH);
-                    rotate_arm.setPower(0.5);
                     rotate_arm.setTargetPosition(ROTATE_DROP);
                     if (Math.abs(rotate_arm.getCurrentPosition() - ROTATE_DROP) <= 5) {
-                        slide_extension.setPower(1);
                         slide_extension.setTargetPosition(SLIDE_DROPOFF);
                         tilt_claw.setPosition(CLAWTILT_DEPOSIT);
                         if (Math.abs(slide_extension.getCurrentPosition() - SLIDE_DROPOFF) <= 5) {
                             claw.setPosition(CLAW_DEPOSIT);
                             liftTimer.reset();
-                            liftState = LiftState.LIFT_INC;
+                            liftState = LiftState.PARKING_STATE;
+                            break;
                         }
                     }
                 }
@@ -313,61 +313,86 @@ public class FSMAutoShortPole extends OpMode {
                 // otherwise do nothing.
                 //if ((Math.abs(tilt_arm.getCurrentPosition() - TILT_HIGH) < 10) && pathonend > 1 && Math.abs(rotate_arm.getCurrentPosition() - ROTATE_DROP) <= 5)  {
                     // our threshold is within 10 encoder ticks of our target.
-                    // set the slide to extend
+                    // set the slide to exten/tgfzd
                     rotate_arm.setTargetPosition(ROTATE_COLLECT);
                     tilt_claw.setPosition(CLAWTILT_COLLECT);
-                        if (Math.abs(rotate_arm.getCurrentPosition() - ROTATE_COLLECT) <= 4){
+                        if (Math.abs(rotate_arm.getCurrentPosition() - ROTATE_COLLECT) <= 8){
                             tilt_arm.setTargetPosition(TILT_LOW);
                                 if (tilt_arm.getCurrentPosition() - TILT_LOW <= 3){
                                     slide_extension.setTargetPosition(SLIDE_COLLECT);
                                         if (slide_extension.getCurrentPosition() >= (SLIDE_COLLECT-8)) {
                                             claw.setPosition(CLAW_HOLD);
-                                            if (liftTimer.seconds() >= 5) {
-                                                liftTimer.reset();
-                                                liftState = LiftState.LIFT_DROP;
+                                            liftTimer.reset();
+                                            liftState = LiftState.LIFT_HOLD;
+                                            break;
                                             }
                                         }
                                 }
-                        }
+                break;
 
-                //}
+            case LIFT_HOLD:
+                if (liftTimer.seconds() >= 0.5){
+                    liftState = LiftState.LIFT_STARTDROP;
+                    break;
+                }
                 break;
 
             case LIFT_INC:
                 if (cones_dropped < CONES_DESIRED) {
-                    cones_dropped += 1;
-                    liftTimer.reset();
-                    liftState = LiftState.LIFT_RETRACTSLIDE;
+                    if (liftTimer.seconds() >= 0.5) {
+                        cones_dropped += 1;
+                        liftTimer.reset();
+                        liftState = LiftState.LIFT_RETRACTSLIDE;
+                        break;
+                    }
                 }
                 else {
                     liftState = LiftState.PARKING_STATE;
-
                 }
                 break;
             case LIFT_RETRACTSLIDE:
                 slide_extension.setTargetPosition(SLIDE_LOW);
                     if (slide_extension.getCurrentPosition() <= 200) {
                         liftTimer.reset();
-                        liftState = LiftState.LIFT_GETNEW;
+                        //liftState = LiftState.LIFT_GETNEW;
+                        liftState = LiftState.PARKING_STATE;
+                        break;
                     }
+                break;
             case PARKING_STATE:
-                if (tagOfInterest == null || tagOfInterest.id == LEFT){
+                if (tagOfInterest == null || tagOfInterest.id == LEFT){ //&& cones_dropped >= CONES_DESIRED) {
 
                     drive.followTrajectorySequenceAsync(BlueOnRedGoLeft);
+                    //drive.update();
+                    //slide_extension.setTargetPosition(0);
+                    //rotate_arm.setTargetPosition(0);
+                    //tilt_arm.setTargetPosition(0);
+                    telemetry.addData("test", 1);
+                    break;
 
-
-                }
-                else if (tagOfInterest.id == RIGHT){
+                } else if (tagOfInterest.id == RIGHT){ //&& cones_dropped >= CONES_DESIRED) {
 
                     drive.followTrajectorySequenceAsync(BlueOnRedGoRight);
+                    slide_extension.setTargetPosition(0);
+                    rotate_arm.setTargetPosition(0);
+                    tilt_arm.setTargetPosition(0);
+                    telemetry.addData("test", 2);
+                    break;
 
 
-                }
-                else if (tagOfInterest.id == MIDDLE){
+                } else if (tagOfInterest.id == MIDDLE){ //&& cones_dropped >= CONES_DESIRED) {
 
                     drive.followTrajectorySequenceAsync(BlueOnRedGoMiddle);
+                    slide_extension.setTargetPosition(0);
+                    rotate_arm.setTargetPosition(0);
+                    tilt_arm.setTargetPosition(0);
+                    telemetry.addData("test", 3);
+                    break;
+
 
                 }
+                break;
+
 
 
         }
@@ -387,5 +412,5 @@ public class FSMAutoShortPole extends OpMode {
         telemetry.addLine(String.format("Rotation Yaw: %.2f degrees", Math.toDegrees(detection.pose.yaw)));
         telemetry.addLine(String.format("Rotation Pitch: %.2f degrees", Math.toDegrees(detection.pose.pitch)));
         telemetry.addLine(String.format("Rotation Roll: %.2f degrees", Math.toDegrees(detection.pose.roll)));
-    };
+    }
 }
