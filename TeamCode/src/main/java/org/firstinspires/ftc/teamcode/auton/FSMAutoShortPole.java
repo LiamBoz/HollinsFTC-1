@@ -100,7 +100,7 @@ public class FSMAutoShortPole extends OpMode {
     final double EXTENSION_TIME = 0.6; // e amount of time it takes to extend from 0 to 2250 on the slide
 
     final int SLIDE_LOW = 0; // the low encoder position for the lift
-    final int SLIDE_COLLECT = 1430; // the high encoder position for the lift
+    final int SLIDE_COLLECT = 1460; // the high encoder position for the lift
     final int SLIDE_DROPOFF = 1280;
     final int SLIDE_MOVEMENT = 1125; // the slide retraction for when rotating
 
@@ -110,7 +110,7 @@ public class FSMAutoShortPole extends OpMode {
 
     // TODO: find encoder values for rotation
     final int ROTATE_COLLECT = -2235;
-    final int ROTATE_DROP = -1150;
+    final int ROTATE_DROP = -1200;
 
     //public TrajectorySequence VariablePath;
 
@@ -285,7 +285,7 @@ public class FSMAutoShortPole extends OpMode {
         telemetry.addData("drive", drive.isBusy());
 
         tilt_arm.setPower(1);
-        rotate_arm.setPower(0.5);
+        rotate_arm.setPower(0.3);
         slide_extension.setPower(1);
 
 
@@ -297,7 +297,7 @@ public class FSMAutoShortPole extends OpMode {
                 if (switchvar) {
                     // if liftstate is called, start extending
                     tilt_arm.setTargetPosition(TILT_HIGH);
-                    if (tilt_arm.getCurrentPosition() >= 100) {
+                    if (tilt_arm.getCurrentPosition() >= 220) {
                         rotate_arm.setTargetPosition(ROTATE_DROP);
                         if (Math.abs(rotate_arm.getCurrentPosition() - ROTATE_DROP) <= 5) {
                             slide_extension.setTargetPosition(SLIDE_DROPOFF);
