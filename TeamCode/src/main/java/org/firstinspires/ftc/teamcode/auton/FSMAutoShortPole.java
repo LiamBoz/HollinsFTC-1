@@ -3,20 +3,15 @@ package org.firstinspires.ftc.teamcode.auton;
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.variable_slide_ticks;
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.variable_tilt_ticks;
 
-import static java.lang.Thread.sleep;
-
 import com.acmerobotics.roadrunner.geometry.Pose2d;
-import com.outoftheboxrobotics.photoncore.PhotonCore;
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
+import com.outoftheboxrobotics.photoncore.PhotonCore;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
-
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
@@ -67,6 +62,9 @@ public class FSMAutoShortPole extends OpMode {
     int LEFT = 1;
     int MIDDLE = 2;
     int RIGHT = 3;
+
+    // This Integer will be set to a default LEFT if no tag is found
+    int parkingTag = LEFT;
 
     AprilTagDetection tagOfInterest = null;
 
@@ -182,6 +180,8 @@ public class FSMAutoShortPole extends OpMode {
                     if(tag.id == LEFT || tag.id == MIDDLE || tag.id == RIGHT)
                     {
                         tagOfInterest = tag;
+                        // Here we set the integer we KNOW is is one of the three from the test above
+                        parkingTag = tag.id;
                         tagFound = true;
                         break;
                     }
@@ -360,7 +360,8 @@ public class FSMAutoShortPole extends OpMode {
                     }
                 break;
             case PARKING_STATE:
-                if (tagOfInterest == null || tagOfInterest.id == LEFT){ //&& cones_dropped >= CONES_DESIRED) {
+                // Use the parkingTag here - it must be at least LEFT if no tag was seen
+                if (parkingTag == LEFT){ //&& cones_dropped >= CONES_DESIRED) {
 
                     drive.followTrajectorySequenceAsync(BlueOnRedGoLeft);
                     //drive.update();
@@ -370,7 +371,7 @@ public class FSMAutoShortPole extends OpMode {
                     telemetry.addData("test", 1);
                     break;
 
-                } else if (tagOfInterest.id == RIGHT){ //&& cones_dropped >= CONES_DESIRED) {
+                } else if (parkingTag == RIGHT){ //&& cones_dropped >= CONES_DESIRED) {
 
                     drive.followTrajectorySequenceAsync(BlueOnRedGoRight);
                     slide_extension.setTargetPosition(0);
@@ -380,7 +381,7 @@ public class FSMAutoShortPole extends OpMode {
                     break;
 
 
-                } else if (tagOfInterest.id == MIDDLE){ //&& cones_dropped >= CONES_DESIRED) {
+                } else if (parkingTag == MIDDLE){ //&& cones_dropped >= CONES_DESIRED) {
 
                     drive.followTrajectorySequenceAsync(BlueOnRedGoMiddle);
                     slide_extension.setTargetPosition(0);
