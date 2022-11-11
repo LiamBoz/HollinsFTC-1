@@ -19,10 +19,14 @@ public class MeepMeepTesting{
                 .setColorScheme(new ColorSchemeBlueDark())
                 .setConstraints(88, 88, Math.toRadians(480), Math.toRadians(480), 11.5)
                 .followTrajectorySequence(drive ->
-                        drive.trajectorySequenceBuilder(new Pose2d(36, 67.75, Math.toRadians(270)))
+                        drive.trajectorySequenceBuilder(new Pose2d(36, 64, Math.toRadians(270)))
                                 .lineTo(new Vector2d(36,60))
                                 .lineTo(new Vector2d(36,24))
-                                .splineToConstantHeading(new Vector2d(39,12), Math.toRadians(270))
+                                .splineToConstantHeading(new Vector2d(42,14), Math.toRadians(270))
+                                .lineToConstantHeading(new Vector2d(14,14))
+                                .splineToLinearHeading(new Pose2d(14,36, Math.toRadians(270)), Math.toRadians(270))
+                                //.lineToConstantHeading(new Vector2d(60,14))
+                                //.lineToConstantHeading(new Vector2d(60,38))
                                 .build()
                 );
         // Declare out second bot

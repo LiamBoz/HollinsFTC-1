@@ -30,6 +30,7 @@ public class FSMAutoShortPoleSemiExtendable extends OpMode {
         LIFT_GETNEW,
         LIFT_GETNEWRETRACT,
         LIFT_DROP,
+        LIFT_IDLE,
         PARKING_STATE
     }
 
@@ -277,6 +278,9 @@ public class FSMAutoShortPoleSemiExtendable extends OpMode {
         //telemetry.update();
 
         switch (liftState) {
+
+            case LIFT_IDLE:
+                drive.update();
             case LIFT_STARTDROP:
                 if (switchvar) {
                     // if liftstate is called, start extending
@@ -289,7 +293,7 @@ public class FSMAutoShortPoleSemiExtendable extends OpMode {
                             slide_extension.setPower(1);
                             slide_extension.setTargetPosition(SLIDE_DROPOFF);
                             if (Math.abs(slide_extension.getCurrentPosition() - SLIDE_DROPOFF) <= 10) {
-                                liftState = LiftState.LIFT_DROP;
+                                liftState = LiftState.PARKING_STATE;
                             }
                         }
                     liftTimer.reset();
@@ -315,6 +319,7 @@ public class FSMAutoShortPoleSemiExtendable extends OpMode {
                                         }
                                                     if (tilt_claw.getPosition() <= 0.51)
                                                             liftState = LiftState.PARKING_STATE;
+                                                            break;
                                 }
                         }
                     liftTimer.reset();
@@ -328,19 +333,11 @@ public class FSMAutoShortPoleSemiExtendable extends OpMode {
                             slide_extension.setTargetPosition(SLIDE_DROPOFF);
                                 if (Math.abs(slide_extension.getCurrentPosition() - SLIDE_DROPOFF) <= 8) {
                                     claw.setPosition(CLAW_DEPOSIT);
-                                    cones_dropped += 1;
-                                    liftTimer.reset();
-                                    if (liftTimer.seconds() >= 2) {
-                                        if (cones_dropped >= CONES_DESIRED) {
-                                            liftState = LiftState.PARKING_STATE;
-                                        } else if (cones_dropped < CONES_DESIRED) {
-                                            liftState = LiftState.LIFT_GETNEWRETRACT;
-                                            liftTimer.reset();
-                                        }
-                                    }
+                                    liftState = LiftState.PARKING_STATE;
                                 }
                     }
                 break;
+
 
             case LIFT_GETNEWRETRACT:
                 slide_extension.setTargetPosition(SLIDE_LOW);
@@ -351,6 +348,7 @@ public class FSMAutoShortPoleSemiExtendable extends OpMode {
                 if (tagOfInterest == null || tagOfInterest.id == LEFT){
 
                     drive.followTrajectorySequence(BlueOnRedGoLeft);
+                    liftState = LiftState.LIFT_IDLE;
 
                 }
                 else if (tagOfInterest.id == RIGHT){
@@ -362,8 +360,6 @@ public class FSMAutoShortPoleSemiExtendable extends OpMode {
 
                     drive.followTrajectorySequence(BlueOnRedGoMiddle);
                 }
-                break;
-
 
         }
     }

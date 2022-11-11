@@ -3,20 +3,15 @@ package org.firstinspires.ftc.teamcode.auton;
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.variable_slide_ticks;
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.variable_tilt_ticks;
 
-import static java.lang.Thread.sleep;
-
 import com.acmerobotics.roadrunner.geometry.Pose2d;
-import com.outoftheboxrobotics.photoncore.PhotonCore;
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
+import com.outoftheboxrobotics.photoncore.PhotonCore;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
-
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
@@ -38,7 +33,8 @@ public class FSMAutoShortPole extends OpMode {
         LIFT_RETRACTSLIDE,
         LIFT_HOLD,
         LIFT_INC,
-        PARKING_STATE
+        PARKING_STATE,
+        FINISH
     }
 
 
@@ -68,6 +64,9 @@ public class FSMAutoShortPole extends OpMode {
     int MIDDLE = 2;
     int RIGHT = 3;
 
+    // This Integer will be set to a default LEFT if no tag is found
+    int parkingTag = LEFT;
+
     AprilTagDetection tagOfInterest = null;
 
     TrajectorySequence BlueOnRedGoMiddle;
@@ -87,7 +86,7 @@ public class FSMAutoShortPole extends OpMode {
     int cones_dropped = 0;
     int CONES_DESIRED = 3;
 
-    boolean switchvar = true;
+    boolean switchvar = false;
 
     final double CLAW_HOLD = 0.2; // the idle position for the dump servo
     final double CLAW_DEPOSIT = 0.0; // the dumping position for the dump servo
@@ -101,17 +100,17 @@ public class FSMAutoShortPole extends OpMode {
     final double EXTENSION_TIME = 0.6; // e amount of time it takes to extend from 0 to 2250 on the slide
 
     final int SLIDE_LOW = 0; // the low encoder position for the lift
-    final int SLIDE_COLLECT = 1470; // the high encoder position for the lift
-    final int SLIDE_DROPOFF = 1350;
+    final int SLIDE_COLLECT = 1430; // the high encoder position for the lift
+    final int SLIDE_DROPOFF = 1280;
     final int SLIDE_MOVEMENT = 1125; // the slide retraction for when rotating
 
     // TODO: find encoder values for tilt
-    final int TILT_LOW = 111;
+    final int TILT_LOW = 115;
     final int TILT_HIGH = 430;
 
     // TODO: find encoder values for rotation
     final int ROTATE_COLLECT = -2235;
-    final int ROTATE_DROP = -1190;
+    final int ROTATE_DROP = -1150;
 
     //public TrajectorySequence VariablePath;
 
@@ -182,6 +181,8 @@ public class FSMAutoShortPole extends OpMode {
                     if(tag.id == LEFT || tag.id == MIDDLE || tag.id == RIGHT)
                     {
                         tagOfInterest = tag;
+                        // Here we set the integer we KNOW is is one of the three from the test above
+                        parkingTag = tag.id;
                         tagFound = true;
                         break;
                     }
@@ -239,17 +240,17 @@ public class FSMAutoShortPole extends OpMode {
             telemetry.update();
         }
 
-        BlueOnRedGoMiddle = drive.trajectorySequenceBuilder(new Pose2d(39,12, Math.toRadians(270)))
+        BlueOnRedGoMiddle = drive.trajectorySequenceBuilder(new Pose2d(42,14, Math.toRadians(270)))
                 .strafeRight(4)
                 .back(24)
                 .build();
-        BlueOnRedGoRight = drive.trajectorySequenceBuilder(new Pose2d(39,12, Math.toRadians(270)))
-                .strafeRight(28)
-                .back(24)
+        BlueOnRedGoRight = drive.trajectorySequenceBuilder(new Pose2d(42,14, Math.toRadians(270)))
+                .lineToConstantHeading(new Vector2d(14,14))
+                .splineToLinearHeading(new Pose2d(14,36, Math.toRadians(270)), Math.toRadians(270))
                 .build();
-        BlueOnRedGoLeft = drive.trajectorySequenceBuilder(new Pose2d(39,12, Math.toRadians(270)))
-                .strafeLeft(20)
-                .back(24)
+        BlueOnRedGoLeft = drive.trajectorySequenceBuilder(new Pose2d(42,14, Math.toRadians(270)))
+                .lineToConstantHeading(new Vector2d(54,14))
+                .splineToLinearHeading(new Pose2d(60,36, Math.toRadians(270)), Math.toRadians(270))
                 .build();
 
         TrajectorySequence BlueOnRedGoCycle = drive.trajectorySequenceBuilder(new Pose2d(36, 64, Math.toRadians(270)))
@@ -265,7 +266,7 @@ public class FSMAutoShortPole extends OpMode {
 
     public void loop() {
 
-        drive.update();
+
 
         Pose2d poseEstimate = drive.getPoseEstimate();
 
@@ -292,18 +293,21 @@ public class FSMAutoShortPole extends OpMode {
 
         switch (liftState) {
             case LIFT_STARTDROP:
+                drive.update();
                 if (switchvar) {
                     // if liftstate is called, start extending
                     tilt_arm.setTargetPosition(TILT_HIGH);
-                    rotate_arm.setTargetPosition(ROTATE_DROP);
-                    if (Math.abs(rotate_arm.getCurrentPosition() - ROTATE_DROP) <= 5) {
-                        slide_extension.setTargetPosition(SLIDE_DROPOFF);
-                        tilt_claw.setPosition(CLAWTILT_DEPOSIT);
-                        if (Math.abs(slide_extension.getCurrentPosition() - SLIDE_DROPOFF) <= 5) {
-                            claw.setPosition(CLAW_DEPOSIT);
-                            liftTimer.reset();
-                            liftState = LiftState.PARKING_STATE;
-                            break;
+                    if (tilt_arm.getCurrentPosition() >= 100) {
+                        rotate_arm.setTargetPosition(ROTATE_DROP);
+                        if (Math.abs(rotate_arm.getCurrentPosition() - ROTATE_DROP) <= 5) {
+                            slide_extension.setTargetPosition(SLIDE_DROPOFF);
+                            tilt_claw.setPosition(CLAWTILT_DEPOSIT);
+                            if (Math.abs(slide_extension.getCurrentPosition() - SLIDE_DROPOFF) <= 5) {
+                                claw.setPosition(CLAW_DEPOSIT);
+                                liftTimer.reset();
+                                liftState = LiftState.LIFT_INC;
+                                break;
+                            }
                         }
                     }
                 }
@@ -312,22 +316,22 @@ public class FSMAutoShortPole extends OpMode {
                 // check if the left has finished extending,
                 // otherwise do nothing.
                 //if ((Math.abs(tilt_arm.getCurrentPosition() - TILT_HIGH) < 10) && pathonend > 1 && Math.abs(rotate_arm.getCurrentPosition() - ROTATE_DROP) <= 5)  {
-                    // our threshold is within 10 encoder ticks of our target.
-                    // set the slide to exten/tgfzd
-                    rotate_arm.setTargetPosition(ROTATE_COLLECT);
-                    tilt_claw.setPosition(CLAWTILT_COLLECT);
-                        if (Math.abs(rotate_arm.getCurrentPosition() - ROTATE_COLLECT) <= 8){
-                            tilt_arm.setTargetPosition(TILT_LOW);
-                                if (tilt_arm.getCurrentPosition() - TILT_LOW <= 3){
-                                    slide_extension.setTargetPosition(SLIDE_COLLECT);
-                                        if (slide_extension.getCurrentPosition() >= (SLIDE_COLLECT-8)) {
-                                            claw.setPosition(CLAW_HOLD);
-                                            liftTimer.reset();
-                                            liftState = LiftState.LIFT_HOLD;
-                                            break;
-                                            }
-                                        }
-                                }
+                // our threshold is within 10 encoder ticks of our target.
+                // set the slide to exten/tgfzd
+                rotate_arm.setTargetPosition(ROTATE_COLLECT);
+                tilt_claw.setPosition(CLAWTILT_COLLECT);
+                if (Math.abs(rotate_arm.getCurrentPosition() - ROTATE_COLLECT) <= 8){
+                    tilt_arm.setTargetPosition(TILT_LOW);
+                    if (tilt_arm.getCurrentPosition() - TILT_LOW <= 3){
+                        slide_extension.setTargetPosition(SLIDE_COLLECT);
+                        if (slide_extension.getCurrentPosition() >= (SLIDE_COLLECT-8) && tilt_arm.getCurrentPosition() - TILT_LOW <= 3) {
+                            claw.setPosition(CLAW_HOLD);
+                            liftTimer.reset();
+                            liftState = LiftState.LIFT_HOLD;
+                            break;
+                        }
+                    }
+                }
                 break;
 
             case LIFT_HOLD:
@@ -352,45 +356,42 @@ public class FSMAutoShortPole extends OpMode {
                 break;
             case LIFT_RETRACTSLIDE:
                 slide_extension.setTargetPosition(SLIDE_LOW);
-                    if (slide_extension.getCurrentPosition() <= 200) {
-                        liftTimer.reset();
-                        //liftState = LiftState.LIFT_GETNEW;
-                        liftState = LiftState.PARKING_STATE;
-                        break;
-                    }
+                if (slide_extension.getCurrentPosition() <= 200) {
+                    liftTimer.reset();
+                    //liftState = LiftState.LIFT_GETNEW;
+                    liftState = LiftState.LIFT_GETNEW;
+                    break;
+                }
                 break;
             case PARKING_STATE:
-                if (tagOfInterest == null || tagOfInterest.id == LEFT){ //&& cones_dropped >= CONES_DESIRED) {
+                // Use the parkingTag here - it must be at least LEFT if no tag was seen
+                if (parkingTag == LEFT){ //&& cones_dropped >= CONES_DESIRED) {
 
                     drive.followTrajectorySequenceAsync(BlueOnRedGoLeft);
-                    //drive.update();
-                    //slide_extension.setTargetPosition(0);
-                    //rotate_arm.setTargetPosition(0);
-                    //tilt_arm.setTargetPosition(0);
                     telemetry.addData("test", 1);
-                    break;
 
-                } else if (tagOfInterest.id == RIGHT){ //&& cones_dropped >= CONES_DESIRED) {
+
+                } else if (parkingTag == RIGHT){ //&& cones_dropped >= CONES_DESIRED) {
 
                     drive.followTrajectorySequenceAsync(BlueOnRedGoRight);
-                    slide_extension.setTargetPosition(0);
-                    rotate_arm.setTargetPosition(0);
-                    tilt_arm.setTargetPosition(0);
                     telemetry.addData("test", 2);
-                    break;
 
 
-                } else if (tagOfInterest.id == MIDDLE){ //&& cones_dropped >= CONES_DESIRED) {
+
+                } else if (parkingTag == MIDDLE){ //&& cones_dropped >= CONES_DESIRED) {
 
                     drive.followTrajectorySequenceAsync(BlueOnRedGoMiddle);
-                    slide_extension.setTargetPosition(0);
-                    rotate_arm.setTargetPosition(0);
-                    tilt_arm.setTargetPosition(0);
-                    telemetry.addData("test", 3);
-                    break;
 
+                    telemetry.addData("test", 3);
 
                 }
+                liftState = LiftState.FINISH;
+                break;
+            case FINISH:
+                drive.update();
+                slide_extension.setTargetPosition(0);
+                rotate_arm.setTargetPosition(0);
+                tilt_arm.setTargetPosition(0);
                 break;
 
 

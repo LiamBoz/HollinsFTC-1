@@ -122,7 +122,7 @@ public class teleoppowerplay2 extends OpMode {
                 if (gamepad1.a){
                     rotate_arm.setTargetPosition(rotate_collect);
                     tilt_arm.setTargetPosition(tilt_collect);
-                        if (Math.abs(rotate_arm.getCurrentPosition() - rotate_collect) <= 8){
+                        if (Math.abs(rotate_arm.getCurrentPosition() - rotate_collect) <= 20){
                             slide_extension.setTargetPosition(slide_collect);
                             if (Math.abs(slide_extension.getCurrentPosition() - slide_collect) <= 8) {
                                 claw.setPosition(CLAW_HOLD);
@@ -146,7 +146,7 @@ public class teleoppowerplay2 extends OpMode {
                     tilt_arm.setTargetPosition(tilt_drop);
                     rotate_arm.setTargetPosition(rotate_drop);
                     tilt_claw.setPosition(CLAWTILT_DEPOSIT);
-                    if (Math.abs(tilt_arm.getCurrentPosition() - tilt_drop) <= 5 && Math.abs(rotate_arm.getCurrentPosition() - rotate_drop) <= 5) {
+                    if (Math.abs(tilt_arm.getCurrentPosition() - tilt_drop) <= 8 && Math.abs(rotate_arm.getCurrentPosition() - rotate_drop) <= 10) {
                         liftState = LiftState.LIFT_EXTENDSLIDE;
                     }
                 }
@@ -163,7 +163,7 @@ public class teleoppowerplay2 extends OpMode {
                 break;
             case LIFT_RETRACTSLIDE:
                 slide_extension.setTargetPosition(0);
-                if (slide_extension.getCurrentPosition() <= 200){
+                if (slide_extension.getCurrentPosition() <= 400){
                     liftState = LiftState.LIFT_GRABNEW;
                 }
                 break;
