@@ -26,149 +26,7 @@ import java.util.ArrayList;
 @Autonomous(name="FSM AUTO SHORT POLE")
 public class FSMAutoShortPole extends OpMode {
 
-
-    public enum LiftState {
-        LIFT_STARTDROP,
-        LIFT_GETNEW,
-        LIFT_RETRACTSLIDE,
-        LIFT_HOLD,
-        LIFT_INC,
-        PARKING_STATE,
-        FINISH
-    }
-
-
-    // The liftState variable is declared out here
-    // so its value persists between loop() calls
-    LiftState liftState = LiftState.LIFT_STARTDROP;
-
-    OpenCvCamera camera;
-    AprilTagDetectionPipeline aprilTagDetectionPipeline;
-
-    static final double FEET_PER_METER = 3.28084;
-
-    // Lens intrinsics
-    // UNITS ARE PIXELS
-    // NOTE: this calibration is for the C920 webcam at 800x448.
-    // You will need to do your own calibration for other configurations!
-    double fx = 578.272;
-    double fy = 578.272;
-    double cx = 402.145;
-    double cy = 221.506;
-
-    // UNITS ARE METERS
-    double tagsize = 0.166;
-
-    // Tag ID 1,2,3 from the 36h11 family
-    int LEFT = 1;
-    int MIDDLE = 2;
-    int RIGHT = 3;
-
-    // This Integer will be set to a default LEFT if no tag is found
-    int parkingTag = LEFT;
-
-    AprilTagDetection tagOfInterest = null;
-
-    TrajectorySequence BlueOnRedGoMiddle;
-    TrajectorySequence BlueOnRedGoRight;
-    TrajectorySequence BlueOnRedGoLeft;
-
-    public DcMotorEx slide_extension;
-    public DcMotorEx tilt_arm;
-    public DcMotorEx rotate_arm;
-    public Servo claw;
-    public Servo tilt_claw;
-
-    ElapsedTime liftTimer = new ElapsedTime();
-
-    SampleMecanumDrive drive;
-
-    int cones_dropped = 0;
-    int CONES_DESIRED = 3;
-
-    boolean switchvar = false;
-
-    final double CLAW_HOLD = 0.2; // the idle position for the dump servo
-    final double CLAW_DEPOSIT = 0.0; // the dumping position for the dump servo
-
-    final double CLAWTILT_COLLECT = 0.5;
-    final double CLAWTILT_DEPOSIT = 0.6;
-
-    // the amount of time the dump servo takes to activate in seconds
-    final double DUMP_TIME = 1;
-    final double ROTATE_TIME = 0.3; // the amount of time it takes to rotate 135 degrees
-    final double EXTENSION_TIME = 0.6; // e amount of time it takes to extend from 0 to 2250 on the slide
-
-    final int SLIDE_LOW = 0; // the low encoder position for the lift
-    final int SLIDE_COLLECT = 1460; // the high encoder position for the lift
-    final int SLIDE_DROPOFF = 1280;
-    final int SLIDE_MOVEMENT = 1125; // the slide retraction for when rotating
-
-    // TODO: find encoder values for tilt
-    final int TILT_LOW = 115;
-    final int TILT_HIGH = 430;
-
-    // TODO: find encoder values for rotation
-    final int ROTATE_COLLECT = -2235;
-    final int ROTATE_DROP = -1200;
-
-    //public TrajectorySequence VariablePath;
-
-    public void init() {
-        liftTimer.reset();
-        PhotonCore.enable();
-
-        drive = new SampleMecanumDrive(hardwareMap);
-
-        drive.setPoseEstimate(new Pose2d(36, 64, Math.toRadians(270)));
-
-        slide_extension = hardwareMap.get(DcMotorEx.class,"slide_extension");
-        tilt_arm = hardwareMap.get(DcMotorEx.class,"tilt_arm");
-        rotate_arm = hardwareMap.get(DcMotorEx.class,"rotate_arm");
-        claw = hardwareMap.get(Servo.class,"claw");
-        tilt_claw = hardwareMap.get(Servo.class,"tilt_claw");
-
-        //rotate_arm = hardwareMap.get(DcMotorEx.class,"rotate_arm");
-
-        slide_extension.setDirection(DcMotor.Direction.REVERSE);
-        slide_extension.setTargetPosition(variable_slide_ticks);
-        slide_extension.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        slide_extension.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        tilt_arm.setTargetPosition(variable_tilt_ticks);
-        tilt_arm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        tilt_arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        rotate_arm.setTargetPosition(0);
-        rotate_arm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        rotate_arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
-        claw.setPosition(CLAW_HOLD);
-        tilt_claw.setPosition(CLAWTILT_COLLECT);
-
-        int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
-        camera = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
-        aprilTagDetectionPipeline = new AprilTagDetectionPipeline(tagsize, fx, fy, cx, cy);
-
-        camera.setPipeline(aprilTagDetectionPipeline);
-        camera.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener()
-        {
-            @Override
-            public void onOpened()
-            {
-                camera.startStreaming(800,448, OpenCvCameraRotation.UPRIGHT);
-            }
-
-            @Override
-            public void onError(int errorCode)
-            {
-
-            }
-        });
-
-
-        telemetry.setMsTransmissionInterval(50);
-
-
-        while (tagOfInterest == null)
+    public void init_loop(){
         {
             ArrayList<AprilTagDetection> currentDetections = aprilTagDetectionPipeline.getLatestDetections();
 
@@ -239,27 +97,178 @@ public class FSMAutoShortPole extends OpMode {
             telemetry.addLine("No tag snapshot available, it was never sighted during the init loop :(");
             telemetry.update();
         }
+    }
+
+    public enum LiftState {
+        LIFT_STARTDROP,
+        LIFT_GETNEW,
+        LIFT_RETRACTSLIDE,
+        LIFT_HOLD,
+        LIFT_INC,
+        PARKING_STATE,
+        FINISH
+    }
+
+
+    // The liftState variable is declared out here
+    // so its value persists between loop() calls
+    LiftState liftState = LiftState.LIFT_STARTDROP;
+
+    OpenCvCamera camera;
+    AprilTagDetectionPipeline aprilTagDetectionPipeline;
+
+    static final double FEET_PER_METER = 3.28084;
+
+    // Lens intrinsics
+    // UNITS ARE PIXELS
+    // NOTE: this calibration is for the C920 webcam at 800x448.
+    // You will need to do your own calibration for other configurations!
+    double fx = 578.272;
+    double fy = 578.272;
+    double cx = 402.145;
+    double cy = 221.506;
+
+    // UNITS ARE METERS
+    double tagsize = 0.166;
+
+    // Tag ID 1,2,3 from the 36h11 family
+    int LEFT = 1;
+    int MIDDLE = 2;
+    int RIGHT = 3;
+
+    // This Integer will be set to a default LEFT if no tag is found
+    int parkingTag = LEFT;
+
+    AprilTagDetection tagOfInterest = null;
+
+    TrajectorySequence BlueOnRedGoMiddle;
+    TrajectorySequence BlueOnRedGoRight;
+    TrajectorySequence BlueOnRedGoLeft;
+
+    public DcMotorEx slide_extension;
+    public DcMotorEx tilt_arm;
+    public DcMotorEx rotate_arm;
+    public Servo claw;
+    public Servo tilt_claw;
+
+    ElapsedTime liftTimer = new ElapsedTime();
+    ElapsedTime parkingTimer = new ElapsedTime();
+
+    SampleMecanumDrive drive;
+
+    int cones_dropped = 0;
+    int CONES_DESIRED = 2;
+
+    boolean switchvar = false;
+
+    final double CLAW_HOLD = 0.2; // the idle position for the dump servo
+    final double CLAW_DEPOSIT = 0.0; // the dumping position for the dump servo
+
+    final double CLAWTILT_COLLECT = 0.5;
+    final double CLAWTILT_DEPOSIT = 0.6;
+
+    // the amount of time the dump servo takes to activate in seconds
+    final double DUMP_TIME = 1;
+    final double ROTATE_TIME = 0.3; // the amount of time it takes to rotate 135 degrees
+    final double EXTENSION_TIME = 0.6; // e amount of time it takes to extend from 0 to 2250 on the slide
+
+    final int SLIDE_LOW = 0; // the low encoder position for the lift
+    final int SLIDE_COLLECT = 1460; // the high encoder position for the lift
+    final int SLIDE_DROPOFF = 1310;
+    final int SLIDE_MOVEMENT = 1125; // the slide retraction for when rotating
+
+    // TODO: find encoder values for tilt
+    int TILT_LOW = 131;
+    final int TILT_HIGH = 430;
+
+    // TODO: find encoder values for rotation
+    final int ROTATE_COLLECT = -2235;
+    final int ROTATE_DROP = -1200;
+
+    //public TrajectorySequence VariablePath;
+
+    public void init() {
+        liftTimer.reset();
+        PhotonCore.enable();
+
+        drive = new SampleMecanumDrive(hardwareMap);
+
+        drive.setPoseEstimate(new Pose2d(36, 66, Math.toRadians(270)));
+
+        slide_extension = hardwareMap.get(DcMotorEx.class,"slide_extension");
+        tilt_arm = hardwareMap.get(DcMotorEx.class,"tilt_arm");
+        rotate_arm = hardwareMap.get(DcMotorEx.class,"rotate_arm");
+        claw = hardwareMap.get(Servo.class,"claw");
+        tilt_claw = hardwareMap.get(Servo.class,"tilt_claw");
+
+        //rotate_arm = hardwareMap.get(DcMotorEx.class,"rotate_arm");
+
+        slide_extension.setDirection(DcMotor.Direction.REVERSE);
+        slide_extension.setTargetPosition(variable_slide_ticks);
+        slide_extension.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        slide_extension.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        tilt_arm.setTargetPosition(variable_tilt_ticks);
+        tilt_arm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        tilt_arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        rotate_arm.setTargetPosition(0);
+        rotate_arm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        rotate_arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+        claw.setPosition(CLAW_HOLD);
+        tilt_claw.setPosition(CLAWTILT_COLLECT);
+
+        int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
+        camera = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
+        aprilTagDetectionPipeline = new AprilTagDetectionPipeline(tagsize, fx, fy, cx, cy);
+
+        camera.setPipeline(aprilTagDetectionPipeline);
+        camera.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener()
+        {
+            @Override
+            public void onOpened()
+            {
+                camera.startStreaming(800,448, OpenCvCameraRotation.UPRIGHT);
+            }
+
+            @Override
+            public void onError(int errorCode)
+            {
+
+            }
+        });
+
+
+        telemetry.setMsTransmissionInterval(50);
+
+        //init_loop();{
+       // }
+        //while (tagOfInterest == null)
+
 
         BlueOnRedGoMiddle = drive.trajectorySequenceBuilder(new Pose2d(42,14, Math.toRadians(270)))
                 .strafeRight(4)
                 .back(24)
                 .build();
-        BlueOnRedGoRight = drive.trajectorySequenceBuilder(new Pose2d(42,14, Math.toRadians(270)))
-                .lineToConstantHeading(new Vector2d(14,14))
-                .splineToLinearHeading(new Pose2d(14,36, Math.toRadians(270)), Math.toRadians(270))
+        BlueOnRedGoRight = drive.trajectorySequenceBuilder(new Pose2d(42,13.5, Math.toRadians(270)))
+                .strafeRight(22)
+                .back(24)
+                //.lineToConstantHeading(new Vector2d(14,14))
+                //.splineToLinearHeading(new Pose2d(14,36, Math.toRadians(270)), Math.toRadians(270))
                 .build();
-        BlueOnRedGoLeft = drive.trajectorySequenceBuilder(new Pose2d(42,14, Math.toRadians(270)))
-                .lineToConstantHeading(new Vector2d(54,14))
-                .splineToLinearHeading(new Pose2d(60,36, Math.toRadians(270)), Math.toRadians(270))
+        BlueOnRedGoLeft = drive.trajectorySequenceBuilder(new Pose2d(42,13.5, Math.toRadians(270)))
+                .strafeLeft(14)
+                .back(24)
+                //.lineToConstantHeading(new Vector2d(54,14))
+                //.splineToLinearHeading(new Pose2d(60,36, Math.toRadians(270)), Math.toRadians(270))
                 .build();
 
-        TrajectorySequence BlueOnRedGoCycle = drive.trajectorySequenceBuilder(new Pose2d(36, 64, Math.toRadians(270)))
+        TrajectorySequence BlueOnRedGoCycle = drive.trajectorySequenceBuilder(new Pose2d(36, 66, Math.toRadians(270)))
                 .lineTo(new Vector2d(36,60))
                 .addDisplacementMarker(() -> switchvar = true)
                 .lineTo(new Vector2d(36,24))
-                .splineToConstantHeading(new Vector2d(42,14), Math.toRadians(270))
+                .splineToConstantHeading(new Vector2d(41.3,12.2), Math.toRadians(270))
                 .build();
-
+        init_loop();
         drive.followTrajectorySequenceAsync(BlueOnRedGoCycle);
 
     }
@@ -285,7 +294,7 @@ public class FSMAutoShortPole extends OpMode {
         telemetry.addData("drive", drive.isBusy());
 
         tilt_arm.setPower(1);
-        rotate_arm.setPower(0.3);
+        rotate_arm.setPower(0.25);
         slide_extension.setPower(1);
 
 
@@ -345,12 +354,14 @@ public class FSMAutoShortPole extends OpMode {
                 if (cones_dropped < CONES_DESIRED) {
                     if (liftTimer.seconds() >= 0.5) {
                         cones_dropped += 1;
+                        TILT_LOW = TILT_LOW-22;
                         liftTimer.reset();
                         liftState = LiftState.LIFT_RETRACTSLIDE;
                         break;
                     }
                 }
                 else {
+                    liftTimer.reset();
                     liftState = LiftState.PARKING_STATE;
                 }
                 break;
@@ -368,12 +379,14 @@ public class FSMAutoShortPole extends OpMode {
                 if (parkingTag == LEFT){ //&& cones_dropped >= CONES_DESIRED) {
 
                     drive.followTrajectorySequenceAsync(BlueOnRedGoLeft);
+                    liftTimer.reset();
                     telemetry.addData("test", 1);
 
 
                 } else if (parkingTag == RIGHT){ //&& cones_dropped >= CONES_DESIRED) {
 
                     drive.followTrajectorySequenceAsync(BlueOnRedGoRight);
+                    liftTimer.reset();
                     telemetry.addData("test", 2);
 
 
@@ -381,7 +394,7 @@ public class FSMAutoShortPole extends OpMode {
                 } else if (parkingTag == MIDDLE){ //&& cones_dropped >= CONES_DESIRED) {
 
                     drive.followTrajectorySequenceAsync(BlueOnRedGoMiddle);
-
+                    liftTimer.reset();
                     telemetry.addData("test", 3);
 
                 }
@@ -390,19 +403,16 @@ public class FSMAutoShortPole extends OpMode {
             case FINISH:
                 drive.update();
                 slide_extension.setTargetPosition(0);
-                rotate_arm.setTargetPosition(0);
-                tilt_arm.setTargetPosition(0);
+                if (liftTimer.seconds() >= 3) {
+                    rotate_arm.setTargetPosition(0);
+                    tilt_arm.setTargetPosition(0);
+                }
                 break;
 
 
 
         }
     }
-
-    // mecanum drive code goes here
-    // But since none of the stuff in the switch case stops
-    // the robot, this will always run!
-    //updateDrive(gamepad1, gamepad2);
 
     void tagToTelemetry(AprilTagDetection detection)
     {

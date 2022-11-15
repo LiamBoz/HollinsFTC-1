@@ -36,8 +36,8 @@ public class teleoppowerplay2 extends OpMode {
 
     public int rotate_collect = 895;
     public int tilt_collect = 0;
-    public int slide_collect = 1350;
-    public int rotate_drop = -320;
+    public int slide_collect = 1370;
+    public int rotate_drop = -340;
     public int tilt_drop = 570;
     public int slide_drop = 1480;
     public int slide_var = 0;
@@ -124,7 +124,7 @@ public class teleoppowerplay2 extends OpMode {
                     tilt_arm.setTargetPosition(tilt_collect);
                         if (Math.abs(rotate_arm.getCurrentPosition() - rotate_collect) <= 20){
                             slide_extension.setTargetPosition(slide_collect);
-                            if (Math.abs(slide_extension.getCurrentPosition() - slide_collect) <= 8) {
+                            if (Math.abs(slide_extension.getCurrentPosition() - slide_collect) <= 8 && gamepad1.x) {
                                 claw.setPosition(CLAW_HOLD);
                                 liftTimer.reset();
                                 liftState = LiftState.LIFT_CLAWCLOSE;
@@ -153,7 +153,7 @@ public class teleoppowerplay2 extends OpMode {
                     break;
             case LIFT_EXTENDSLIDE:
                 slide_extension.setTargetPosition(1400);
-                if (slide_extension.getCurrentPosition() >= 1390){
+                if (slide_extension.getCurrentPosition() >= 1390 && gamepad1.b){
                     claw.setPosition(CLAW_DEPOSIT);
                     if (gamepad1.y){
                         liftState = LiftState.LIFT_RETRACTSLIDE;
