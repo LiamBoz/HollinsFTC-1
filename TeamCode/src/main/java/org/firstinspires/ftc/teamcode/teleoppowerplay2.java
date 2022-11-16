@@ -90,10 +90,7 @@ public class teleoppowerplay2 extends OpMode {
 
         claw.setPosition(CLAW_DEPOSIT);
         tilt_claw.setPosition(CLAWTILT_COLLECT);
-
-
         //claw         = hardwareMap.get(Servo.class,"claw");
-
         front_right.setDirection(DcMotor.Direction.REVERSE);
         back_right.setDirection(DcMotor.Direction.REVERSE);
     }

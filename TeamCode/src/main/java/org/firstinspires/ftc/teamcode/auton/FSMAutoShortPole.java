@@ -154,7 +154,7 @@ public class FSMAutoShortPole extends OpMode {
     ElapsedTime liftTimer = new ElapsedTime();
     ElapsedTime parkingTimer = new ElapsedTime();
 
-    SampleMecanumDrive drive;
+    SampleMecanumDrive drive; 
 
     int cones_dropped = 0;
     int CONES_DESIRED = 2;
@@ -241,7 +241,7 @@ public class FSMAutoShortPole extends OpMode {
         telemetry.setMsTransmissionInterval(50);
 
         //init_loop();{
-       // }
+        // }
         //while (tagOfInterest == null)
 
 
@@ -274,8 +274,6 @@ public class FSMAutoShortPole extends OpMode {
     }
 
     public void loop() {
-
-
 
         Pose2d poseEstimate = drive.getPoseEstimate();
 
