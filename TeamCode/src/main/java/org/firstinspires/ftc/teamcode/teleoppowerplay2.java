@@ -108,9 +108,9 @@ public class teleoppowerplay2 extends OpMode {
         telemetry.addData("claw position", claw.getPosition());
         telemetry.addData("lifttimer", liftTimer.seconds());
         telemetry.addData("stuff", Math.abs(slide_extension.getCurrentPosition() - slide_collect));
-        rotate_arm.setPower(1);
+        /*rotate_arm.setPower(1);
         tilt_arm.setPower(0.5);
-        slide_extension.setPower(1);
+        slide_extension.setPower(1);*/
 
         switch (liftState) {
             case LIFT_GRABNEW:
