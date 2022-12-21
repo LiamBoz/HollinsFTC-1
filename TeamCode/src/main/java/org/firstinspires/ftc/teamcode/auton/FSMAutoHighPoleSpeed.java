@@ -10,9 +10,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.checkerframework.checker.i18nformatter.qual.I18nFormat;
@@ -29,8 +27,8 @@ import java.util.ArrayList;
 
 // adb connect 192.168.43.1:5555
 
-@Autonomous(name="FSM AUTO SHORT POLE SPEED")
-public class FSMAutoShortPoleSpeed extends OpMode {
+@Autonomous(name="FSM AUTO HIGH POLE SPEED")
+public class FSMAutoHighPoleSpeed extends OpMode {
 
     /*public void init_loop(){
         {
@@ -128,6 +126,10 @@ public class FSMAutoShortPoleSpeed extends OpMode {
 */
     static final double FEET_PER_METER = 3.28084;
 
+    // Lens intrinsics
+    // UNITS ARE PIXELS
+    // NOTE: this calibration is for the C920 webcam at 800x448.
+    // You will need to do your own calibration for other configurations!
     double fx = 578.272;
     double fy = 578.272;
     double cx = 402.145;
@@ -155,14 +157,11 @@ public class FSMAutoShortPoleSpeed extends OpMode {
     public DcMotorEx rotate_arm;
     public Servo claw;
     public Servo tilt_claw;
-    public Servo odometry_forward;
-    public Servo odometry_strafe;
-    //public VoltageSensor voltageSensor;
 
     ElapsedTime liftTimer = new ElapsedTime();
     ElapsedTime parkingTimer = new ElapsedTime();
 
-    SampleMecanumDrive drive; 
+    SampleMecanumDrive drive;
 
     int cones_dropped = 0;
     int CONES_DESIRED = 4;
@@ -172,28 +171,26 @@ public class FSMAutoShortPoleSpeed extends OpMode {
     final double CLAW_HOLD = 0; // the idle position for the dump servo
     final double CLAW_DEPOSIT = 0.25; // the dumping position for the dump servo
 
-    final double CLAWTILT_END = 0.5;
-    final double CLAWTILT_COLLECT = 0.65;
-    final double CLAWTILT_DEPOSIT = 0.85;
+    final double CLAWTILT_END = 0.3;
+    final double CLAWTILT_COLLECT = 0.6;
+    final double CLAWTILT_DEPOSIT = 0.8;
 
     // the amount of time the dump servo takes to activate in seconds
     final double DUMP_TIME = 1;
     final double ROTATE_TIME = 0.3; // the amount of time it takes to rotate 135 degrees
     final double EXTENSION_TIME = 0.6; // e amount of time it takes to extend from 0 to 2250 on the slide
 
-    final int SLIDE_LOW = 800; // the low encoder position for the lift
-    final int SLIDE_COLLECT = 1320; // the high encoder position for the lift
-    final int SLIDE_DROPOFF = 1300;
-    final int SLIDE_MOVEMENT = 1125; // the slide retraction for when rotating
+    final int SLIDE_LOW = 1000; // the low encoder position for the lift
+    final int SLIDE_COLLECT = 1131; // the high encoder position for the lift
+    final int SLIDE_DROPOFF = 1546;
 
     // TODO: find encoder values for tilt
-    int TILT_LOW = 130;
-    final int TILT_HIGH = 435;
-    public int TILT_DECREMENT = 435;
+    int TILT_LOW = 0;
+    final int TILT_HIGH = 600;
 
     // TODO: find encoder values for rotation
-    final int ROTATE_COLLECT = -2235;
-    final int ROTATE_DROP = -1215;
+    final int ROTATE_COLLECT = 258;
+    final int ROTATE_DROP = -782;
 
     //public TrajectorySequence VariablePath;
 
@@ -211,14 +208,6 @@ public class FSMAutoShortPoleSpeed extends OpMode {
         claw = hardwareMap.get(Servo.class,"claw");
         tilt_claw = hardwareMap.get(Servo.class,"tilt_claw");
 
-        odometry_forward = hardwareMap.get(Servo.class, "odometry_forward");
-        odometry_strafe = hardwareMap.get(Servo.class, "odometry_strafe");
-
-        odometry_forward.setPosition(1);
-        odometry_strafe.setPosition(0.75);
-
-        //VoltageSensor voltageSensor = hardwareMap.voltageSensor.iterator().next();
-
         //rotate_arm = hardwareMap.get(DcMotorEx.class,"rotate_arm");
 
         slide_extension.setDirection(DcMotor.Direction.REVERSE);
@@ -233,7 +222,7 @@ public class FSMAutoShortPoleSpeed extends OpMode {
         rotate_arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
         claw.setPosition(CLAW_HOLD);
-        tilt_claw.setPosition(CLAWTILT_COLLECT);
+        tilt_claw.setPosition(0.3);
 
 
 /*
@@ -283,14 +272,16 @@ public class FSMAutoShortPoleSpeed extends OpMode {
                 //.splineToLinearHeading(new Pose2d(60,36, Math.toRadians(270)), Math.toRadians(270))
                 .build();
 
-        TrajectorySequence BlueOnRedGoCycle = drive.trajectorySequenceBuilder(new Pose2d(0, 0, Math.toRadians(270)))
-                .lineTo(new Vector2d(0,-32))
+        TrajectorySequence BlueOnRedGoCycle = drive.trajectorySequenceBuilder(new Pose2d(36, 66, Math.toRadians(270)))
+                .lineTo(new Vector2d(36,60))
                 .addDisplacementMarker(() -> switchvar = true)
-                .lineTo(new Vector2d(0,-38))
-                .splineToConstantHeading(new Vector2d(41.3,-51.75), Math.toRadians(270))
+                .lineTo(new Vector2d(36,24))
+                .splineToConstantHeading(new Vector2d(41.3,12.2), Math.toRadians(270))
                 .build();
         //init_loop();
         //drive.followTrajectorySequenceAsync(BlueOnRedGoCycle);
+        tilt_claw.setPosition(CLAWTILT_END);
+        claw.setPosition(CLAW_HOLD);
 
     }
 
@@ -313,7 +304,7 @@ public class FSMAutoShortPoleSpeed extends OpMode {
         telemetry.addData("drive", drive.isBusy());
 
         tilt_arm.setPower(1);
-        rotate_arm.setPower(0.5);
+        rotate_arm.setPower(1);
         slide_extension.setPower(1);
 
 
@@ -321,41 +312,33 @@ public class FSMAutoShortPoleSpeed extends OpMode {
 
         switch (liftState) {
             case LIFT_STARTDROP:
-                    rotate_arm.setPower(1);
-                    tilt_arm.setTargetPosition(TILT_HIGH-5);
-                    rotate_arm.setTargetPosition(ROTATE_DROP);
-                        if (Math.abs(rotate_arm.getCurrentPosition() - ROTATE_DROP) <= 30) {
-                            slide_extension.setTargetPosition(SLIDE_DROPOFF);
-                            tilt_claw.setPosition(CLAWTILT_DEPOSIT);
-                            rotate_arm.setPower(0.5);
-                            if ((Math.abs(slide_extension.getCurrentPosition() - SLIDE_DROPOFF) <= 8) && (Math.abs(tilt_arm.getCurrentPosition() - TILT_HIGH) <= 5)) {
-                                liftTimer.reset();
-                                claw.setPosition(CLAW_DEPOSIT);
-                                liftState = LiftState.LIFT_INC;
-                            }
-                        }
-                break;
-
-// Q's DropCycle
-/*            case LIFT_DROPCYCLE:
-                tilt_arm.setPower(1);
-                if (tilt_arm.getCurrentPosition() < 180) {
-                    tilt_arm.setTargetPosition(TILT_HIGH);
-                    break;
+                tilt_claw.setPosition(0.9);
+                rotate_arm.setPower(1);
+                tilt_arm.setTargetPosition(TILT_HIGH);
+                rotate_arm.setTargetPosition(ROTATE_DROP);
+                if ((Math.abs(rotate_arm.getCurrentPosition() - ROTATE_DROP) <= 30) && (Math.abs(tilt_arm.getCurrentPosition() - TILT_HIGH)) <= 5) {
+                    slide_extension.setTargetPosition(SLIDE_DROPOFF);
+                    if ((Math.abs(slide_extension.getCurrentPosition() - SLIDE_DROPOFF) <= 8) && (Math.abs(tilt_arm.getCurrentPosition() - TILT_HIGH) <= 5)) {
+                        liftTimer.reset();
+                        tilt_claw.setPosition(1);
+                        //liftState = LiftState.LIFT_INC;
+                        break;
+                    }
                 }
-                rotate_arm.setTargetPosition(ROTATE_DROP);   */
+                break;
             case LIFT_DROPCYCLE:
-                tilt_arm.setPower(0.3);
+                tilt_arm.setPower(1);
                 tilt_arm.setTargetPosition(TILT_HIGH);
                 if (tilt_arm.getCurrentPosition() >= 180) {
                     rotate_arm.setTargetPosition(ROTATE_DROP);
                     if (Math.abs(rotate_arm.getCurrentPosition() - ROTATE_DROP) <= 30) {
                         slide_extension.setTargetPosition(SLIDE_DROPOFF);
                         tilt_claw.setPosition(CLAWTILT_DEPOSIT);
-                        if ((Math.abs(slide_extension.getCurrentPosition() - SLIDE_DROPOFF) <= 8) && (Math.abs(tilt_arm.getCurrentPosition() - TILT_HIGH) <= 5) && (rotate_arm.getCurrentPosition() - ROTATE_DROP) <= 8) {
+                        if ((Math.abs(slide_extension.getCurrentPosition() - SLIDE_DROPOFF) <= 8) && (Math.abs(tilt_arm.getCurrentPosition() - TILT_HIGH) <= 5)) {
                             claw.setPosition(CLAW_DEPOSIT);
                             liftTimer.reset();
                             liftState = LiftState.LIFT_INC;
+                            break;
                         }
                     }
                 }
@@ -363,21 +346,17 @@ public class FSMAutoShortPoleSpeed extends OpMode {
 
             case LIFT_GETNEW:
                 tilt_claw.setPosition(CLAWTILT_COLLECT);
-                rotate_arm.setTargetPosition(ROTATE_COLLECT); // rotates to the stack of cones
-                if (Math.abs(rotate_arm.getCurrentPosition() - ROTATE_COLLECT) <= 400){
-                    // if the rotation is within 100 ticks begin to drop the tilt arm to the low position
-                    tilt_arm.setPower(0.005);
+                rotate_arm.setTargetPosition(ROTATE_COLLECT);
+                if (Math.abs(rotate_arm.getCurrentPosition() - ROTATE_COLLECT) <= 100){
+                    tilt_arm.setPower(-0.2);
                     tilt_arm.setTargetPosition(TILT_LOW);
-                    if (tilt_arm.getCurrentPosition() - TILT_LOW <= 1){
-                        // once the tilt is close etend the slide
+                    if (tilt_arm.getCurrentPosition() - TILT_LOW <= 3){
                         slide_extension.setTargetPosition(SLIDE_COLLECT);
-                        tilt_arm.setPower(0.05);
-                        if (slide_extension.getCurrentPosition() >= (SLIDE_COLLECT-8) && tilt_arm.getCurrentPosition() - TILT_LOW <= 1) {
-                            // once they are both within a certain tick value grab with the claw
-                            tilt_arm.setPower(0.1);
+                        if (slide_extension.getCurrentPosition() >= (SLIDE_COLLECT-8) && tilt_arm.getCurrentPosition() - TILT_LOW <= 3) {
                             claw.setPosition(CLAW_HOLD);
                             liftTimer.reset();
                             liftState = LiftState.LIFT_HOLD;
+                            break;
                         }
                     }
                 }
@@ -386,6 +365,7 @@ public class FSMAutoShortPoleSpeed extends OpMode {
             case LIFT_HOLD:
                 if (liftTimer.seconds() >= 0.4) {
                     liftState = LiftState.LIFT_DROPCYCLE;
+                    break;
                 }
                 break;
 
@@ -396,6 +376,7 @@ public class FSMAutoShortPoleSpeed extends OpMode {
                         TILT_LOW = TILT_LOW-20;
                         liftTimer.reset();
                         liftState = LiftState.LIFT_RETRACTSLIDE;
+                        break;
                     }
                 }
                 else {
@@ -403,21 +384,24 @@ public class FSMAutoShortPoleSpeed extends OpMode {
 
                         liftTimer.reset();
                         liftState = LiftState.PARKING_STATE;
+                        break;
                     }
                 }
                 break;
             case LIFT_RETRACTSLIDE:
                 slide_extension.setTargetPosition(SLIDE_LOW);
                 rotate_arm.setTargetPosition(ROTATE_COLLECT);
-                if (slide_extension.getCurrentPosition() <= 900) {
+                if (slide_extension.getCurrentPosition() <= 1100) {
                     liftTimer.reset();
                     //liftState = LiftState.LIFT_GETNEW;
                     liftState = LiftState.LIFT_GETNEW;
+                    break;
                 }
                 break;
             case PARKING_STATE:
                 liftTimer.reset();
                 liftState = LiftState.FINISH;
+
                 break;
                 /*// Use the parkingTag here - it must be at least LEFT if no tag was seen
                 if (parkingTag == LEFT){ //&& cones_dropped >= CONES_DESIRED) {

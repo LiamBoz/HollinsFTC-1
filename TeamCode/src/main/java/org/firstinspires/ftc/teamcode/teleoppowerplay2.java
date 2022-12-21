@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -34,17 +35,20 @@ public class teleoppowerplay2 extends OpMode {
     private static DcMotor slide_extension;
     private DcMotor rotate_arm;
 
-    public int rotate_collect = 895;
+    public int rotate_collect = 860;
     public int tilt_collect = 0;
-    public int slide_collect = 1370;
-    public int rotate_drop = -340;
-    public int tilt_drop = 570;
-    public int slide_drop = 1480;
+    public int slide_collect = 1200;
+    public int rotate_drop = -368;
+    public int tilt_drop = 580;
+    public int slide_drop = 1660;
     public int slide_var = 0;
-    public double CLAW_HOLD = 0.2;
-    public double CLAW_DEPOSIT = 0.0;
+    public double CLAW_HOLD = 0.0;
+    public double CLAW_DEPOSIT = 0.13;
     final double CLAWTILT_COLLECT = 0.5;
-    final double CLAWTILT_DEPOSIT = 0.6;
+    final double CLAWTILT_DEPOSIT = 0.75;
+
+    double odometry_forward_static = 0.5;
+    double odometry_strafe_static = 0.5;
 
     public int ZeroDegreeTiltTicks = 30;
     public int SixtyDegreeTiltTicks = 250;
@@ -55,6 +59,8 @@ public class teleoppowerplay2 extends OpMode {
     public int rotation_ticks = 0;
     private Servo claw = null;
     private Servo tilt_claw = null;
+    private Servo odometry_forward = null;
+    private Servo odometry_strafe = null;
     static int MaxPositionTicks = 1400;
     int MinPositionTicks = 0;
 
@@ -72,6 +78,8 @@ public class teleoppowerplay2 extends OpMode {
         claw = hardwareMap.get(Servo.class,"claw");
         tilt_claw = hardwareMap.get(Servo.class,"tilt_claw");
         rotate_arm = hardwareMap.get(DcMotor.class,"rotate_arm");
+        odometry_forward = hardwareMap.get(Servo.class, "odometry_forward");
+        odometry_strafe = hardwareMap.get(Servo.class, "odometry_strafe");
         slide_extension.setDirection(DcMotor.Direction.REVERSE);
 
         slide_extension.setTargetPosition(MinPositionTicks);
@@ -88,8 +96,10 @@ public class teleoppowerplay2 extends OpMode {
         back_left.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         back_right.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-        claw.setPosition(CLAW_DEPOSIT);
-        tilt_claw.setPosition(CLAWTILT_COLLECT);
+        //claw.setPosition(CLAW_DEPOSIT);
+        //tilt_claw.setPosition(CLAWTILT_COLLECT);
+        odometry_forward.setPosition(0.55);
+        odometry_strafe.setPosition(0.2);
         //claw         = hardwareMap.get(Servo.class,"claw");
         front_right.setDirection(DcMotor.Direction.REVERSE);
         back_right.setDirection(DcMotor.Direction.REVERSE);
@@ -108,13 +118,15 @@ public class teleoppowerplay2 extends OpMode {
         telemetry.addData("claw position", claw.getPosition());
         telemetry.addData("lifttimer", liftTimer.seconds());
         telemetry.addData("stuff", Math.abs(slide_extension.getCurrentPosition() - slide_collect));
-        /*rotate_arm.setPower(1);
-        tilt_arm.setPower(0.5);
-        slide_extension.setPower(1);*/
+        telemetry.addData("odometry_forward", odometry_forward.getPosition());
+        telemetry.addData("odometry_strafe", odometry_strafe.getPosition());
+        //rotate_arm.setPower(1);
+        //tilt_arm.setPower(0.5);
+        //slide_extension.setPower(1);
 
         switch (liftState) {
             case LIFT_GRABNEW:
-                tilt_claw.setPosition(CLAWTILT_COLLECT);
+                //tilt_claw.setPosition(CLAWTILT_COLLECT);
                 slide_var = 0;
                 if (gamepad1.a){
                     rotate_arm.setTargetPosition(rotate_collect);
@@ -149,7 +161,7 @@ public class teleoppowerplay2 extends OpMode {
                 }
                     break;
             case LIFT_EXTENDSLIDE:
-                slide_extension.setTargetPosition(1400);
+                slide_extension.setTargetPosition(slide_drop);
                 if (slide_extension.getCurrentPosition() >= 1390 && gamepad1.b){
                     claw.setPosition(CLAW_DEPOSIT);
                     if (gamepad1.y){

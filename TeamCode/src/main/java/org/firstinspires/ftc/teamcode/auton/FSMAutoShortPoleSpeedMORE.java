@@ -29,10 +29,10 @@ import java.util.ArrayList;
 
 // adb connect 192.168.43.1:5555
 
-@Autonomous(name="FSM AUTO SHORT POLE SPEED")
-public class FSMAutoShortPoleSpeed extends OpMode {
+@Autonomous(name="FSM AUTO SHORT POLE SPEED MORE")
+public class FSMAutoShortPoleSpeedMORE extends OpMode {
 
-    /*public void init_loop(){
+    public void init_loop(){
         {
             ArrayList<AprilTagDetection> currentDetections = aprilTagDetectionPipeline.getLatestDetections();
 
@@ -103,7 +103,7 @@ public class FSMAutoShortPoleSpeed extends OpMode {
             telemetry.addLine("No tag snapshot available, it was never sighted during the init loop :(");
             telemetry.update();
         }
-    }*/
+    }
 
     public enum LiftState {
         LIFT_STARTDROP,
@@ -123,9 +123,9 @@ public class FSMAutoShortPoleSpeed extends OpMode {
     // so its value persists between loop() calls
     LiftState liftState = LiftState.LIFT_STARTDROP;
 
-    /*OpenCvCamera camera;
+    OpenCvCamera camera;
     AprilTagDetectionPipeline aprilTagDetectionPipeline;
-*/
+
     static final double FEET_PER_METER = 3.28084;
 
     double fx = 578.272;
@@ -140,15 +140,17 @@ public class FSMAutoShortPoleSpeed extends OpMode {
     int LEFT = 1;
     int MIDDLE = 2;
     int RIGHT = 3;
-/*
+
     // This Integer will be set to a default LEFT if no tag is found
     int parkingTag = LEFT;
 
-    AprilTagDetection tagOfInterest = null;*/
+    AprilTagDetection tagOfInterest = null;
 
     TrajectorySequence BlueOnRedGoMiddle;
     TrajectorySequence BlueOnRedGoRight;
     TrajectorySequence BlueOnRedGoLeft;
+
+    public Pose2d NoX = new Pose2d(0, 0,0);
 
     public DcMotorEx slide_extension;
     public DcMotorEx tilt_arm;
@@ -162,33 +164,33 @@ public class FSMAutoShortPoleSpeed extends OpMode {
     ElapsedTime liftTimer = new ElapsedTime();
     ElapsedTime parkingTimer = new ElapsedTime();
 
-    SampleMecanumDrive drive; 
+    SampleMecanumDrive drive;
 
     int cones_dropped = 0;
     int CONES_DESIRED = 4;
 
-    boolean switchvar = true;
+    boolean movedForward = false;
 
-    final double CLAW_HOLD = 0; // the idle position for the dump servo
-    final double CLAW_DEPOSIT = 0.25; // the dumping position for the dump servo
+    final double CLAW_HOLD = 0.45; // the idle position for the dump servo
+    final double CLAW_DEPOSIT = 0.7; // the dumping position for the dump servo
 
-    final double CLAWTILT_END = 0.5;
-    final double CLAWTILT_COLLECT = 0.65;
-    final double CLAWTILT_DEPOSIT = 0.85;
+    final double CLAWTILT_END = 0.27;
+    final double CLAWTILT_COLLECT = 0.50;
+    final double CLAWTILT_DEPOSIT = .70;
 
     // the amount of time the dump servo takes to activate in seconds
     final double DUMP_TIME = 1;
     final double ROTATE_TIME = 0.3; // the amount of time it takes to rotate 135 degrees
     final double EXTENSION_TIME = 0.6; // e amount of time it takes to extend from 0 to 2250 on the slide
 
-    final int SLIDE_LOW = 800; // the low encoder position for the lift
-    final int SLIDE_COLLECT = 1320; // the high encoder position for the lift
-    final int SLIDE_DROPOFF = 1300;
+    final int SLIDE_LOW = 200; // the low encoder position for the lift
+    final int SLIDE_COLLECT = 1340; // the high encoder position for the lift
+    final int SLIDE_DROPOFF = 1360;
     final int SLIDE_MOVEMENT = 1125; // the slide retraction for when rotating
 
     // TODO: find encoder values for tilt
     int TILT_LOW = 130;
-    final int TILT_HIGH = 435;
+    final int TILT_HIGH = 450;
     public int TILT_DECREMENT = 435;
 
     // TODO: find encoder values for rotation
@@ -201,9 +203,10 @@ public class FSMAutoShortPoleSpeed extends OpMode {
         liftTimer.reset();
         PhotonCore.enable();
 
+
         drive = new SampleMecanumDrive(hardwareMap);
 
-        drive.setPoseEstimate(new Pose2d(36, 66, Math.toRadians(270)));
+        drive.setPoseEstimate(new Pose2d(0, 0, Math.toRadians(270)));
 
         slide_extension = hardwareMap.get(DcMotorEx.class,"slide_extension");
         tilt_arm = hardwareMap.get(DcMotorEx.class,"tilt_arm");
@@ -214,8 +217,8 @@ public class FSMAutoShortPoleSpeed extends OpMode {
         odometry_forward = hardwareMap.get(Servo.class, "odometry_forward");
         odometry_strafe = hardwareMap.get(Servo.class, "odometry_strafe");
 
-        odometry_forward.setPosition(1);
-        odometry_strafe.setPosition(0.75);
+        odometry_forward.setPosition(0);
+        odometry_strafe.setPosition(0.25);
 
         //VoltageSensor voltageSensor = hardwareMap.voltageSensor.iterator().next();
 
@@ -233,10 +236,10 @@ public class FSMAutoShortPoleSpeed extends OpMode {
         rotate_arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
         claw.setPosition(CLAW_HOLD);
-        tilt_claw.setPosition(CLAWTILT_COLLECT);
+        tilt_claw.setPosition(CLAWTILT_END);
 
 
-/*
+
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         camera = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
         aprilTagDetectionPipeline = new AprilTagDetectionPipeline(tagsize, fx, fy, cx, cy);
@@ -259,47 +262,44 @@ public class FSMAutoShortPoleSpeed extends OpMode {
 
 
         telemetry.setMsTransmissionInterval(50);
-*/
 
-        //init_loop();{
-        // }
+
+    /*    init_loop();{
+         }*/
         //while (tagOfInterest == null)
 
 
-        BlueOnRedGoMiddle = drive.trajectorySequenceBuilder(new Pose2d(42,14, Math.toRadians(270)))
-                .strafeRight(4)
-                .back(24)
+        BlueOnRedGoRight = drive.trajectorySequenceBuilder(new Pose2d(3.7,-52, Math.toRadians(270)))
+                .strafeRight(26)
                 .build();
-        BlueOnRedGoRight = drive.trajectorySequenceBuilder(new Pose2d(42,13.5, Math.toRadians(270)))
-                .strafeRight(22)
-                .back(24)
-                //.lineToConstantHeading(new Vector2d(14,14))
-                //.splineToLinearHeading(new Pose2d(14,36, Math.toRadians(270)), Math.toRadians(270))
-                .build();
-        BlueOnRedGoLeft = drive.trajectorySequenceBuilder(new Pose2d(42,13.5, Math.toRadians(270)))
-                .strafeLeft(14)
-                .back(24)
-                //.lineToConstantHeading(new Vector2d(54,14))
-                //.splineToLinearHeading(new Pose2d(60,36, Math.toRadians(270)), Math.toRadians(270))
+        BlueOnRedGoLeft = drive.trajectorySequenceBuilder(new Pose2d(3.7,-52, Math.toRadians(270)))
+                .strafeLeft(17)
                 .build();
 
         TrajectorySequence BlueOnRedGoCycle = drive.trajectorySequenceBuilder(new Pose2d(0, 0, Math.toRadians(270)))
-                .lineTo(new Vector2d(0,-32))
-                .addDisplacementMarker(() -> switchvar = true)
-                .lineTo(new Vector2d(0,-38))
-                .splineToConstantHeading(new Vector2d(41.3,-51.75), Math.toRadians(270))
+                //.lineTo(new Vector2d(0,-32))
+                //.addDisplacementMarker(() -> switchvar = true)
+                //.lineTo(new Vector2d(0,-48))
+                .splineToConstantHeading(new Vector2d(0, -48), Math.toRadians(270))
+                //.strafeLeft(3.7)
+                .splineToConstantHeading(new Vector2d(3.7,-52), Math.toRadians(270))
                 .build();
-        //init_loop();
-        //drive.followTrajectorySequenceAsync(BlueOnRedGoCycle);
+        init_loop();
+        drive.followTrajectorySequenceAsync(BlueOnRedGoCycle);
 
     }
 
     public void loop() {
-
         Pose2d poseEstimate = drive.getPoseEstimate();
 
-        telemetry.addData("x", poseEstimate.getX());
-        telemetry.addData("y", poseEstimate.getY());
+/*        if (drive.getPoseEstimate().getY() >= -47){
+            drive.setPoseEstimate(new Pose2d(0, poseEstimate.getY(), poseEstimate.getHeading()));
+        }*/
+
+        telemetry.addData("x", (drive.getPoseEstimate()).getX());
+        telemetry.addData("x2", poseEstimate.getX());
+        telemetry.addData("y", (drive.getPoseEstimate()).getY());
+        telemetry.addData("y2", poseEstimate.getY());
         telemetry.addData("heading", poseEstimate.getHeading());
         telemetry.addData("encoder ticks for slide",slide_extension.getCurrentPosition());
         telemetry.addData("encoder ticks for tilt",tilt_arm.getCurrentPosition());
@@ -309,47 +309,61 @@ public class FSMAutoShortPoleSpeed extends OpMode {
         telemetry.addData("timer",liftTimer.seconds());
         telemetry.addData("liftstate", liftState);
         telemetry.addData("cones dropped", cones_dropped);
+        telemetry.addData("movedForward", movedForward);
         //telemetry.addData("tag location", tagOfInterest.id);
         telemetry.addData("drive", drive.isBusy());
 
-        tilt_arm.setPower(1);
-        rotate_arm.setPower(0.5);
-        slide_extension.setPower(1);
 
 
         //telemetry.update();
+        drive.update();
+/*
+        Pose2d noX = new Pose2d(0, poseEstimate.getY(), poseEstimate.getHeading());
+*/
 
-        switch (liftState) {
+        drive.updatePoseEstimate();
+
+/*        if ((poseEstimate.getY() <= -47.75) && (poseEstimate.getY()) >= -48 && !(movedForward)) {
+            drive.setPoseEstimate(new Pose2d(0, -48, Math.toRadians(270)));
+            movedForward = true;
+        }*/
+
+
+/*        switch (liftState) {
             case LIFT_STARTDROP:
-                    rotate_arm.setPower(1);
-                    tilt_arm.setTargetPosition(TILT_HIGH-5);
-                    rotate_arm.setTargetPosition(ROTATE_DROP);
-                        if (Math.abs(rotate_arm.getCurrentPosition() - ROTATE_DROP) <= 30) {
-                            slide_extension.setTargetPosition(SLIDE_DROPOFF);
-                            tilt_claw.setPosition(CLAWTILT_DEPOSIT);
-                            rotate_arm.setPower(0.5);
-                            if ((Math.abs(slide_extension.getCurrentPosition() - SLIDE_DROPOFF) <= 8) && (Math.abs(tilt_arm.getCurrentPosition() - TILT_HIGH) <= 5)) {
-                                liftTimer.reset();
-                                claw.setPosition(CLAW_DEPOSIT);
-                                liftState = LiftState.LIFT_INC;
-                            }
-                        }
+                drive.update();
+                rotate_arm.setPower(0.5);
+                tilt_arm.setPower(0.5);
+                slide_extension.setPower(1);
+                tilt_arm.setTargetPosition(TILT_HIGH-10);
+                rotate_arm.setTargetPosition(ROTATE_DROP);
+                tilt_claw.setPosition(CLAW_DEPOSIT);
+                if (Math.abs(rotate_arm.getCurrentPosition() - ROTATE_DROP) <= 30) {
+                    slide_extension.setTargetPosition(SLIDE_DROPOFF);
+                    tilt_claw.setPosition(CLAWTILT_DEPOSIT);
+                    rotate_arm.setPower(0.5);
+                    if ((Math.abs(slide_extension.getCurrentPosition() - SLIDE_DROPOFF) <= 8) && (Math.abs(tilt_arm.getCurrentPosition() - TILT_HIGH) <= 17)) {
+                        liftTimer.reset();
+                        claw.setPosition(CLAW_DEPOSIT);
+                        liftState = LiftState.LIFT_INC;
+                    }
+                }
                 break;
 
 // Q's DropCycle
-/*            case LIFT_DROPCYCLE:
+*//*            case LIFT_DROPCYCLE:
                 tilt_arm.setPower(1);
                 if (tilt_arm.getCurrentPosition() < 180) {
                     tilt_arm.setTargetPosition(TILT_HIGH);
                     break;
                 }
-                rotate_arm.setTargetPosition(ROTATE_DROP);   */
+                rotate_arm.setTargetPosition(ROTATE_DROP);   *//*
             case LIFT_DROPCYCLE:
-                tilt_arm.setPower(0.3);
+                tilt_arm.setPower(1);
                 tilt_arm.setTargetPosition(TILT_HIGH);
                 if (tilt_arm.getCurrentPosition() >= 180) {
                     rotate_arm.setTargetPosition(ROTATE_DROP);
-                    if (Math.abs(rotate_arm.getCurrentPosition() - ROTATE_DROP) <= 30) {
+                    if (Math.abs(rotate_arm.getCurrentPosition() - ROTATE_DROP) <= 10) {
                         slide_extension.setTargetPosition(SLIDE_DROPOFF);
                         tilt_claw.setPosition(CLAWTILT_DEPOSIT);
                         if ((Math.abs(slide_extension.getCurrentPosition() - SLIDE_DROPOFF) <= 8) && (Math.abs(tilt_arm.getCurrentPosition() - TILT_HIGH) <= 5) && (rotate_arm.getCurrentPosition() - ROTATE_DROP) <= 8) {
@@ -362,20 +376,22 @@ public class FSMAutoShortPoleSpeed extends OpMode {
                 break;
 
             case LIFT_GETNEW:
-                tilt_claw.setPosition(CLAWTILT_COLLECT);
+                tilt_arm.setPower(0.5);
+                tilt_arm.setTargetPosition(TILT_LOW);
                 rotate_arm.setTargetPosition(ROTATE_COLLECT); // rotates to the stack of cones
                 if (Math.abs(rotate_arm.getCurrentPosition() - ROTATE_COLLECT) <= 400){
                     // if the rotation is within 100 ticks begin to drop the tilt arm to the low position
-                    tilt_arm.setPower(0.005);
+                    tilt_claw.setPosition(CLAWTILT_COLLECT);
+                    tilt_arm.setPower(0.3);
                     tilt_arm.setTargetPosition(TILT_LOW);
-                    if (tilt_arm.getCurrentPosition() - TILT_LOW <= 1){
+                    if (tilt_arm.getCurrentPosition() - TILT_LOW <= 5){
                         // once the tilt is close etend the slide
                         slide_extension.setTargetPosition(SLIDE_COLLECT);
-                        tilt_arm.setPower(0.05);
+                        tilt_arm.setPower(0.1);
                         if (slide_extension.getCurrentPosition() >= (SLIDE_COLLECT-8) && tilt_arm.getCurrentPosition() - TILT_LOW <= 1) {
                             // once they are both within a certain tick value grab with the claw
-                            tilt_arm.setPower(0.1);
                             claw.setPosition(CLAW_HOLD);
+                            rotate_arm.setPower(0.5);
                             liftTimer.reset();
                             liftState = LiftState.LIFT_HOLD;
                         }
@@ -407,9 +423,11 @@ public class FSMAutoShortPoleSpeed extends OpMode {
                 }
                 break;
             case LIFT_RETRACTSLIDE:
+                rotate_arm.setPower(1);
                 slide_extension.setTargetPosition(SLIDE_LOW);
                 rotate_arm.setTargetPosition(ROTATE_COLLECT);
-                if (slide_extension.getCurrentPosition() <= 900) {
+                tilt_claw.setPosition(0.3);
+                if (slide_extension.getCurrentPosition() <= 450) {
                     liftTimer.reset();
                     //liftState = LiftState.LIFT_GETNEW;
                     liftState = LiftState.LIFT_GETNEW;
@@ -417,35 +435,35 @@ public class FSMAutoShortPoleSpeed extends OpMode {
                 break;
             case PARKING_STATE:
                 liftTimer.reset();
-                liftState = LiftState.FINISH;
-                break;
-                /*// Use the parkingTag here - it must be at least LEFT if no tag was seen
+                // Use the parkingTag here - it must be at least LEFT if no tag was seen
                 if (parkingTag == LEFT){ //&& cones_dropped >= CONES_DESIRED) {
 
                     drive.followTrajectorySequenceAsync(BlueOnRedGoLeft);
                     liftTimer.reset();
-                    telemetry.addData("test", 1);
+                    telemetry.addData("left", 1);
+                    liftState = LiftState.FINISH;
 
 
                 } else if (parkingTag == RIGHT){ //&& cones_dropped >= CONES_DESIRED) {
 
                     drive.followTrajectorySequenceAsync(BlueOnRedGoRight);
                     liftTimer.reset();
-                    telemetry.addData("test", 2);
+                    telemetry.addData("right", 2);
+                    liftState = LiftState.FINISH;
 
 
 
                 } else if (parkingTag == MIDDLE){ //&& cones_dropped >= CONES_DESIRED) {
 
-                    drive.followTrajectorySequenceAsync(BlueOnRedGoMiddle);
                     liftTimer.reset();
-                    telemetry.addData("test", 3);
+                    telemetry.addData("middle", 3);
+                    liftState = LiftState.FINISH;
 
                 }
                 liftState = LiftState.FINISH;
-                break;*/
+                break;
             case FINISH:
-                //drive.update();
+                drive.update();
                 slide_extension.setTargetPosition(0);
                 tilt_claw.setPosition(CLAWTILT_END);
                 if (liftTimer.seconds() >= 0.5) {
@@ -457,7 +475,7 @@ public class FSMAutoShortPoleSpeed extends OpMode {
 
 
 
-        }
+        }*/
     }
 
     void tagToTelemetry(AprilTagDetection detection)

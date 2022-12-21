@@ -79,23 +79,23 @@ public class AprilTagAutonomousBlueOnRed extends LinearOpMode
 
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
 
-        DcMotorEx tilt_arm, slide_extension;
+/*        DcMotorEx tilt_arm, slide_extension;
         CRServo rotate_arm, claw;
 
         slide_extension = hardwareMap.get(DcMotorEx.class,"slide_extension");
-        tilt_arm = hardwareMap.get(DcMotorEx.class,"tilt_arm");
+        tilt_arm = hardwareMap.get(DcMotorEx.class,"tilt_arm");*/
 
-        slide_extension.setPower(1);
+/*        slide_extension.setPower(1);
         slide_extension.setTargetPosition(variable_slide_ticks);
         slide_extension.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         slide_extension.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         tilt_arm.setPower(1);
         slide_extension.setTargetPosition(variable_tilt_ticks);
         tilt_arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        tilt_arm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        tilt_arm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);*/
 
 
-        drive.setPoseEstimate(new Pose2d(35, 61, Math.toRadians(270)));
+        drive.setPoseEstimate(new Pose2d(0, 0, Math.toRadians(270)));
 
         camera.setPipeline(aprilTagDetectionPipeline);
         camera.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener()
@@ -122,6 +122,8 @@ public class AprilTagAutonomousBlueOnRed extends LinearOpMode
         while (!isStarted() && !isStopRequested())
         {
             ArrayList<AprilTagDetection> currentDetections = aprilTagDetectionPipeline.getLatestDetections();
+
+
 
             if(currentDetections.size() != 0)
             {
@@ -196,31 +198,45 @@ public class AprilTagAutonomousBlueOnRed extends LinearOpMode
             telemetry.update();
         }
         if (tagOfInterest == null || tagOfInterest.id == LEFT){
-            TrajectorySequence BlueOnRedGoLeft = drive.trajectorySequenceBuilder(new Pose2d(35, 61, Math.toRadians(270)))
-                    .lineTo(new Vector2d(36,26))
-                    .splineTo(new Vector2d(27,11),Math.toRadians(180))
+            TrajectorySequence BlueOnRedGoCycle = drive.trajectorySequenceBuilder(new Pose2d(0, 0, Math.toRadians(270)))
+                    //.lineTo(new Vector2d(0,-32))
+                    //.addDisplacementMarker(() -> switchvar = true)
+                    //.lineTo(new Vector2d(0,-48))
+                    .splineToConstantHeading(new Vector2d(0, -48), Math.toRadians(270))
+                    //.strafeLeft(3.7)
+                    .splineToConstantHeading(new Vector2d(3.7,-52), Math.toRadians(270))
                     .build();
-            drive.followTrajectorySequence(BlueOnRedGoLeft);
+            drive.followTrajectorySequence(BlueOnRedGoCycle);
 
         }
         else if (tagOfInterest.id == RIGHT){
-            TrajectorySequence BlueOnRedGoRight = drive.trajectorySequenceBuilder(new Pose2d(35, 61, Math.toRadians(270)))
-                    .lineTo(new Vector2d(36,26))
-                    .splineTo(new Vector2d(27,11),Math.toRadians(180))
+            TrajectorySequence BlueOnRedGoCycle = drive.trajectorySequenceBuilder(new Pose2d(0, 0, Math.toRadians(270)))
+                    //.lineTo(new Vector2d(0,-32))
+                    //.addDisplacementMarker(() -> switchvar = true)
+                    //.lineTo(new Vector2d(0,-48))
+                    .splineToConstantHeading(new Vector2d(0, -48), Math.toRadians(270))
+                    //.strafeLeft(3.7)
+                    .splineToConstantHeading(new Vector2d(3.7,-52), Math.toRadians(270))
                     .build();
-
-            drive.followTrajectorySequence(BlueOnRedGoRight);
+            drive.followTrajectorySequence(BlueOnRedGoCycle);
 
         }
         else{
-            TrajectorySequence BlueOnRedGoMiddle = drive.trajectorySequenceBuilder(new Pose2d(35, 61, Math.toRadians(270)))
-                    .lineTo(new Vector2d(36,26))
-                    .splineTo(new Vector2d(27,11),Math.toRadians(180))
+            TrajectorySequence BlueOnRedGoCycle = drive.trajectorySequenceBuilder(new Pose2d(0, 0, Math.toRadians(270)))
+                    //.lineTo(new Vector2d(0,-32))
+                    //.addDisplacementMarker(() -> switchvar = true)
+                    //.lineTo(new Vector2d(0,-48))
+                    .splineToConstantHeading(new Vector2d(0, -48), Math.toRadians(270))
+                    //.strafeLeft(3.7)
+                    .splineToConstantHeading(new Vector2d(3.7,-52), Math.toRadians(270))
                     .build();
-            drive.followTrajectorySequence(BlueOnRedGoMiddle);
+            drive.followTrajectorySequence(BlueOnRedGoCycle);
         }
 
         /* You wouldn't have this in your autonomous, this is just to prevent the sample from ending */
+        telemetry.addData("y", (drive.getPoseEstimate()).getY());
+        telemetry.addData("x", (drive.getPoseEstimate()).getX());
+        telemetry.update();
         while (opModeIsActive()) {sleep(20);}
     }
 
