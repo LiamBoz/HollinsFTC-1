@@ -174,7 +174,7 @@ public class teleoppowerplay3 extends OpMode {
 
         botHeading = imu.getAngularOrientation().firstAngle;
 
-        extension_ticks = extension_ticks - ((int) gamepad1.right_stick_y*10);
+        //extension_ticks = extension_ticks - ((int) gamepad1.right_stick_y*10);
 
         tilt_arm.setPower(gamepad1.right_trigger - gamepad1.left_trigger);
 
@@ -245,6 +245,10 @@ public class teleoppowerplay3 extends OpMode {
         telemetry.addData("angle error", error);
         telemetry.addData("botheading", Math.toDegrees(botHeading));
         //telemetry.addData("encoder ticks for tilt",tilt_ticks);
+
+        double testdegrees = Math.toDegrees(Math.atan((-gamepad1.right_stick_y)/gamepad1.right_stick_x));
+        telemetry.addData("testdegrees", testdegrees);
+        slide_extension.setPower(gamepad1.right_stick_y);
 
         //slide_extension.setPower(gamepad2.left_stick_y);
 

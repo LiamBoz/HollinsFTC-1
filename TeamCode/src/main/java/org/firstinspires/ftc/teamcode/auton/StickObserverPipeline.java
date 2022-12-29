@@ -6,6 +6,7 @@ import org.opencv.core.MatOfPoint;
 import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
 import org.openftc.easyopencv.OpenCvPipeline;
+import org.tensorflow.lite.task.core.vision.ImageProcessingOptions;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,6 +20,12 @@ public class StickObserverPipeline extends OpenCvPipeline {
     //these are public static to be tuned in dashboard
     public static double strictLowS = 140;
     public static double strictHighS = 255;
+
+    String PoleText = "Pole";
+    int font = Imgproc.FONT_HERSHEY_COMPLEX;
+    int scale = 1;
+    int thickness = 3;
+    Scalar color = new Scalar(255, 0, 0);
 
     public StickObserverPipeline() {
         frameList = new ArrayList<>();
@@ -69,12 +76,20 @@ public class StickObserverPipeline extends OpenCvPipeline {
         Mat edges = new Mat();
         //detect edges(only useful for showing result)(you can delete)
         Imgproc.Canny(scaledThresh, edges, 100, 200);
+        //Imgproc.putText(scaledThresh, PoleText, contours, font, scale, color, thickness);
+
 
         //contours, apply post processing to information
         List<MatOfPoint> contours = new ArrayList<>();
         Mat hierarchy = new Mat();
         //find contours, input scaledThresh because it has hard edges
         Imgproc.findContours(scaledThresh, contours, hierarchy, Imgproc.RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
+
+/*
+         = Imgproc.boundingRect(scaledThresh);
+         image = Imgproc.rectangle();
+         Imgproc.putText(image, PoleText, (x, y));*/
+
 
         //list of frames to reduce inconsistency, not too many so that it is still real-time, change the number from 5 if you want
         if (frameList.size() > 5) {
