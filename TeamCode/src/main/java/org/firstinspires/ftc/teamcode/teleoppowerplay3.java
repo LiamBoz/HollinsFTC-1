@@ -43,6 +43,14 @@ public class teleoppowerplay3 extends OpMode {
     double odometry_forward_static = 0.5;
     double odometry_strafe_static = 0.5;
 
+    int tilt_position = 1;
+    int slide_position = 0;
+
+    double tiltclaw_4 = 0.9;
+    double tiltclaw_3 = 0.78;
+    double tiltclaw_2 = 0.7;
+    double tiltclaw_0 = 0.65;
+
     public int ZeroDegreeTiltTicks = 30;
     public int SixtyDegreeTiltTicks = 250;
     public int EightyFiveDegreeTiltTicks = 280;
@@ -51,11 +59,15 @@ public class teleoppowerplay3 extends OpMode {
     public double changing_tilt_ticks = 0;
     public int rotation_ticks = 0;
 
+
+
     double target;
     double error;
     double Kp = 0.04;
     double leftPow;
     double rightPow;
+
+    boolean slidevar = true;
 
     Gamepad currentGamepad1;
     Gamepad previousGamepad1;
@@ -102,13 +114,13 @@ public class teleoppowerplay3 extends OpMode {
         slide_extension.setDirection(DcMotor.Direction.REVERSE);
 
         slide_extension.setTargetPosition(0);
-        //tilt_arm.setTargetPosition(0);
+        tilt_arm.setTargetPosition(0);
         rotate_arm.setTargetPosition(MinPositionTicks);
         slide_extension.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        //tilt_arm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        tilt_arm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         rotate_arm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         slide_extension.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        //tilt_arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        tilt_arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         rotate_arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         front_left.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         front_right.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -117,10 +129,10 @@ public class teleoppowerplay3 extends OpMode {
 
         //claw.setPosition(CLAW_DEPOSIT);
         //tilt_claw.setPosition(CLAWTILT_COLLECT);
-        odometry_forward.setPosition(0.55);
-        odometry_strafe.setPosition(0.2);
-        rotate_arm.setPower(1);
+/*        odometry_forward.setPosition(0.55);
+        odometry_strafe.setPosition(0.2);*/
         slide_extension.setPower(1);
+        tilt_arm.setPower(1);
         //claw         = hardwareMap.get(Servo.class,"claw");
         front_right.setDirection(DcMotor.Direction.REVERSE);
         back_right.setDirection(DcMotor.Direction.REVERSE);
@@ -148,50 +160,136 @@ public class teleoppowerplay3 extends OpMode {
             // currentGamepad1/2 are being copied from valid Gamepads.
         }
 
+
         if (gamepad1.left_bumper){
             claw.setPosition(0.7);
         }
         else if (gamepad1.right_bumper){
-            claw.setPosition(0.45);
+            claw.setPosition(0.35);
         }
-        if (gamepad1.dpad_up){
+/*        if (gamepad1.dpad_up){
             tilt_claw.setPosition(0.3);
         }
         else if (gamepad1.dpad_down){
             tilt_claw.setPosition(0.78);
-        }
+        }*/
 
         //tilt_ticks = tilt_arm.getCurrentPosition();
         //extension_ticks = slide_extension.getCurrentPosition();
         rotation_ticks = rotate_arm.getCurrentPosition();
         //telemetry.addData("changing tilt ticks:",changing_tilt_ticks);
         telemetry.addData("changing rotation ticks", rotation_ticks);
+        telemetry.addData("tilt ticks", tilt_arm.getCurrentPosition());
         telemetry.addData("rotatre goal", MinPositionTicks);
         telemetry.addData("lifttimer", liftTimer.seconds());
         telemetry.addData("stuff", Math.abs(slide_extension.getCurrentPosition() - slide_collect));
         telemetry.addData("odometry_forward", odometry_forward.getPosition());
         telemetry.addData("odometry_strafe", odometry_strafe.getPosition());
+        telemetry.addData("SLDIEVAR",slidevar);
 
         botHeading = imu.getAngularOrientation().firstAngle;
 
-        extension_ticks = extension_ticks - ((int) gamepad1.right_stick_y*10);
+        //rotate_arm.setPower(-gamepad1.right_stick_x*0.65);
+        MinPositionTicks += (-gamepad1.right_stick_x*10);
 
-        tilt_arm.setPower(gamepad1.right_trigger - gamepad1.left_trigger);
 
         if (currentGamepad1.b && !previousGamepad1.b) {
-            MinPositionTicks = MinPositionTicks - 622;
+            MinPositionTicks = MinPositionTicks - 311;
         }
         else if (currentGamepad1.x && !previousGamepad1.x){
-            MinPositionTicks = MinPositionTicks + 622;
+            MinPositionTicks = MinPositionTicks + 311;
         }
+
+
+        if (currentGamepad1.dpad_up && !previousGamepad1.dpad_up) {
+            tilt_position = tilt_position + 1;
+        }
+        else if (currentGamepad1.dpad_down && !previousGamepad1.dpad_down){
+            tilt_position = tilt_position - 1;
+        }
+
+        if (currentGamepad1.y && !previousGamepad1.y) {
+            slidevar = true;
+            slide_position = slide_position + 1;
+        }
+        else if (currentGamepad1.a && !previousGamepad1.a){
+            slidevar = true;
+            slide_position = slide_position - 1;
+        }
+
+        if (tilt_position == 0){
+            tilt_arm.setTargetPosition(900);
+            tilt_claw.setPosition(0.60);
+        }
+        else if (tilt_position == 1){
+            tilt_arm.setTargetPosition(0);
+
+        }
+        else if (tilt_position == 2){
+            tilt_arm.setTargetPosition(-750);
+            tilt_claw.setPosition(tiltclaw_2);
+            if (gamepad1.right_trigger>0.5){
+                tilt_claw.setPosition(tiltclaw_2+0.4);
+            }
+        }
+        else if (tilt_position == 3){
+            tilt_arm.setTargetPosition(-1400);
+            tilt_claw.setPosition(tiltclaw_3);
+            if (gamepad1.right_trigger>0.5){
+                tilt_claw.setPosition(tiltclaw_3+0.4);
+            }
+
+        }
+        else if (tilt_position == 4){
+            tilt_arm.setTargetPosition(-2650);
+            tilt_claw.setPosition(tiltclaw_4);
+            if (gamepad1.right_trigger>0.5){
+                tilt_claw.setPosition(tiltclaw_4+0.4);
+            }
+        }
+        else if (tilt_position == 5){
+            tilt_arm.setTargetPosition(-3000);
+            tilt_claw.setPosition(tiltclaw_4);
+            if (gamepad1.right_trigger>0.5){
+                tilt_claw.setPosition(tiltclaw_4+0.4);
+            }
+        }
+
+        if (gamepad1.dpad_right){
+            tilt_position = 4;
+        }
+        else if (gamepad1.dpad_left){
+            tilt_position = 0;
+        }
+
+        if (slide_position == 0 && slidevar){
+            slide_extension.setTargetPosition(0);
+        }
+        else if (slide_position == 1 && slidevar){
+            slide_extension.setTargetPosition(550);
+        }
+        else if (slide_position == 2 && slidevar){
+            slide_extension.setTargetPosition(987);
+        }
+        else if (slide_position == 3 && slidevar){
+            slide_extension.setTargetPosition(1480);
+        }
+        if (-gamepad1.right_stick_y < -0.75){
+            slidevar = false;
+            slide_extension.setTargetPosition(0);
+        }
+        else if(-gamepad1.right_stick_y > 0.75){
+            slidevar = false;
+            slide_extension.setTargetPosition(1480);
+        }
+
+
+
         rotate_arm.setTargetPosition(MinPositionTicks);
 
-        slide_extension.setTargetPosition(extension_ticks);
 
 
-
-
-        //rotate_arm.setPower(1);
+        rotate_arm.setPower(1);
         //tilt_arm.setPower(0.5);
         //slide_extension.setPower(1);
 

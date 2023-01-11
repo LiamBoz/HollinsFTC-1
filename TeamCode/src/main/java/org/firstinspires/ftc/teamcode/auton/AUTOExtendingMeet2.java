@@ -103,6 +103,7 @@ public class AUTOExtendingMeet2 extends OpMode {
     }
 
     public enum LiftState {
+        LIFT_TILTTHECLAW,
         LIFT_STARTDROP,
         LIFT_GETNEW,
         LIFT_RETRACTSLIDE,
@@ -118,7 +119,7 @@ public class AUTOExtendingMeet2 extends OpMode {
 
     // The liftState variable is declared out here
     // so its value persists between loop() calls
-    LiftState liftState = LiftState.LIFT_STARTDROP;
+    LiftState liftState = LiftState.LIFT_TILTTHECLAW;
 
     OpenCvCamera camera;
     AprilTagDetectionPipeline aprilTagDetectionPipeline;
@@ -163,33 +164,35 @@ public class AUTOExtendingMeet2 extends OpMode {
     SampleMecanumDrive drive;
 
     int cones_dropped = 0;
-    int CONES_DESIRED = 4;
+    int CONES_DESIRED = 3;
 
 
-    final double CLAW_HOLD = 0.45; // the idle position for the dump servo
+    final double CLAW_HOLD = 0.35; // the idle position for the dump servo
     final double CLAW_DEPOSIT = 0.7; // the dumping position for the dump servo
 
     final double CLAWTILT_END = 0.27;
     final double CLAWTILT_COLLECT = 0.50;
     final double CLAWTILT_DEPOSIT = .70;
 
+    boolean switchvar = false;
+
     // the amount of time the dump servo takes to activate in seconds
     final double DUMP_TIME = 1;
     final double ROTATE_TIME = 0.3; // the amount of time it takes to rotate 135 degrees
     final double EXTENSION_TIME = 0.6; // e amount of time it takes to extend from 0 to 2250 on the slide
 
-    final int SLIDE_LOW = 200; // the low encoder position for the lift
+    final int SLIDE_LOW = 0; // the low encoder position for the lift
     final int SLIDE_COLLECT = 1340; // the high encoder position for the lift
     final int SLIDE_DROPOFF = 1360;
     final int SLIDE_MOVEMENT = 1125; // the slide retraction for when rotating
 
     // TODO: find encoder values for tilt
-    int TILT_LOW = 130;
-    final int TILT_HIGH = 450;
+    int TILT_LOW = -50;
+    final int TILT_HIGH = -2200;
     public int TILT_DECREMENT = 435;
 
     // TODO: find encoder values for rotation
-    final int ROTATE_COLLECT = -2235;
+    final int ROTATE_COLLECT = 607;
     final int ROTATE_DROP = -1215;
 
     //public TrajectorySequence VariablePath;
@@ -212,7 +215,7 @@ public class AUTOExtendingMeet2 extends OpMode {
         odometry_forward = hardwareMap.get(Servo.class, "odometry_forward");
         odometry_strafe = hardwareMap.get(Servo.class, "odometry_strafe");
 
-        odometry_forward.setPosition(1);
+        odometry_forward.setPosition(0.54);
         odometry_strafe.setPosition(0.25);
 
         //VoltageSensor voltageSensor = hardwareMap.voltageSensor.iterator().next();
@@ -233,7 +236,9 @@ public class AUTOExtendingMeet2 extends OpMode {
         claw.setPosition(CLAW_HOLD);
         tilt_claw.setPosition(0.15);
 
-
+        rotate_arm.setPower(1);
+        tilt_arm.setPower(1);
+        slide_extension.setPower(1);
 
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         camera = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
@@ -273,9 +278,9 @@ public class AUTOExtendingMeet2 extends OpMode {
 
         TrajectorySequence BlueOnRedGoCycle = drive.trajectorySequenceBuilder(new Pose2d(0, 0, Math.toRadians(270)))
                 //.lineTo(new Vector2d(0,-32))
-                //.addDisplacementMarker(() -> switchvar = true)
                 //.lineTo(new Vector2d(0,-48))
-                .splineToConstantHeading(new Vector2d(0, -50), Math.toRadians(270))
+                .splineToConstantHeading(new Vector2d(0, -52), Math.toRadians(270))
+
                 //.strafeLeft(3.7)
                 .build();
         init_loop();
@@ -306,6 +311,9 @@ public class AUTOExtendingMeet2 extends OpMode {
         //telemetry.addData("movedForward", movedForward);
         //telemetry.addData("tag location", tagOfInterest.id);
         telemetry.addData("drive", drive.isBusy());
+        if (drive.getPoseEstimate().getY() < -50){
+            switchvar = true;
+        }
 
 
 
@@ -321,76 +329,59 @@ public class AUTOExtendingMeet2 extends OpMode {
             drive.setPoseEstimate(new Pose2d(0, -48, Math.toRadians(270)));
             movedForward = true;
         }*/
+        if (gamepad1.a){
+            liftState = LiftState.FINISH;
+        }
 
 
-/*        switch (liftState) {
+        switch (liftState) {
+            case LIFT_TILTTHECLAW:
+                tilt_claw.setPosition(CLAWTILT_DEPOSIT);
+                liftState = LiftState.LIFT_STARTDROP;
+                break;
             case LIFT_STARTDROP:
-                drive.update();
-                rotate_arm.setPower(0.5);
-                tilt_arm.setPower(0.5);
-                slide_extension.setPower(1);
-                tilt_arm.setTargetPosition(TILT_HIGH-10);
-                rotate_arm.setTargetPosition(ROTATE_DROP);
-                tilt_claw.setPosition(CLAW_DEPOSIT);
-                if (Math.abs(rotate_arm.getCurrentPosition() - ROTATE_DROP) <= 30) {
-                    slide_extension.setTargetPosition(SLIDE_DROPOFF);
-                    tilt_claw.setPosition(CLAWTILT_DEPOSIT);
-                    rotate_arm.setPower(0.5);
-                    if ((Math.abs(slide_extension.getCurrentPosition() - SLIDE_DROPOFF) <= 8) && (Math.abs(tilt_arm.getCurrentPosition() - TILT_HIGH) <= 17)) {
+                tilt_arm.setTargetPosition(-2200);
+                rotate_arm.setTargetPosition(-415);
+                if (Math.abs(rotate_arm.getCurrentPosition() - -415) <= 30 && switchvar) {
+                    slide_extension.setTargetPosition(950);
+                    if ((Math.abs(slide_extension.getCurrentPosition() - 950) <= 8) && (Math.abs(tilt_arm.getCurrentPosition() - -2200) <= 17)) {
                         liftTimer.reset();
+                        tilt_claw.setPosition(CLAWTILT_DEPOSIT+0.3);
                         claw.setPosition(CLAW_DEPOSIT);
                         liftState = LiftState.LIFT_INC;
+                        break;
                     }
                 }
                 break;
 
-// Q's DropCycle
-*//*            case LIFT_DROPCYCLE:
+/*// Q's DropCycle
+            case LIFT_DROPCYCLE:
                 tilt_arm.setPower(1);
                 if (tilt_arm.getCurrentPosition() < 180) {
                     tilt_arm.setTargetPosition(TILT_HIGH);
                     break;
                 }
-                rotate_arm.setTargetPosition(ROTATE_DROP);   *//*
+                rotate_arm.setTargetPosition(ROTATE_DROP);   */
+
             case LIFT_DROPCYCLE:
-                tilt_arm.setPower(1);
                 tilt_arm.setTargetPosition(TILT_HIGH);
-                if (tilt_arm.getCurrentPosition() >= 180) {
-                    rotate_arm.setTargetPosition(ROTATE_DROP);
-                    if (Math.abs(rotate_arm.getCurrentPosition() - ROTATE_DROP) <= 10) {
-                        slide_extension.setTargetPosition(SLIDE_DROPOFF);
-                        tilt_claw.setPosition(CLAWTILT_DEPOSIT);
-                        if ((Math.abs(slide_extension.getCurrentPosition() - SLIDE_DROPOFF) <= 8) && (Math.abs(tilt_arm.getCurrentPosition() - TILT_HIGH) <= 5) && (rotate_arm.getCurrentPosition() - ROTATE_DROP) <= 8) {
-                            claw.setPosition(CLAW_DEPOSIT);
-                            liftTimer.reset();
-                            liftState = LiftState.LIFT_INC;
-                        }
+                if (tilt_arm.getCurrentPosition() <= -400) {
+                    slide_extension.setTargetPosition(0);
+                    if (slide_extension.getCurrentPosition() <= 50) {
+                        liftState = LiftState.LIFT_STARTDROP;
                     }
                 }
                 break;
 
             case LIFT_GETNEW:
-                tilt_arm.setPower(0.5);
-                tilt_arm.setTargetPosition(TILT_LOW);
-                rotate_arm.setTargetPosition(ROTATE_COLLECT); // rotates to the stack of cones
-                if (Math.abs(rotate_arm.getCurrentPosition() - ROTATE_COLLECT) <= 400){
-                    // if the rotation is within 100 ticks begin to drop the tilt arm to the low position
-                    tilt_claw.setPosition(CLAWTILT_COLLECT);
-                    tilt_arm.setPower(0.3);
-                    tilt_arm.setTargetPosition(TILT_LOW);
-                    if (tilt_arm.getCurrentPosition() - TILT_LOW <= 5){
-                        // once the tilt is close etend the slide
-                        slide_extension.setTargetPosition(SLIDE_COLLECT);
-                        tilt_arm.setPower(0.1);
-                        if (slide_extension.getCurrentPosition() >= (SLIDE_COLLECT-8) && tilt_arm.getCurrentPosition() - TILT_LOW <= 1) {
-                            // once they are both within a certain tick value grab with the claw
-                            claw.setPosition(CLAW_HOLD);
-                            rotate_arm.setPower(0.5);
-                            liftTimer.reset();
-                            liftState = LiftState.LIFT_HOLD;
-                        }
-                    }
+                if (Math.abs(rotate_arm.getCurrentPosition()) - ROTATE_COLLECT <= 50 && Math.abs(tilt_arm.getCurrentPosition() - TILT_LOW) <= 30){
+                    slide_extension.setTargetPosition(SLIDE_COLLECT);
+                if (slide_extension.getCurrentPosition() >= (SLIDE_COLLECT - 8)) {
+                    claw.setPosition(CLAW_HOLD);
+                    liftTimer.reset();
+                    liftState = LiftState.LIFT_HOLD;
                 }
+            }
                 break;
 
             case LIFT_HOLD:
@@ -403,7 +394,7 @@ public class AUTOExtendingMeet2 extends OpMode {
                 if (cones_dropped <= CONES_DESIRED) {
                     if (liftTimer.seconds() >= 0.5) {
                         cones_dropped += 1;
-                        TILT_LOW = TILT_LOW-20;
+                        TILT_LOW = TILT_LOW+90;
                         liftTimer.reset();
                         liftState = LiftState.LIFT_RETRACTSLIDE;
                     }
@@ -417,14 +408,14 @@ public class AUTOExtendingMeet2 extends OpMode {
                 }
                 break;
             case LIFT_RETRACTSLIDE:
-                rotate_arm.setPower(1);
+                tilt_claw.setPosition(0.7);
                 slide_extension.setTargetPosition(SLIDE_LOW);
-                rotate_arm.setTargetPosition(ROTATE_COLLECT);
-                tilt_claw.setPosition(0.3);
-                if (slide_extension.getCurrentPosition() <= 450) {
+                if (slide_extension.getCurrentPosition() <= 100) {
                     liftTimer.reset();
-                    //liftState = LiftState.LIFT_GETNEW;
+                    tilt_arm.setTargetPosition(TILT_LOW);
+                    rotate_arm.setTargetPosition(ROTATE_COLLECT);
                     liftState = LiftState.LIFT_GETNEW;
+                    break;
                 }
                 break;
             case PARKING_STATE:
@@ -469,7 +460,7 @@ public class AUTOExtendingMeet2 extends OpMode {
 
 
 
-        }*/
+        }
     }
 
     void tagToTelemetry(AprilTagDetection detection)

@@ -20,29 +20,29 @@ public class servopositionaltesting extends OpMode {
     @Override
     public void loop() {
         if (gamepad1.x){
-            claw.setPosition(0);
+            odometry_forward.setPosition(0);
         }
         else if (gamepad1.b){
-            claw.setPosition(0.1);
+            odometry_forward.setPosition(0.1);
         }
         else if (gamepad1.a){
-            claw.setPosition(0.25);
+            odometry_forward.setPosition(0.25);
         }
         else if (gamepad1.y){
-            claw.setPosition(0.4);
+            odometry_forward.setPosition(0.4);
         }
 
         if (gamepad2.x){
-            claw.setPosition(0.5);
+            odometry_forward.setPosition(0.5);
         }
         else if (gamepad2.b){
-            claw.setPosition(0.6);
+            odometry_forward.setPosition(0.6);
         }
         else if (gamepad2.a){
-            claw.setPosition(.8);
+            odometry_forward.setPosition(.8);
         }
         else if (gamepad2.y){
-            claw.setPosition(1);
+            odometry_forward.setPosition(1);
         }
 
     }
