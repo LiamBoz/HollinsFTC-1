@@ -7,9 +7,9 @@ public class PickPlaceOptions {
     public int rotate_collect;
     public int tilt_collect = 655;
     public int slide_collect = 1155;
-    public int rotate_drop = 240;
-    public int tilt_drop = -2316;
-    public int slide_drop = 1360;
+    public int rotate_drop;
+    public int tilt_drop;
+    public int slide_drop;
     public int slide_var = 0;
     public double CLAW_HOLD = 0.35;
     public double CLAW_DEPOSIT = 0.7;
@@ -17,7 +17,10 @@ public class PickPlaceOptions {
     public double CLAWTILT_DEPOSIT = 0.72;
 
     public PickPlaceOptions() {
-        rotate_collect = 1122;
+        this.rotate_collect = 1122;
+        this.rotate_drop = 240;
+        this.slide_drop = 1360;
+        this.tilt_drop = 2316;
     }
 
     public void setTilt_drop(int tilt_drop) {
