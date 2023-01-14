@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 
 @TeleOp(name="servopositionaltest", group="Iterative Opmode")
@@ -9,16 +10,20 @@ public class servopositionaltesting extends OpMode {
     private Servo claw;
     private Servo tilt_claw;
     private Servo odometry_forward;
+    private DcMotor tilt_arm;
     @Override
     public void init() {
         claw = hardwareMap.get(Servo.class,"claw");
         tilt_claw = hardwareMap.get(Servo.class,"tilt_claw");
+        tilt_arm = hardwareMap.get(DcMotor.class,"tilt_arm");
         odometry_forward = hardwareMap.get(Servo.class, "odometry_forward");
 
     }
 
     @Override
     public void loop() {
+
+        tilt_arm.setPower(gamepad1.right_stick_y);
         if (gamepad1.x){
             odometry_forward.setPosition(0);
         }

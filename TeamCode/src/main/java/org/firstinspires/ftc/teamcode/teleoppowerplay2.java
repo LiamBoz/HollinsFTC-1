@@ -23,20 +23,6 @@ public class teleoppowerplay2 extends OpMode {
         LIFT_MANUAL_CONTROL
     }
 
-    public enum PoleState{
-        POLE_RIGHTHIGH(-2316, 240, 1360, 0.72),
-        POLE_RIGHTMEDIUM(-2316, 240, 1360, 0.72),
-        POLE_RIGHTLOW(-2316, 240, 1360, 0.72),
-        POLE_LEFTHIGH(-2316, 240, 1360, 0.72),
-        POLE_LEFTMEDIUM(-2316, 240, 1360, 0.72),
-        POLE_LEFTLOW(-2316, 240, 1360, 0.72);
-
-        PoleState(double tilt_drop, double rotate_drop, double slide_drop, double tiltclaw){
-
-        }
-    }
-
-
     ElapsedTime liftTimer = new ElapsedTime();
 
     LiftState liftState = LiftState.LIFT_GRABNEW;
@@ -50,7 +36,6 @@ public class teleoppowerplay2 extends OpMode {
     private DcMotor rotate_arm;
 
 
-//
 //    public int rotate_collect = 1122;
 //    public int tilt_collect = 655;
 //    public int slide_collect = 1155;
@@ -64,14 +49,20 @@ public class teleoppowerplay2 extends OpMode {
 //    final double CLAWTILT_DEPOSIT = 0.72;
 
     // Values for HPRight are in the class defaults
-    public PickPlaceOptions HPRight = new PickPlaceOptions(240);
-    public PickPlaceOptions MPRight = new PickPlaceOptions(-312);
-    public PickPlaceOptions LPRight = new PickPlaceOptions(-966);
-    //public PickPlaceOptions GJRight = new PickPlaceOptions();
+    public PickPlaceOptions HPRight = new PickPlaceOptions();
+    public PickPlaceOptions MPRight = new PickPlaceOptions();
+    public PickPlaceOptions LPRight = new PickPlaceOptions();
+    public PickPlaceOptions LP2Right = new PickPlaceOptions();
+    public PickPlaceOptions HPLeft = new PickPlaceOptions();
+    public PickPlaceOptions MPLeft = new PickPlaceOptions();
+    public PickPlaceOptions LPLeft = new PickPlaceOptions();
+    public PickPlaceOptions LP2Left = new PickPlaceOptions();
+
+
 
     // set the values for MPRight
-    //MPRight.setRotate_drop = -312;
-    //MPRight.tilt_drop = -1383;
+
+
 
 
     public PickPlaceOptions ActiveOptions = HPRight;
@@ -81,7 +72,6 @@ public class teleoppowerplay2 extends OpMode {
     //LPRight.rotate_drop = -966;
     //LPRight.tilt_drop = -826;
     //LPRight.slide_drop = 0;
-
 
 
     double odometry_forward_static = 0.5;
@@ -102,14 +92,6 @@ public class teleoppowerplay2 extends OpMode {
     int tilt_position = 1;
     int slide_position = 0;
 
-    public enum TILTCLAW{
-        LOWPOLE(0.7),
-        MEDIUMPOLE(0.78),
-        HIGHPOLE(0.9);
-
-        TILTCLAW(double v) {
-        }
-    }
     double tiltclaw_4 = 0.9;
     double tiltclaw_3 = 0.78;
     double tiltclaw_2 = 0.7;
@@ -123,11 +105,40 @@ public class teleoppowerplay2 extends OpMode {
 
         PhotonCore.enable();
 
-        HPRight.setTilt_drop(-2316);
-        MPRight.setTilt_drop(-1383);
-        LPRight.setTilt_drop(-826);
+        MPRight.rotate_drop = -335;
+        MPRight.tilt_drop = -1580;
+        MPRight.slide_drop = 563;
+        MPRight.rotate_collect = 1122;
 
-        MPRight.setSlide_drop(563);
+        LPRight.rotate_drop = -966;
+        LPRight.tilt_drop = -826;
+        LPRight.slide_drop = 0;
+        LPRight.rotate_collect = 1122;
+
+        LP2Right.rotate_drop = -312;
+        LP2Right.tilt_drop = -826;
+        LP2Right.slide_drop = 0;
+        LP2Right.rotate_collect = 1122;
+
+        HPLeft.rotate_drop = -350;
+        HPLeft.tilt_drop = -2316;
+        HPLeft.slide_drop = 1280;
+        HPLeft.rotate_collect = -1182;
+
+        MPLeft.rotate_drop = 175;
+        MPLeft.tilt_drop = -1580;
+        MPLeft.slide_drop = 563;
+        MPLeft.rotate_collect = -1182;
+
+        LPLeft.rotate_drop = 790;
+        LPLeft.tilt_drop = -826;
+        LPLeft.slide_drop = 0;
+        LPLeft.rotate_collect = -1182;
+
+        LP2Left.rotate_drop = 252;
+        LP2Left.tilt_drop = -826;
+        LP2Left.slide_drop = 0;
+        LP2Left.rotate_collect = -1182;
 
 
         front_left   = hardwareMap.get(DcMotor.class, "front_left");
@@ -157,8 +168,8 @@ public class teleoppowerplay2 extends OpMode {
         back_left.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         back_right.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-        //claw.setPosition(CLAW_DEPOSIT);
-        //tilt_claw.setPosition(CLAWTILT_COLLECT);
+        claw.setPosition(ActiveOptions.CLAW_DEPOSIT);
+        tilt_claw.setPosition(0.5);
         odometry_forward.setPosition(0.55);
         odometry_strafe.setPosition(0.2);
         //claw         = hardwareMap.get(Servo.class,"claw");
@@ -226,15 +237,36 @@ public class teleoppowerplay2 extends OpMode {
             // Low Pole Right Teleop
             ActiveOptions = LPRight;
         }
+        else if (gamepad1.right_bumper && gamepad1.x){
+            // Low Pole Right Teleop
+            ActiveOptions = LP2Right;
+        }
+        else if (gamepad1.left_bumper && gamepad1.y){
+            // Low Pole Right Teleop
+            ActiveOptions = HPLeft;
+        }
+        else if (gamepad1.left_bumper && gamepad1.b){
+            // Low Pole Right Teleop
+            ActiveOptions = MPLeft;
+        }
+        else if (gamepad1.left_bumper && gamepad1.a){
+            // Low Pole Right Teleop
+            ActiveOptions = LPLeft;
+        }
+        else if (gamepad1.left_bumper && gamepad1.x){
+            // Low Pole Right Teleop
+            ActiveOptions = LP2Left;
+        }
+
 
         switch (liftState) {
             case LIFT_GRABNEW:
-                tilt_claw.setPosition(ActiveOptions.CLAWTILT_COLLECT);
                 ActiveOptions.slide_var = 0;
                 if (gamepad1.a){
                     rotate_arm.setTargetPosition(ActiveOptions.rotate_collect);
                     tilt_arm.setTargetPosition(ActiveOptions.tilt_collect);
                     if (Math.abs(rotate_arm.getCurrentPosition() - ActiveOptions.rotate_collect) <= 20){
+                        tilt_claw.setPosition(ActiveOptions.CLAWTILT_COLLECT);
                         slide_extension.setTargetPosition(ActiveOptions.slide_collect);
                         if (Math.abs(slide_extension.getCurrentPosition() - ActiveOptions.slide_collect) <= 8 && gamepad1.x) {
                             claw.setPosition(ActiveOptions.CLAW_HOLD);
@@ -250,10 +282,10 @@ public class teleoppowerplay2 extends OpMode {
                 MinPositionTicks += (-gamepad1.right_stick_x*10);
 
                 if (gamepad1.left_bumper){
-                    claw.setPosition(0.7);
+                    claw.setPosition(0.35);
                 }
                 else if (gamepad1.right_bumper){
-                    claw.setPosition(0.35);
+                    claw.setPosition(0.0);
                 }
 
                 if (currentGamepad1.b && !previousGamepad1.b) {
@@ -360,29 +392,29 @@ public class teleoppowerplay2 extends OpMode {
             case LIFT_DROPCONE:
                 slide_extension.setTargetPosition(0);
                 if (slide_extension.getCurrentPosition() <= 100) {
+                    tilt_claw.setPosition(0.50);
                     tilt_arm.setTargetPosition(ActiveOptions.tilt_drop);
                     rotate_arm.setTargetPosition(ActiveOptions.rotate_drop);
-                    tilt_claw.setPosition(ActiveOptions.CLAWTILT_DEPOSIT);
-                    if (Math.abs(tilt_arm.getCurrentPosition() - ActiveOptions.tilt_drop) <= 8 && Math.abs(rotate_arm.getCurrentPosition() - ActiveOptions.rotate_drop) <= 10) {
+                    if (Math.abs(tilt_arm.getCurrentPosition() - ActiveOptions.tilt_drop) <= 8 && Math.abs(rotate_arm.getCurrentPosition() - ActiveOptions.rotate_drop) <= 10 && gamepad1.a) {
                         liftState = LiftState.LIFT_EXTENDSLIDE;
                     }
                 }
                 break;
             case LIFT_EXTENDSLIDE:
-                slide_extension.setTargetPosition(ActiveOptions.slide_drop);
-                if ((slide_extension.getCurrentPosition() >= (ActiveOptions.slide_drop - 100)) && gamepad1.b) {
-                    tilt_claw.setPosition((ActiveOptions.CLAWTILT_DEPOSIT + 0.3));
+                    slide_extension.setTargetPosition(ActiveOptions.slide_drop);
+                    if ((slide_extension.getCurrentPosition() >= (ActiveOptions.slide_drop - 100)) && gamepad1.b) {
+                        tilt_claw.setPosition((ActiveOptions.CLAWTILT_DEPOSIT + 0.3));
 
-                    if (gamepad1.right_trigger > 0.5) {
-                        claw.setPosition(ActiveOptions.CLAW_DEPOSIT);
-                        liftState = LiftState.LIFT_RETRACTSLIDE;
+                        if (gamepad1.right_trigger > 0.5) {
+                            claw.setPosition(ActiveOptions.CLAW_DEPOSIT);
+                            liftState = LiftState.LIFT_RETRACTSLIDE;
+                        }
+                    } else {
+                        tilt_claw.setPosition(ActiveOptions.CLAWTILT_DEPOSIT);
                     }
-                }
-                else {
-                    tilt_claw.setPosition(ActiveOptions.CLAWTILT_DEPOSIT);
-                }
                 break;
             case LIFT_RETRACTSLIDE:
+                tilt_claw.setPosition(0.55);
                 slide_extension.setTargetPosition(0);
                 if (slide_extension.getCurrentPosition() <= 400){
                     liftState = LiftState.LIFT_GRABNEW;
@@ -438,6 +470,11 @@ public class teleoppowerplay2 extends OpMode {
 
         telemetry.addData("encoder ticks for slide",extension_ticks);
         telemetry.addData("encoder ticks for tilt",tilt_ticks);
+        telemetry.addData("tilt arm",ActiveOptions.tilt_drop);
+        telemetry.addData("slide ext",ActiveOptions.slide_drop);
+        telemetry.addData("rotate arm",ActiveOptions.rotate_drop);
+
+
 
         //slide_extension.setPower(gamepad2.left_stick_y);
 

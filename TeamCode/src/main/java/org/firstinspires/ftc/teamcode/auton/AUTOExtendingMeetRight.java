@@ -26,8 +26,8 @@ import java.util.ArrayList;
 
 // adb connect 192.168.43.1:5555
 
-@Autonomous(name="AUTOExtendingMeet2")
-public class AUTOExtendingMeet2 extends OpMode {
+@Autonomous(name="AUTOExtendingMeetRight")
+public class AUTOExtendingMeetRight extends OpMode {
 
     public void init_loop(){
         {
@@ -192,8 +192,8 @@ public class AUTOExtendingMeet2 extends OpMode {
     public int TILT_DECREMENT = 435;
 
     // TODO: find encoder values for rotation
-    final int ROTATE_COLLECT = 607;
-    final int ROTATE_DROP = -1215;
+    final int ROTATE_COLLECT = -657;
+    final int ROTATE_DROP = 557;
 
     //public TrajectorySequence VariablePath;
 
@@ -341,8 +341,8 @@ public class AUTOExtendingMeet2 extends OpMode {
                 break;
             case LIFT_STARTDROP:
                 tilt_arm.setTargetPosition(-2200);
-                rotate_arm.setTargetPosition(-415);
-                if (Math.abs(rotate_arm.getCurrentPosition() - -415) <= 30 && switchvar) {
+                rotate_arm.setTargetPosition(250);
+                if (Math.abs(rotate_arm.getCurrentPosition() - 250) <= 30 && switchvar) {
                     slide_extension.setTargetPosition(950);
                     if ((Math.abs(slide_extension.getCurrentPosition() - 950) <= 8) && (Math.abs(tilt_arm.getCurrentPosition() - -2200) <= 17)) {
                         liftTimer.reset();
@@ -374,14 +374,14 @@ public class AUTOExtendingMeet2 extends OpMode {
                 break;
 
             case LIFT_GETNEW:
-                if (Math.abs(rotate_arm.getCurrentPosition()) - ROTATE_COLLECT <= 50 && Math.abs(tilt_arm.getCurrentPosition() - TILT_LOW) <= 30){
+                if (Math.abs(rotate_arm.getCurrentPosition()) + ROTATE_COLLECT <= 50 && Math.abs(tilt_arm.getCurrentPosition() - TILT_LOW) <= 30){
                     slide_extension.setTargetPosition(SLIDE_COLLECT);
-                if (slide_extension.getCurrentPosition() >= (SLIDE_COLLECT - 8)) {
-                    claw.setPosition(CLAW_HOLD);
-                    liftTimer.reset();
-                    liftState = LiftState.LIFT_HOLD;
+                    if (slide_extension.getCurrentPosition() >= (SLIDE_COLLECT - 8)) {
+                        claw.setPosition(CLAW_HOLD);
+                        liftTimer.reset();
+                        liftState = LiftState.LIFT_HOLD;
+                    }
                 }
-            }
                 break;
 
             case LIFT_HOLD:
