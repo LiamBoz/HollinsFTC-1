@@ -341,8 +341,8 @@ public class AUTOExtendingMeetRight extends OpMode {
                 break;
             case LIFT_STARTDROP:
                 tilt_arm.setTargetPosition(-2200);
-                rotate_arm.setTargetPosition(250);
-                if (Math.abs(rotate_arm.getCurrentPosition() - 250) <= 30 && switchvar) {
+                rotate_arm.setTargetPosition(275);
+                if (Math.abs(rotate_arm.getCurrentPosition() - 275) <= 30 && switchvar) {
                     slide_extension.setTargetPosition(950);
                     if ((Math.abs(slide_extension.getCurrentPosition() - 950) <= 8) && (Math.abs(tilt_arm.getCurrentPosition() - -2200) <= 17)) {
                         liftTimer.reset();

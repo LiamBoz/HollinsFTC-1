@@ -131,8 +131,8 @@ public class teleoppowerplay3 extends OpMode {
         //tilt_claw.setPosition(CLAWTILT_COLLECT);
 /*        odometry_forward.setPosition(0.55);
         odometry_strafe.setPosition(0.2);*/
-        slide_extension.setPower(1);
-        tilt_arm.setPower(1);
+        //slide_extension.setPower(1);
+        //tilt_arm.setPower(1);
         //claw         = hardwareMap.get(Servo.class,"claw");
         front_right.setDirection(DcMotor.Direction.REVERSE);
         back_right.setDirection(DcMotor.Direction.REVERSE);
@@ -175,14 +175,14 @@ public class teleoppowerplay3 extends OpMode {
         }*/
 
         //tilt_ticks = tilt_arm.getCurrentPosition();
-        //extension_ticks = slide_extension.getCurrentPosition();
+        //extension_ticks = slide_extension.getCurrentPosition();   tt
         rotation_ticks = rotate_arm.getCurrentPosition();
         //telemetry.addData("changing tilt ticks:",changing_tilt_ticks);
         telemetry.addData("changing rotation ticks", rotation_ticks);
         telemetry.addData("tilt ticks", tilt_arm.getCurrentPosition());
         telemetry.addData("rotatre goal", MinPositionTicks);
         telemetry.addData("lifttimer", liftTimer.seconds());
-        telemetry.addData("stuff", Math.abs(slide_extension.getCurrentPosition() - slide_collect));
+        telemetry.addData("slidepos", (slide_extension.getCurrentPosition()));
         telemetry.addData("odometry_forward", odometry_forward.getPosition());
         telemetry.addData("odometry_strafe", odometry_strafe.getPosition());
         telemetry.addData("SLDIEVAR",slidevar);
@@ -289,7 +289,7 @@ public class teleoppowerplay3 extends OpMode {
 
 
 
-        rotate_arm.setPower(1);
+        //rotate_arm.setPower(1);
         //tilt_arm.setPower(0.5);
         //slide_extension.setPower(1);
 

@@ -23,36 +23,30 @@ public class clawtilttest extends OpMode {
     public void loop() {
 
 
-        if (gamepad2.right_bumper) {
-            claw.setPosition(0.0);
-        }
-        else if (gamepad2.left_bumper){
-            claw.setPosition(0.35);
-        }
         if (gamepad1.x){
-            claw.setPosition(0);
+            tilt_claw.setPosition(0);
         }
         else if (gamepad1.b){
-            claw.setPosition(0.1);
+            tilt_claw.setPosition(0.1);
         }
         else if (gamepad1.a){
-            claw.setPosition(0.25);
+            tilt_claw.setPosition(0.25);
         }
         else if (gamepad1.y){
-            claw.setPosition(0.4);
+            tilt_claw.setPosition(0.4);
         }
 
-        if (gamepad2.x){
-            claw.setPosition(0.5);
+        if (gamepad1.dpad_up){
+            tilt_claw.setPosition(0.5);
         }
-        else if (gamepad2.b){
-            claw.setPosition(0.6);
+        else if (gamepad1.dpad_down){
+            tilt_claw.setPosition(0.6);
         }
-        else if (gamepad2.a){
-            claw.setPosition(.8);
+        else if (gamepad1.dpad_left){
+            tilt_claw.setPosition(.8);
         }
-        else if (gamepad2.y){
-            claw.setPosition(1);
+        else if (gamepad1.dpad_right){
+            tilt_claw.setPosition(1);
         }
 
     }
