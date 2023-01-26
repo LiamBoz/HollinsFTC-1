@@ -1,24 +1,33 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.outoftheboxrobotics.photoncore.PhotonCore;
-import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.exception.RobotCoreException;
-import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
-import org.firstinspires.ftc.teamcode.auton.FSMAutoShortPole;
-
 @TeleOp(name="teleoppowerplay3", group="Iterative Opmode")
-public class teleoppowerplay3 extends OpMode {
+class teleoppowerplay3 extends OpMode {
+
+    public enum LiftState {
+        LIFT_GRABNEW_SWING,
+        LIFT_GRABNEW_GRAB,
+        LIFT_CLAWCLOSE,
+        LIFT_DROPCONE,
+        LIFT_DROPCONEMEDIUM,
+        LIFT_EXTENDSLIDE,
+        LIFT_RETRACTSLIDE,
+        LIFT_CLAWOPEN,
+        LIFT_MANUAL_CONTROL,
+        FINISH
+    }
 
     ElapsedTime liftTimer = new ElapsedTime();
+
+    LiftState liftState = LiftState.LIFT_GRABNEW_SWING;
 
     private DcMotor front_left  = null;
     private DcMotor front_right = null;
@@ -28,20 +37,59 @@ public class teleoppowerplay3 extends OpMode {
     private static DcMotor slide_extension;
     private DcMotor rotate_arm;
 
-    public int rotate_collect = 860;
-    public int tilt_collect = 0;
-    public int slide_collect = 1200;
-    public int rotate_drop = -368;
-    public int tilt_drop = 580;
-    public int slide_drop = 1660;
-    public int slide_var = 0;
-    public double CLAW_HOLD = 0.0;
-    public double CLAW_DEPOSIT = 0.13;
-    final double CLAWTILT_COLLECT = 0.5;
-    final double CLAWTILT_DEPOSIT = 0.75;
+
+//    public int rotate_collect = 1122;
+//    public int tilt_collect = 655;
+//    public int slide_collect = 1155;
+//    public int rotate_drop = 235;
+//    public int tilt_drop = -2316;
+//    public int slide_drop = 1498;
+//    public int slide_var = 0;
+//    public double CLAW_HOLD = 0.35;
+//    public double CLAW_DEPOSIT = 0.7;
+//    final double CLAWTILT_COLLECT = 0.62;
+//    final double CLAWTILT_DEPOSIT = 0.72;
+
+    // Values for HPRight are in the class defaults
+    public PickPlaceOptions HPRight = new PickPlaceOptions();
+    public PickPlaceOptions MPRight = new PickPlaceOptions();
+    public PickPlaceOptions LPRight = new PickPlaceOptions();
+    public PickPlaceOptions LP2Right = new PickPlaceOptions();
+    public PickPlaceOptions HPLeft = new PickPlaceOptions();
+    public PickPlaceOptions MPLeft = new PickPlaceOptions();
+    public PickPlaceOptions LPLeft = new PickPlaceOptions();
+    public PickPlaceOptions LP2Left = new PickPlaceOptions();
+
+
+
+    // set the values for MPRight
+
+
+
+
+    public PickPlaceOptions ActiveOptions = HPRight;
+
+    // set the values for LPRight
+
+    //LPRight.rotate_drop = -966;
+    //LPRight.tilt_drop = -826;
+    //LPRight.slide_drop = 0;
+
 
     double odometry_forward_static = 0.5;
     double odometry_strafe_static = 0.5;
+
+    public int tilt_ticks;
+    public int extension_ticks;
+    public double changing_tilt_ticks = 0;
+    public int rotation_ticks = 0;
+    private Servo claw = null;
+    private Servo tilt_claw = null;
+    private Servo odometry_forward = null;
+    private Servo odometry_strafe = null;
+    int MinPositionTicks = 0;
+
+    boolean slidevar = true;
 
     int tilt_position = 1;
     int slide_position = 0;
@@ -51,54 +99,51 @@ public class teleoppowerplay3 extends OpMode {
     double tiltclaw_2 = 0.7;
     double tiltclaw_0 = 0.65;
 
-    public int ZeroDegreeTiltTicks = 30;
-    public int SixtyDegreeTiltTicks = 250;
-    public int EightyFiveDegreeTiltTicks = 280;
-    public int tilt_ticks;
-    public int extension_ticks;
-    public double changing_tilt_ticks = 0;
-    public int rotation_ticks = 0;
-
-
-
-    double target;
-    double error;
-    double Kp = 0.04;
-    double leftPow;
-    double rightPow;
-
-    boolean slidevar = true;
-
     Gamepad currentGamepad1;
     Gamepad previousGamepad1;
-
-    double botHeading;
-
-    BNO055IMU imu;
-    double globalAngle, power = .30, correction;
-
-    private Servo claw = null;
-    private Servo tilt_claw = null;
-    private Servo odometry_forward = null;
-    private Servo odometry_strafe = null;
-    static int MaxPositionTicks = 1400;
-    int MinPositionTicks = 0;
-
+    final double CLAWTILT_END = 0.1;
+    final int SLIDE_SWING = 0;
+    //final double CLAWTILT_SWING = 0.5;
     @Override
     public void init() {
 
         PhotonCore.enable();
 
-        currentGamepad1 = new Gamepad();
-        previousGamepad1 = new Gamepad();
+        MPRight.rotate_drop = 2123;
+        MPRight.tilt_drop = -1100;
+        MPRight.slide_drop = 200;
+        MPRight.rotate_collect = 1122;
 
-// Retrieve the IMU from the hardware map
-        imu = hardwareMap.get(BNO055IMU.class, "imu");
-        BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
-// Technically this is the default, however specifying it is clearer
-        parameters.angleUnit = BNO055IMU.AngleUnit.RADIANS;
-// Without this, data retrieving from the IMU throws an exception
-        imu.initialize(parameters);
+        LPRight.rotate_drop = 1480;
+        LPRight.tilt_drop = -430;
+        LPRight.slide_drop = 30;
+        LPRight.rotate_collect = 1122;
+
+        LP2Right.rotate_drop = -357;
+        LP2Right.tilt_drop = -430;
+        LP2Right.slide_drop = 120;
+        LP2Right.rotate_collect = 1122;
+
+        HPLeft.rotate_drop = -350;
+        HPLeft.tilt_drop = -1403;
+        HPLeft.slide_drop = 402;
+        HPLeft.rotate_collect = -1182;
+
+        MPLeft.rotate_drop = -2250;
+        MPLeft.tilt_drop = -972;
+        MPLeft.slide_drop = 180;
+        MPLeft.rotate_collect = -1182;
+
+        LPLeft.rotate_drop = -1635;
+        LPLeft.tilt_drop = -489;
+        LPLeft.slide_drop = 30;
+        LPLeft.rotate_collect = -1182;
+
+        LP2Left.rotate_drop = 244;
+        LP2Left.tilt_drop = -489;
+        LP2Left.slide_drop = 126;
+        LP2Left.rotate_collect = -1182;
+
 
         front_left   = hardwareMap.get(DcMotor.class, "front_left");
         front_right  = hardwareMap.get(DcMotor.class, "front_right");
@@ -113,8 +158,8 @@ public class teleoppowerplay3 extends OpMode {
         odometry_strafe = hardwareMap.get(Servo.class, "odometry_strafe");
         slide_extension.setDirection(DcMotor.Direction.REVERSE);
 
-        slide_extension.setTargetPosition(0);
-        tilt_arm.setTargetPosition(0);
+        slide_extension.setTargetPosition(MinPositionTicks);
+        tilt_arm.setTargetPosition(MinPositionTicks);
         rotate_arm.setTargetPosition(MinPositionTicks);
         slide_extension.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         tilt_arm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -127,15 +172,18 @@ public class teleoppowerplay3 extends OpMode {
         back_left.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         back_right.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-        //claw.setPosition(CLAW_DEPOSIT);
-        //tilt_claw.setPosition(CLAWTILT_COLLECT);
-/*        odometry_forward.setPosition(0.55);
-        odometry_strafe.setPosition(0.2);*/
-        //slide_extension.setPower(1);
-        //tilt_arm.setPower(1);
+        claw.setPosition(ActiveOptions.CLAW_DEPOSIT);
+        tilt_claw.setPosition(0.65);
+        odometry_forward.setPosition(0.55);
+        odometry_strafe.setPosition(0.2);
         //claw         = hardwareMap.get(Servo.class,"claw");
         front_right.setDirection(DcMotor.Direction.REVERSE);
         back_right.setDirection(DcMotor.Direction.REVERSE);
+
+        PhotonCore.enable();
+
+        currentGamepad1 = new Gamepad();
+        previousGamepad1 = new Gamepad();
     }
 
     @Override
@@ -161,137 +209,242 @@ public class teleoppowerplay3 extends OpMode {
         }
 
 
-        if (gamepad1.left_bumper){
-            claw.setPosition(0.7);
-        }
-        else if (gamepad1.right_bumper){
-            claw.setPosition(0.35);
-        }
-/*        if (gamepad1.dpad_up){
-            tilt_claw.setPosition(0.3);
-        }
-        else if (gamepad1.dpad_down){
-            tilt_claw.setPosition(0.78);
-        }*/
-
-        //tilt_ticks = tilt_arm.getCurrentPosition();
-        //extension_ticks = slide_extension.getCurrentPosition();   tt
+        tilt_ticks = tilt_arm.getCurrentPosition();
+        extension_ticks = slide_extension.getCurrentPosition();
         rotation_ticks = rotate_arm.getCurrentPosition();
-        //telemetry.addData("changing tilt ticks:",changing_tilt_ticks);
+        changing_tilt_ticks = changing_tilt_ticks + (0.5*(-gamepad2.right_stick_y));
+        telemetry.addData("changing tilt ticks:",changing_tilt_ticks);
         telemetry.addData("changing rotation ticks", rotation_ticks);
-        telemetry.addData("tilt ticks", tilt_arm.getCurrentPosition());
-        telemetry.addData("rotatre goal", MinPositionTicks);
+        telemetry.addData("current state", liftState);
+        telemetry.addData("claw position", claw.getPosition());
         telemetry.addData("lifttimer", liftTimer.seconds());
-        telemetry.addData("slidepos", (slide_extension.getCurrentPosition()));
+        telemetry.addData("stuff", Math.abs(slide_extension.getCurrentPosition() - ActiveOptions.slide_collect));
         telemetry.addData("odometry_forward", odometry_forward.getPosition());
         telemetry.addData("odometry_strafe", odometry_strafe.getPosition());
-        telemetry.addData("SLDIEVAR",slidevar);
+        rotate_arm.setPower(1);
+        tilt_arm.setPower(1);
+        slide_extension.setPower(1);
 
-        botHeading = imu.getAngularOrientation().firstAngle;
-
-        //rotate_arm.setPower(-gamepad1.right_stick_x*0.65);
-        MinPositionTicks += (-gamepad1.right_stick_x*10);
-
-
-        if (currentGamepad1.b && !previousGamepad1.b) {
-            MinPositionTicks = MinPositionTicks - 311;
+        if (gamepad1.back){
+            liftState = liftState.LIFT_GRABNEW_SWING;
         }
-        else if (currentGamepad1.x && !previousGamepad1.x){
-            MinPositionTicks = MinPositionTicks + 311;
+        else if (gamepad1.right_bumper && gamepad1.y){
+            // High Pole Right Teleop
+            ActiveOptions = HPRight;
         }
-
-
-        if (currentGamepad1.dpad_up && !previousGamepad1.dpad_up) {
-            tilt_position = tilt_position + 1;
+        else if (gamepad1.right_bumper && gamepad1.b){
+            // Medium Pole Right Teleop
+            ActiveOptions = MPRight;
         }
-        else if (currentGamepad1.dpad_down && !previousGamepad1.dpad_down){
-            tilt_position = tilt_position - 1;
+        else if (gamepad1.right_bumper && gamepad1.a){
+            // Low Pole Right Teleop
+            ActiveOptions = LPRight;
         }
-
-        if (currentGamepad1.y && !previousGamepad1.y) {
-            slidevar = true;
-            slide_position = slide_position + 1;
+        else if (gamepad1.right_bumper && gamepad1.x){
+            // Low Pole Right Teleop
+            ActiveOptions = LP2Right;
         }
-        else if (currentGamepad1.a && !previousGamepad1.a){
-            slidevar = true;
-            slide_position = slide_position - 1;
+        else if (gamepad1.left_bumper && gamepad1.y){
+            // Low Pole Right Teleop
+            ActiveOptions = HPLeft;
         }
-
-        if (tilt_position == 0){
-            tilt_arm.setTargetPosition(900);
-            tilt_claw.setPosition(0.60);
+        else if (gamepad1.left_bumper && gamepad1.b){
+            // Low Pole Right Teleop
+            ActiveOptions = MPLeft;
         }
-        else if (tilt_position == 1){
-            tilt_arm.setTargetPosition(0);
-
+        else if (gamepad1.left_bumper && gamepad1.a){
+            // Low Pole Right Teleop
+            ActiveOptions = LPLeft;
         }
-        else if (tilt_position == 2){
-            tilt_arm.setTargetPosition(-750);
-            tilt_claw.setPosition(tiltclaw_2);
-            if (gamepad1.right_trigger>0.5){
-                tilt_claw.setPosition(tiltclaw_2+0.4);
-            }
+        else if (gamepad1.left_bumper && gamepad1.x){
+            // Low Pole Right Teleop
+            ActiveOptions = LP2Left;
         }
-        else if (tilt_position == 3){
-            tilt_arm.setTargetPosition(-1400);
-            tilt_claw.setPosition(tiltclaw_3);
-            if (gamepad1.right_trigger>0.5){
-                tilt_claw.setPosition(tiltclaw_3+0.4);
-            }
-
-        }
-        else if (tilt_position == 4){
-            tilt_arm.setTargetPosition(-2650);
-            tilt_claw.setPosition(tiltclaw_4);
-            if (gamepad1.right_trigger>0.5){
-                tilt_claw.setPosition(tiltclaw_4+0.4);
-            }
-        }
-        else if (tilt_position == 5){
-            tilt_arm.setTargetPosition(-3000);
-            tilt_claw.setPosition(tiltclaw_4);
-            if (gamepad1.right_trigger>0.5){
-                tilt_claw.setPosition(tiltclaw_4+0.4);
-            }
-        }
-
-        if (gamepad1.dpad_right){
-            tilt_position = 4;
-        }
-        else if (gamepad1.dpad_left){
-            tilt_position = 0;
-        }
-
-        if (slide_position == 0 && slidevar){
-            slide_extension.setTargetPosition(0);
-        }
-        else if (slide_position == 1 && slidevar){
-            slide_extension.setTargetPosition(550);
-        }
-        else if (slide_position == 2 && slidevar){
-            slide_extension.setTargetPosition(987);
-        }
-        else if (slide_position == 3 && slidevar){
-            slide_extension.setTargetPosition(1480);
-        }
-        if (-gamepad1.right_stick_y < -0.75){
-            slidevar = false;
-            slide_extension.setTargetPosition(0);
-        }
-        else if(-gamepad1.right_stick_y > 0.75){
-            slidevar = false;
-            slide_extension.setTargetPosition(1480);
+        else if (gamepad1.left_trigger>0.5){
+            liftTimer.reset();
+            liftState = liftState.FINISH;
         }
 
 
+        switch (liftState) {
+            case LIFT_GRABNEW_SWING:
+                ActiveOptions.slide_var = 0;
+                if (slide_extension.getCurrentPosition() <= 50) {
+                    claw.setPosition(ActiveOptions.CLAW_DEPOSIT);
+                    if (gamepad1.a){
+                        rotate_arm.setTargetPosition(ActiveOptions.rotate_collect);
+                        tilt_arm.setTargetPosition(ActiveOptions.tilt_collect);
+                        if (Math.abs(rotate_arm.getCurrentPosition() - ActiveOptions.rotate_collect) <= 30){
+                            tilt_claw.setPosition(ActiveOptions.CLAWTILT_COLLECT);
+                            slide_extension.setTargetPosition(ActiveOptions.slide_collect);
+                            liftState = LiftState.LIFT_GRABNEW_GRAB;
+                        }
+                    }
+                }
+                break;
+            case LIFT_GRABNEW_GRAB:
+                if (Math.abs(slide_extension.getCurrentPosition() - ActiveOptions.slide_collect) <= 30 && gamepad1.x) {
+                    claw.setPosition(ActiveOptions.CLAW_HOLD);
+                    liftTimer.reset();
+                    liftState = LiftState.LIFT_CLAWCLOSE;
+                }
+                break;
 
-        rotate_arm.setTargetPosition(MinPositionTicks);
+            case LIFT_MANUAL_CONTROL:
+                MinPositionTicks += (-gamepad1.right_stick_x*10);
+
+                if (gamepad1.left_bumper){
+                    claw.setPosition(0.35);
+                }
+                else if (gamepad1.right_bumper){
+                    claw.setPosition(0.0);
+                }
+
+                if (currentGamepad1.b && !previousGamepad1.b) {
+                    MinPositionTicks = MinPositionTicks - 311;
+                }
+                else if (currentGamepad1.x && !previousGamepad1.x){
+                    MinPositionTicks = MinPositionTicks + 311;
+                }
 
 
+                if (currentGamepad1.dpad_up && !previousGamepad1.dpad_up) {
+                    tilt_position = tilt_position + 1;
+                }
+                else if (currentGamepad1.dpad_down && !previousGamepad1.dpad_down){
+                    tilt_position = tilt_position - 1;
+                }
 
-        //rotate_arm.setPower(1);
-        //tilt_arm.setPower(0.5);
-        //slide_extension.setPower(1);
+                if (currentGamepad1.y && !previousGamepad1.y) {
+                    slidevar = true;
+                    slide_position = slide_position + 1;
+                }
+                else if (currentGamepad1.a && !previousGamepad1.a){
+                    slidevar = true;
+                    slide_position = slide_position - 1;
+                }
+
+                if (tilt_position == 0){
+                    tilt_arm.setTargetPosition(900);
+                    tilt_claw.setPosition(0.60);
+                }
+                else if (tilt_position == 1){
+                    tilt_arm.setTargetPosition(0);
+
+                }
+                else if (tilt_position == 2){
+                    tilt_arm.setTargetPosition(-750);
+                    tilt_claw.setPosition(tiltclaw_2);
+                    if (gamepad1.right_trigger>0.5){
+                        tilt_claw.setPosition(tiltclaw_2+0.4);
+                    }
+                }
+                else if (tilt_position == 3){
+                    tilt_arm.setTargetPosition(-1400);
+                    tilt_claw.setPosition(tiltclaw_3);
+                    if (gamepad1.right_trigger>0.5){
+                        tilt_claw.setPosition(tiltclaw_3+0.4);
+                    }
+
+                }
+                else if (tilt_position == 4){
+                    tilt_arm.setTargetPosition(-2650);
+                    tilt_claw.setPosition(tiltclaw_4);
+                    if (gamepad1.right_trigger>0.5){
+                        tilt_claw.setPosition(tiltclaw_4+0.4);
+                    }
+                }
+                else if (tilt_position == 5){
+                    tilt_arm.setTargetPosition(-3000);
+                    tilt_claw.setPosition(tiltclaw_4);
+                    if (gamepad1.right_trigger>0.5){
+                        tilt_claw.setPosition(tiltclaw_4+0.4);
+                    }
+                }
+
+                if (gamepad1.dpad_right){
+                    tilt_position = 4;
+                }
+                else if (gamepad1.dpad_left){
+                    tilt_position = 0;
+                }
+
+                if (slide_position == 0 && slidevar){
+                    slide_extension.setTargetPosition(0);
+                }
+                else if (slide_position == 1 && slidevar){
+                    slide_extension.setTargetPosition(550);
+                }
+                else if (slide_position == 2 && slidevar){
+                    slide_extension.setTargetPosition(987);
+                }
+                else if (slide_position == 3 && slidevar){
+                    slide_extension.setTargetPosition(1480);
+                }
+                if (-gamepad1.right_stick_y < -0.75){
+                    slidevar = false;
+                    slide_extension.setTargetPosition(0);
+                }
+                else if(-gamepad1.right_stick_y > 0.75){
+                    slidevar = false;
+                    slide_extension.setTargetPosition(1480);
+                }
+
+
+                rotate_arm.setTargetPosition(MinPositionTicks);
+
+
+                break;
+            case LIFT_CLAWCLOSE:
+                if (liftTimer.seconds() >= 0.4) {
+                    liftState = LiftState.LIFT_DROPCONE;
+                }
+                break;
+
+            case LIFT_DROPCONE:
+                slide_extension.setTargetPosition(SLIDE_SWING);
+                if (slide_extension.getCurrentPosition() <= 30) {
+                    tilt_claw.setPosition(ActiveOptions.CLAWTILT_DEPOSIT);
+                    tilt_arm.setTargetPosition(ActiveOptions.tilt_drop);
+                    if (tilt_arm.getCurrentPosition() < -350) {
+                        rotate_arm.setTargetPosition(ActiveOptions.rotate_drop);
+                        if (Math.abs(tilt_arm.getCurrentPosition() - ActiveOptions.tilt_drop) <= 50 && Math.abs(rotate_arm.getCurrentPosition() - ActiveOptions.rotate_drop) <= 30 && gamepad1.a) {
+                            liftState = LiftState.LIFT_EXTENDSLIDE;
+                        }
+                    }
+                }
+                break;
+            case LIFT_EXTENDSLIDE:
+                    slide_extension.setTargetPosition(ActiveOptions.slide_drop);
+                    if ((slide_extension.getCurrentPosition() >= (ActiveOptions.slide_drop - 80)) && gamepad1.b) {
+                        tilt_claw.setPosition((ActiveOptions.CLAWTILT_DEPOSIT + 0.20));
+
+                        if (gamepad1.right_trigger > 0.5) {
+                            claw.setPosition(ActiveOptions.CLAW_DEPOSIT);
+                            liftState = LiftState.LIFT_RETRACTSLIDE;
+                        }
+                    } else {
+                        tilt_claw.setPosition(ActiveOptions.CLAWTILT_DEPOSIT);
+                    }
+                break;
+            case LIFT_RETRACTSLIDE:
+                tilt_claw.setPosition(0.65);
+                slide_extension.setTargetPosition(0);
+                if (slide_extension.getCurrentPosition() <= 400){
+                    liftState = LiftState.LIFT_GRABNEW_SWING;
+                }
+                break;
+            case FINISH:
+                slide_extension.setTargetPosition(0);
+                tilt_claw.setPosition(CLAWTILT_END);
+                if (liftTimer.seconds() >= 0.5) {
+                    rotate_arm.setPower(1);
+                    rotate_arm.setTargetPosition(0);
+                    tilt_arm.setTargetPosition(0);
+                }
+                break;
+        }
+
 
 
 
@@ -339,68 +492,36 @@ public class teleoppowerplay3 extends OpMode {
          */
 
         telemetry.addData("encoder ticks for slide",extension_ticks);
-        telemetry.addData("target angle", target);
-        telemetry.addData("angle error", error);
-        telemetry.addData("botheading", Math.toDegrees(botHeading));
-        //telemetry.addData("encoder ticks for tilt",tilt_ticks);
+        telemetry.addData("encoder ticks for tilt",tilt_ticks);
+        telemetry.addData("tilt arm",ActiveOptions.tilt_drop);
+        telemetry.addData("slide ext",ActiveOptions.slide_drop);
+        telemetry.addData("rotate arm",ActiveOptions.rotate_drop);
+
+
 
         //slide_extension.setPower(gamepad2.left_stick_y);
 
-        double y = gamepad1.left_stick_y; // Remember, this is reversed!
-        double x = -gamepad1.left_stick_x * 1.1; // Counteract imperfect strafing
+        double drive  = gamepad1.left_stick_y;
+        double strafe = -gamepad1.left_stick_x;
+        double twist  = -gamepad1.right_stick_x;
 
-        //target += -gamepad1.right_stick_x*50;
-
-        // Denominator is the largest motor power (absolute value) or 1
-        // This ensures all the powers maintain the same ratio, but only when
-        // at least one is out of the range [-1, 1]
-        double denominator = Math.max(Math.abs(y) + Math.abs(x), 1);
-        double frontLeftPower = (y + x) / denominator;
-        double backLeftPower = (y - x) / denominator;
-        double frontRightPower = (y - x) / denominator;
-        double backRightPower = (y + x) / denominator;
-
-        //while((Math.abs(error)>2))
-        //{
-        error = -Math.toDegrees(botHeading) - target;
-        frontLeftPower += error * Kp;
-        backLeftPower += error * Kp;
-        frontRightPower += -error * Kp;
-        backRightPower += -error * Kp;
-            //setMotorPowers(leftPow, rightPow);
-        //}
-
-        front_left.setPower(frontLeftPower);
-        back_left.setPower(backLeftPower);
-        front_right.setPower(frontRightPower);
-        back_right.setPower(backRightPower);
-
-/*
-        if (angleTank2Enemy > angleCannon) {
-
-            diffAngle = angleTank2Enemy - angleCannon;
-            if (diffAngle > MathUtils.PI) {
-                rotDirRight = true;
-            }
-            else rotDirRight = false;
+        double[] speeds = {
+                (drive + strafe + twist),
+                (drive - strafe - twist),
+                (drive - strafe + twist),
+                (drive + strafe - twist)
+        };
+        double max = Math.abs(speeds[0]);
+        for (int i = 0; i < speeds.length; i++) {
+            if ( max < Math.abs(speeds[i]) ) max = Math.abs(speeds[i]);
         }
-        else {
-            diffAngle = angleCannon - angleTank2Enemy;
-            if (diffAngle > MathUtils.PI) {
-                rotDirRight = false;
-            }
-            else rotDirRight = true;
+        if (max > 1) {
+            for (int i = 0; i < speeds.length; i++) speeds[i] /= max;
         }
 
-        if ((diffAngle) > 0.05f) {  // dead zone
-
-            if (rotDirRight)    direction = 1;  // this goes to cannon.getBody().setAngularVelocity(cannonAngularVelocity);
-            else                direction = -1; // this goes to cannon.getBody().setAngularVelocity(cannonAngularVelocity);
-        }
-*/
-
-
-
+        front_left.setPower(speeds[0]);
+        front_right.setPower(speeds[1]);
+        back_left.setPower(speeds[2]);
+        back_right.setPower(speeds[3]);
     }
 }
-
