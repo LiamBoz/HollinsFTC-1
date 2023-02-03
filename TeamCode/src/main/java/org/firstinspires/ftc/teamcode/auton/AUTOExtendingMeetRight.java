@@ -198,13 +198,15 @@ public class AUTOExtendingMeetRight extends OpMode {
     final double ROTATE_TIME = 0.3; // the amount of time it takes to rotate 135 degrees
     final double EXTENSION_TIME = 0.6; // e amount of time it takes to extend from 0 to 2250 on the slide
 
+    double distance_seen = 0.0;
+
     final int SLIDE_LOW = 0; // the low encoder position for the lift
     int SLIDE_COLLECT = 490; // the high encoder position for the lift
     final int SLIDE_DROPOFF = 415;
     final int SLIDE_MOVEMENT = 1125; // the slide retraction for when rotating
 
     // TODO: find encoder values for tilt
-    int TILT_LOW = 100;
+    int TILT_LOW = 40;
     final int TILT_HIGH = -1570;
     //public int TILT_DECREMENT = 435;
 
@@ -222,6 +224,8 @@ public class AUTOExtendingMeetRight extends OpMode {
     //public TrajectorySequence VariablePath;
 
     public void init() {
+
+        FailSafe = true;
         liftTimer.reset();
         //PhotonCore.enable();
 
@@ -332,6 +336,10 @@ public class AUTOExtendingMeetRight extends OpMode {
             FailSafe = false;
         }
 
+        if (FailSafeTimer.seconds() >= 27.5){
+            liftState = LiftState.PARKING_STATE;
+        }
+
 
 
 
@@ -353,6 +361,7 @@ public class AUTOExtendingMeetRight extends OpMode {
         //telemetry.addData("tag location", tagOfInterest.id);
         telemetry.addData("drive", drive.isBusy());
         telemetry.addData("distance", colorsensor1.getDistance(DistanceUnit.INCH));
+        telemetry.addData("Sensor seen",distance_seen);
         if (drive.getPoseEstimate().getY() < -50){
             switchvar = true;
         }
@@ -407,7 +416,8 @@ public class AUTOExtendingMeetRight extends OpMode {
                     RotateArmPosition = RotateArmBegin - RotateArmOffset;
                     rotate_arm.setTargetPosition((int) RotateArmPosition);
                     // add 0.3 second pause
-                    if (colorsensor1.getDistance(DistanceUnit.INCH) <= 10) {
+                    distance_seen = colorsensor1.getDistance(DistanceUnit.INCH);
+                    if (distance_seen <= 10) {
                         liftTimer.reset();
                         RotateArmPosition = RotateArmPosition - 30;
                         RotateArmFinalPosition = RotateArmPosition;
@@ -433,7 +443,8 @@ public class AUTOExtendingMeetRight extends OpMode {
                     rotate_arm.setTargetPosition((int) RotateArmPosition);
                     RotateArmOffset = 100 * PoleSearchTimer.seconds();
                     RotateArmPosition = RotateArmBegin + RotateArmOffset;
-                    if (colorsensor1.getDistance(DistanceUnit.INCH) <= 15) {
+                    distance_seen = colorsensor1.getDistance(DistanceUnit.INCH);
+                    if (distance_seen <= 15) {
                         liftTimer.reset();
                         RotateArmPosition = RotateArmPosition + 30;
                         RotateArmFinalPosition = RotateArmPosition;
@@ -478,7 +489,6 @@ public class AUTOExtendingMeetRight extends OpMode {
                 rotate_arm.setTargetPosition(ROTATE_DROP);   */
 
             case LIFT_DROPCYCLE:
-                tilt_claw.setPosition(0.4);
                 tilt_arm.setTargetPosition(TILT_HIGH);
                 if (tilt_arm.getCurrentPosition() <= -200) {
                     slide_extension.setTargetPosition(0);
@@ -503,7 +513,8 @@ public class AUTOExtendingMeetRight extends OpMode {
 
             case LIFT_HOLD:
                 if (liftTimer.seconds() >= 0.4) {
-                    slide_extension.setTargetPosition(SLIDE_COLLECT - 30);
+                    slide_extension.setTargetPosition(SLIDE_COLLECT - 50);
+                    tilt_claw.setPosition(0.4);
                     liftState = LiftState.LIFT_DROPCYCLE;
                 }
                 break;
@@ -539,6 +550,8 @@ public class AUTOExtendingMeetRight extends OpMode {
                 break;
             case PARKING_STATE:
                 liftTimer.reset();
+                slide_extension.setTargetPosition(0);
+                tilt_claw.setPosition(CLAWTILT_END);
                 // Use the parkingTag here - it must be at least LEFT if no tag was seen
                 if (parkingTag == LEFT){ //&& cones_dropped >= CONES_DESIRED) {
 
@@ -567,6 +580,7 @@ public class AUTOExtendingMeetRight extends OpMode {
                 liftState = LiftState.FINISH;
                 break;
             case FINISH:
+                FailSafeTimer.reset();
                 drive.update();
                 slide_extension.setTargetPosition(0);
                 tilt_claw.setPosition(CLAWTILT_END);
