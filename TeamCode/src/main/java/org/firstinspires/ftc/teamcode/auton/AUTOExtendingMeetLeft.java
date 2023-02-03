@@ -300,19 +300,17 @@ public class AUTOExtendingMeetLeft extends OpMode {
         //while (tagOfInterest == null)
 
 
-        BlueOnRedGoRight = drive.trajectorySequenceBuilder(new Pose2d(3.7,-52, Math.toRadians(270)))
+        BlueOnRedGoRight = drive.trajectorySequenceBuilder(new Pose2d(0,-52, Math.toRadians(270)))
                 .strafeRight(26)
                 .build();
-        BlueOnRedGoLeft = drive.trajectorySequenceBuilder(new Pose2d(3.7,-52, Math.toRadians(270)))
-                .strafeLeft(20)
+        BlueOnRedGoLeft = drive.trajectorySequenceBuilder(new Pose2d(0,-52, Math.toRadians(270)))
+                .strafeLeft(25)
                 .build();
 
         BlueOnRedGoCycle = drive.trajectorySequenceBuilder(new Pose2d(0, 0, Math.toRadians(270)))
                 //.lineTo(new Vector2d(0,-32))
                 //.lineTo(new Vector2d(0,-48))
                 .splineToConstantHeading(new Vector2d(0, -52), Math.toRadians(270))
-                .waitSeconds(30)
-                .forward(30)
                 //.strafeLeft(3.7)
                 .build();
 
@@ -504,7 +502,7 @@ public class AUTOExtendingMeetLeft extends OpMode {
                 if (Math.abs(rotate_arm.getCurrentPosition()) - ROTATE_COLLECT <= 50 && Math.abs(tilt_arm.getCurrentPosition() - TILT_LOW) <= 50) {
                     slide_extension.setTargetPosition(SLIDE_COLLECT);
                     tilt_claw.setPosition(0.50);
-                    if (slide_extension.getCurrentPosition() >= (SLIDE_COLLECT - 140)) {
+                    if (slide_extension.getCurrentPosition() >= (SLIDE_COLLECT - 120)) {
                         claw.setPosition(CLAW_HOLD);
                         liftTimer.reset();
                         liftState = LiftState.LIFT_HOLD;
@@ -513,10 +511,14 @@ public class AUTOExtendingMeetLeft extends OpMode {
                 break;
 
             case LIFT_HOLD:
+
                 if (liftTimer.seconds() >= 0.4) {
-                    slide_extension.setTargetPosition(SLIDE_COLLECT - 40);
-                    tilt_claw.setPosition(0.30);
+                    slide_extension.setTargetPosition(SLIDE_COLLECT - 30);
+                    //tilt_claw.setPosition(0.40);
                     liftState = LiftState.LIFT_DROPCYCLE;
+                }
+                else if (liftTimer.seconds() > 0.2) {
+                    tilt_claw.setPosition(0.45);
                 }
                 break;
 
