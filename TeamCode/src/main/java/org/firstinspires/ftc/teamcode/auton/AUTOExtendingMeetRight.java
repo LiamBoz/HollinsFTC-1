@@ -198,7 +198,7 @@ public class AUTOExtendingMeetRight extends OpMode {
     final double ROTATE_TIME = 0.3; // the amount of time it takes to rotate 135 degrees
     final double EXTENSION_TIME = 0.6; // e amount of time it takes to extend from 0 to 2250 on the slide
 
-    double distance_seen = 0.0;
+    double distance_seen = 0.0; // telemetry of the distance sensor
 
     final int SLIDE_LOW = 0; // the low encoder position for the lift
     int SLIDE_COLLECT = 490; // the high encoder position for the lift
@@ -316,7 +316,7 @@ public class AUTOExtendingMeetRight extends OpMode {
                 //.strafeLeft(3.7)
                 .build();
 
-        sensor_servo.setPosition(0.5);
+        sensor_servo.setPosition(0.6);
 
         init_loop();
         drive.followTrajectorySequenceAsync(BlueOnRedGoCycle);
@@ -362,6 +362,7 @@ public class AUTOExtendingMeetRight extends OpMode {
         telemetry.addData("drive", drive.isBusy());
         telemetry.addData("distance", colorsensor1.getDistance(DistanceUnit.INCH));
         telemetry.addData("Sensor seen",distance_seen);
+        telemetry.addData("Final drop rotate", RotateArmFinalPosition);
         if (drive.getPoseEstimate().getY() < -50){
             switchvar = true;
         }
@@ -513,8 +514,8 @@ public class AUTOExtendingMeetRight extends OpMode {
 
             case LIFT_HOLD:
                 if (liftTimer.seconds() >= 0.4) {
-                    slide_extension.setTargetPosition(SLIDE_COLLECT - 50);
-                    tilt_claw.setPosition(0.4);
+                    slide_extension.setTargetPosition(SLIDE_COLLECT - 40);
+                    tilt_claw.setPosition(0.30);
                     liftState = LiftState.LIFT_DROPCYCLE;
                 }
                 break;
