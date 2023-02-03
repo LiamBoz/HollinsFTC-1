@@ -550,6 +550,7 @@ public class AUTOExtendingMeetLeft extends OpMode {
                 }
                 break;
             case PARKING_STATE:
+                FailSafeTimer.reset();
                 liftTimer.reset();
                 slide_extension.setTargetPosition(0);
                 tilt_claw.setPosition(CLAWTILT_END);
