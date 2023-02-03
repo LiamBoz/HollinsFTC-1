@@ -34,6 +34,7 @@ public class teleoppowerplay2 extends OpMode {
     private static DcMotor tilt_arm;
     private static DcMotor slide_extension;
     private DcMotor rotate_arm;
+    private Servo sensor_servo;
 
 
 //    public int rotate_collect = 1122;
@@ -152,6 +153,7 @@ public class teleoppowerplay2 extends OpMode {
         rotate_arm = hardwareMap.get(DcMotor.class,"rotate_arm");
         odometry_forward = hardwareMap.get(Servo.class, "odometry_forward");
         odometry_strafe = hardwareMap.get(Servo.class, "odometry_strafe");
+        sensor_servo = hardwareMap.get(Servo.class, "sensor_servo");
         slide_extension.setDirection(DcMotor.Direction.REVERSE);
 
         slide_extension.setTargetPosition(MinPositionTicks);
@@ -175,6 +177,8 @@ public class teleoppowerplay2 extends OpMode {
         //claw         = hardwareMap.get(Servo.class,"claw");
         front_right.setDirection(DcMotor.Direction.REVERSE);
         back_right.setDirection(DcMotor.Direction.REVERSE);
+
+        sensor_servo.setPosition(0);
 
         PhotonCore.enable();
 
@@ -404,7 +408,7 @@ public class teleoppowerplay2 extends OpMode {
             case LIFT_EXTENDSLIDE:
                     slide_extension.setTargetPosition(ActiveOptions.slide_drop);
                     if ((slide_extension.getCurrentPosition() >= (ActiveOptions.slide_drop - 100)) && gamepad1.b) {
-                        tilt_claw.setPosition((ActiveOptions.CLAWTILT_DEPOSIT - 0.15));
+                        tilt_claw.setPosition((ActiveOptions.CLAWTILT_DEPOSIT + 0.2));
 
                         if (gamepad1.right_trigger > 0.5) {
                             claw.setPosition(ActiveOptions.CLAW_DEPOSIT);

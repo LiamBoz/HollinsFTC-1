@@ -5,7 +5,6 @@ import static org.firstinspires.ftc.teamcode.drive.DriveConstants.variable_tilt_
 
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
-import com.outoftheboxrobotics.photoncore.PhotonCore;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -159,7 +158,7 @@ public class AUTOExtendingMeet2 extends OpMode {
     //public VoltageSensor voltageSensor;
 
     ElapsedTime liftTimer = new ElapsedTime();
-    ElapsedTime parkingTimer = new ElapsedTime();
+    ElapsedTime FailSafeTimer = new ElapsedTime();
 
     SampleMecanumDrive drive;
 
@@ -182,13 +181,15 @@ public class AUTOExtendingMeet2 extends OpMode {
     final double EXTENSION_TIME = 0.6; // e amount of time it takes to extend from 0 to 2250 on the slide
 
     final int SLIDE_LOW = 0; // the low encoder position for the lift
-    final int SLIDE_COLLECT = 1340; // the high encoder position for the lift
-    final int SLIDE_DROPOFF = 1360;
+    final int SLIDE_COLLECT = 400; // the high encoder position for the lift
+    final int SLIDE_DROPOFF = 397;
     final int SLIDE_MOVEMENT = 1125; // the slide retraction for when rotating
 
+    boolean FailSafe = true;
+
     // TODO: find encoder values for tilt
-    int TILT_LOW = -50;
-    final int TILT_HIGH = -2200;
+    int TILT_LOW = -146;
+    final int TILT_HIGH = -1403;
     public int TILT_DECREMENT = 435;
 
     // TODO: find encoder values for rotation
@@ -295,6 +296,19 @@ public class AUTOExtendingMeet2 extends OpMode {
             drive.setPoseEstimate(new Pose2d(0, poseEstimate.getY(), poseEstimate.getHeading()));
         }*/
 
+/*
+        if (FailSafe){
+            FailSafeTimer.reset();
+            FailSafe = false;
+        }
+
+        if (FailSafeTimer.seconds() >= 27.5){
+            liftState = LiftState.PARKING_STATE;
+        }
+*/
+
+
+
         telemetry.addData("x", (drive.getPoseEstimate()).getX());
         //telemetry.addData("x2", poseEstimate.getX());
         telemetry.addData("y", (drive.getPoseEstimate()).getY());
@@ -308,6 +322,7 @@ public class AUTOExtendingMeet2 extends OpMode {
         telemetry.addData("timer",liftTimer.seconds());
         telemetry.addData("liftstate", liftState);
         telemetry.addData("cones dropped", cones_dropped);
+        telemetry.addData("FailSafeTimer", FailSafeTimer.seconds());
         //telemetry.addData("movedForward", movedForward);
         //telemetry.addData("tag location", tagOfInterest.id);
         telemetry.addData("drive", drive.isBusy());
@@ -340,17 +355,18 @@ public class AUTOExtendingMeet2 extends OpMode {
                 liftState = LiftState.LIFT_STARTDROP;
                 break;
             case LIFT_STARTDROP:
-                tilt_arm.setTargetPosition(-2200);
+                tilt_arm.setTargetPosition(TILT_HIGH);
                 rotate_arm.setTargetPosition(-415);
                 if (Math.abs(rotate_arm.getCurrentPosition() - -415) <= 30 && switchvar) {
                     slide_extension.setTargetPosition(950);
-                    if ((Math.abs(slide_extension.getCurrentPosition() - 950) <= 8) && (Math.abs(tilt_arm.getCurrentPosition() - -2200) <= 17)) {
+                    break;
+/*                    if ((Math.abs(slide_extension.getCurrentPosition() - SLIDE_DROPOFF) <= 8) && (Math.abs(tilt_arm.getCurrentPosition() - -TILT_HIGH) <= 17)) {
                         liftTimer.reset();
                         tilt_claw.setPosition(CLAWTILT_DEPOSIT+0.3);
                         claw.setPosition(CLAW_DEPOSIT);
                         liftState = LiftState.LIFT_INC;
                         break;
-                    }
+                    }*/
                 }
                 break;
 
@@ -376,12 +392,12 @@ public class AUTOExtendingMeet2 extends OpMode {
             case LIFT_GETNEW:
                 if (Math.abs(rotate_arm.getCurrentPosition()) - ROTATE_COLLECT <= 50 && Math.abs(tilt_arm.getCurrentPosition() - TILT_LOW) <= 30){
                     slide_extension.setTargetPosition(SLIDE_COLLECT);
-                if (slide_extension.getCurrentPosition() >= (SLIDE_COLLECT - 8)) {
-                    claw.setPosition(CLAW_HOLD);
-                    liftTimer.reset();
-                    liftState = LiftState.LIFT_HOLD;
+                    if (slide_extension.getCurrentPosition() >= (SLIDE_COLLECT - 8)) {
+                        claw.setPosition(CLAW_HOLD);
+                        liftTimer.reset();
+                        liftState = LiftState.LIFT_HOLD;
+                    }
                 }
-            }
                 break;
 
             case LIFT_HOLD:
