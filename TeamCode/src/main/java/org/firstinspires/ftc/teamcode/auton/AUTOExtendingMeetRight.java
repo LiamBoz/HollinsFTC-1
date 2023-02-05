@@ -201,12 +201,12 @@ public class AUTOExtendingMeetRight extends OpMode {
     double distance_seen = 0.0; // telemetry of the distance sensor
 
     final int SLIDE_LOW = 0; // the low encoder position for the lift
-    int SLIDE_COLLECT = 490; // the high encoder position for the lift
-    final int SLIDE_DROPOFF = 415;
+    int SLIDE_COLLECT = 475; // the high encoder position for the lift
+    final int SLIDE_DROPOFF = 440;
     final int SLIDE_MOVEMENT = 1125; // the slide retraction for when rotating
 
     // TODO: find encoder values for tilt
-    int TILT_LOW = 40;
+    int TILT_LOW = 30;
     final int TILT_HIGH = -1570;
     //public int TILT_DECREMENT = 435;
 
@@ -265,7 +265,7 @@ public class AUTOExtendingMeetRight extends OpMode {
         rotate_arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
         claw.setPosition(CLAW_HOLD);
-        tilt_claw.setPosition(0.1);
+        tilt_claw.setPosition(0.0);
 
         rotate_arm.setPower(1);
         tilt_arm.setPower(1);
@@ -300,11 +300,11 @@ public class AUTOExtendingMeetRight extends OpMode {
         //while (tagOfInterest == null)
 
 
-        BlueOnRedGoRight = drive.trajectorySequenceBuilder(new Pose2d(3.7,-52, Math.toRadians(270)))
+        BlueOnRedGoRight = drive.trajectorySequenceBuilder(new Pose2d(0,-52, Math.toRadians(270)))
                 .strafeRight(26)
                 .build();
-        BlueOnRedGoLeft = drive.trajectorySequenceBuilder(new Pose2d(3.7,-52, Math.toRadians(270)))
-                .strafeLeft(20)
+        BlueOnRedGoLeft = drive.trajectorySequenceBuilder(new Pose2d(0,-52, Math.toRadians(270)))
+                .strafeLeft(23)
                 .build();
 
         BlueOnRedGoCycle = drive.trajectorySequenceBuilder(new Pose2d(0, 0, Math.toRadians(270)))
@@ -402,7 +402,7 @@ public class AUTOExtendingMeetRight extends OpMode {
                 // 275 is pole
                 if (Math.abs(rotate_arm.getCurrentPosition() - (int)RotateArmFinalPosition) <= 50 && switchvar) {
                     slide_extension.setTargetPosition(SLIDE_DROPOFF);
-                    if ((Math.abs(slide_extension.getCurrentPosition() - SLIDE_DROPOFF) <= 15) && (Math.abs(tilt_arm.getCurrentPosition() - TILT_HIGH) <= 30)) {
+                    if ((Math.abs(slide_extension.getCurrentPosition() - SLIDE_DROPOFF) <= 10) && (Math.abs(tilt_arm.getCurrentPosition() - TILT_HIGH) <= 30)) {
                         liftTimer.reset();
                         PoleSearchTimer.reset();
                         liftState = LiftState.LIFT_POLESEARCH;
@@ -420,7 +420,7 @@ public class AUTOExtendingMeetRight extends OpMode {
                     distance_seen = colorsensor1.getDistance(DistanceUnit.INCH);
                     if (distance_seen <= 10) {
                         liftTimer.reset();
-                        RotateArmPosition = RotateArmPosition - 30;
+                        RotateArmPosition = RotateArmPosition - 20;
                         RotateArmFinalPosition = RotateArmPosition;
                         liftState = LiftState.LIFT_DUNK;
                         break;
@@ -447,7 +447,7 @@ public class AUTOExtendingMeetRight extends OpMode {
                     distance_seen = colorsensor1.getDistance(DistanceUnit.INCH);
                     if (distance_seen <= 15) {
                         liftTimer.reset();
-                        RotateArmPosition = RotateArmPosition + 30;
+                        RotateArmPosition = RotateArmPosition + 0;
                         RotateArmFinalPosition = RotateArmPosition;
                         liftState = LiftState.LIFT_DUNK;
                         break;
@@ -491,7 +491,7 @@ public class AUTOExtendingMeetRight extends OpMode {
 
             case LIFT_DROPCYCLE:
                 tilt_arm.setTargetPosition(TILT_HIGH);
-                if (tilt_arm.getCurrentPosition() <= -200) {
+                if (tilt_arm.getCurrentPosition() <= -120) {
                     slide_extension.setTargetPosition(0);
                     sensor_servo.setPosition(0);
                     if (slide_extension.getCurrentPosition() <= 50) {
@@ -503,7 +503,6 @@ public class AUTOExtendingMeetRight extends OpMode {
             case LIFT_GETNEW:
                 if (Math.abs(rotate_arm.getCurrentPosition()) + ROTATE_COLLECT <= 50 && Math.abs(tilt_arm.getCurrentPosition() - TILT_LOW) <= 50) {
                     slide_extension.setTargetPosition(SLIDE_COLLECT);
-                    tilt_claw.setPosition(0.50);
                     if (slide_extension.getCurrentPosition() >= (SLIDE_COLLECT - 150)) {
                         claw.setPosition(CLAW_HOLD);
                         liftTimer.reset();
@@ -515,7 +514,6 @@ public class AUTOExtendingMeetRight extends OpMode {
             case LIFT_HOLD:
                 if (liftTimer.seconds() >= 0.4) {
                     slide_extension.setTargetPosition(SLIDE_COLLECT - 40);
-                    tilt_claw.setPosition(0.30);
                     liftState = LiftState.LIFT_DROPCYCLE;
                 }
                 break;
@@ -525,7 +523,7 @@ public class AUTOExtendingMeetRight extends OpMode {
                     if (liftTimer.seconds() >= 0.4) {
                         claw.setPosition(CLAW_DEPOSIT);
                         cones_dropped += 1;
-                        TILT_LOW = TILT_LOW+70;
+                        TILT_LOW = TILT_LOW+60;
                         SLIDE_COLLECT = SLIDE_COLLECT + 2;
                         liftTimer.reset();
                         liftState = LiftState.LIFT_RETRACTSLIDE;
@@ -540,10 +538,10 @@ public class AUTOExtendingMeetRight extends OpMode {
                 }
                 break;
             case LIFT_RETRACTSLIDE:
+                tilt_claw.setPosition(CLAWTILT_DEPOSIT);
                 slide_extension.setTargetPosition(SLIDE_LOW);
                 if (slide_extension.getCurrentPosition() <= 150) {
                     liftTimer.reset();
-                    tilt_claw.setPosition(0.50);
                     tilt_arm.setTargetPosition(TILT_LOW);
                     rotate_arm.setTargetPosition(ROTATE_COLLECT);
                     liftState = LiftState.LIFT_GETNEW;
@@ -551,6 +549,7 @@ public class AUTOExtendingMeetRight extends OpMode {
                 break;
             case PARKING_STATE:
                 liftTimer.reset();
+                FailSafeTimer.reset();
                 slide_extension.setTargetPosition(0);
                 tilt_claw.setPosition(CLAWTILT_END);
                 // Use the parkingTag here - it must be at least LEFT if no tag was seen

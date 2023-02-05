@@ -201,12 +201,12 @@ public class AUTOExtendingMeetLeft extends OpMode {
     double distance_seen = 0.0; // telemetry of the distance sensor
 
     final int SLIDE_LOW = 0; // the low encoder position for the lift
-    int SLIDE_COLLECT = 535; // the high encoder position for the lift
-    final int SLIDE_DROPOFF = 380;
+    int SLIDE_COLLECT = 555; // the high encoder position for the lift
+    final int SLIDE_DROPOFF = 370;
     final int SLIDE_MOVEMENT = 1125; // the slide retraction for when rotating
 
     // TODO: find encoder values for tilt
-    int TILT_LOW = 40;
+    int TILT_LOW = -50;
     final int TILT_HIGH = -1570;
     //public int TILT_DECREMENT = 435;
 
@@ -265,7 +265,7 @@ public class AUTOExtendingMeetLeft extends OpMode {
         rotate_arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
         claw.setPosition(CLAW_HOLD);
-        tilt_claw.setPosition(0.1);
+        tilt_claw.setPosition(0.0);
 
         rotate_arm.setPower(1);
         tilt_arm.setPower(1);
@@ -400,7 +400,7 @@ public class AUTOExtendingMeetLeft extends OpMode {
                 // 275 is pole
                 if (Math.abs(rotate_arm.getCurrentPosition() - (int)RotateArmFinalPosition) <= 50 && switchvar) {
                     slide_extension.setTargetPosition(SLIDE_DROPOFF);
-                    if ((Math.abs(slide_extension.getCurrentPosition() - SLIDE_DROPOFF) <= 15) && (Math.abs(tilt_arm.getCurrentPosition() - TILT_HIGH) <= 30)) {
+                    if ((Math.abs(slide_extension.getCurrentPosition() - SLIDE_DROPOFF) <= 10) && (Math.abs(tilt_arm.getCurrentPosition() - TILT_HIGH) <= 30)) {
                         liftTimer.reset();
                         PoleSearchTimer.reset();
                         liftState = LiftState.LIFT_POLESEARCH;
@@ -501,7 +501,7 @@ public class AUTOExtendingMeetLeft extends OpMode {
             case LIFT_GETNEW:
                 if (Math.abs(rotate_arm.getCurrentPosition()) - ROTATE_COLLECT <= 50 && Math.abs(tilt_arm.getCurrentPosition() - TILT_LOW) <= 50) {
                     slide_extension.setTargetPosition(SLIDE_COLLECT);
-                    tilt_claw.setPosition(0.50);
+                    //tilt_claw.setPosition(0.50);
                     if (slide_extension.getCurrentPosition() >= (SLIDE_COLLECT - 120)) {
                         claw.setPosition(CLAW_HOLD);
                         liftTimer.reset();
@@ -517,9 +517,9 @@ public class AUTOExtendingMeetLeft extends OpMode {
                     //tilt_claw.setPosition(0.40);
                     liftState = LiftState.LIFT_DROPCYCLE;
                 }
-                else if (liftTimer.seconds() > 0.2) {
+/*                else if (liftTimer.seconds() > 0.2) {
                     tilt_claw.setPosition(0.45);
-                }
+                }*/
                 break;
 
             case LIFT_INC:
@@ -527,7 +527,7 @@ public class AUTOExtendingMeetLeft extends OpMode {
                     if (liftTimer.seconds() >= 0.4) {
                         claw.setPosition(CLAW_DEPOSIT);
                         cones_dropped += 1;
-                        TILT_LOW = TILT_LOW+70;
+                        TILT_LOW = TILT_LOW+60;
                         SLIDE_COLLECT = SLIDE_COLLECT + 2;
                         liftTimer.reset();
                         liftState = LiftState.LIFT_RETRACTSLIDE;
@@ -542,10 +542,11 @@ public class AUTOExtendingMeetLeft extends OpMode {
                 }
                 break;
             case LIFT_RETRACTSLIDE:
+                tilt_claw.setPosition(CLAWTILT_DEPOSIT);
                 slide_extension.setTargetPosition(SLIDE_LOW);
                 if (slide_extension.getCurrentPosition() <= 150) {
                     liftTimer.reset();
-                    tilt_claw.setPosition(0.50);
+                    //tilt_claw.setPosition(0.50);
                     tilt_arm.setTargetPosition(TILT_LOW);
                     rotate_arm.setTargetPosition(ROTATE_COLLECT);
                     liftState = LiftState.LIFT_GETNEW;
@@ -555,7 +556,7 @@ public class AUTOExtendingMeetLeft extends OpMode {
                 FailSafeTimer.reset();
                 liftTimer.reset();
                 slide_extension.setTargetPosition(0);
-                tilt_claw.setPosition(CLAWTILT_END);
+                //.setPosition(CLAWTILT_END);
                 // Use the parkingTag here - it must be at least LEFT if no tag was seen
                 if (parkingTag == LEFT){ //&& cones_dropped >= CONES_DESIRED) {
 
