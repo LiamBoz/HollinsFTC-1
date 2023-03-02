@@ -221,9 +221,9 @@ public class teleoppowerplay2 extends OpMode {
         telemetry.addData("stuff", Math.abs(slide_extension.getCurrentPosition() - ActiveOptions.slide_collect));
         telemetry.addData("odometry_forward", odometry_forward.getPosition());
         telemetry.addData("odometry_strafe", odometry_strafe.getPosition());
-        rotate_arm.setPower(1);
-        tilt_arm.setPower(1);
-        slide_extension.setPower(1);
+        rotate_arm.setPower(0);
+        tilt_arm.setPower(0);
+        slide_extension.setPower(0);
 
         if (gamepad1.back){
             liftState = LiftState.LIFT_GRABNEW;

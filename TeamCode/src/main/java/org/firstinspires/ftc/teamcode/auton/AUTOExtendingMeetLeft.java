@@ -5,6 +5,7 @@ import static org.firstinspires.ftc.teamcode.drive.DriveConstants.variable_tilt_
 
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
+import com.outoftheboxrobotics.photoncore.PhotonCore;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.ColorRangeSensor;
@@ -186,9 +187,9 @@ public class AUTOExtendingMeetLeft extends OpMode {
     final double CLAW_HOLD = 0.0; // the idle position for the dump servo
     final double CLAW_DEPOSIT = 0.35; // the dumping position for the dump servo
 
-    final double CLAWTILT_END = 0.13;
+    final double CLAWTILT_END = 0.19;
     final double CLAWTILT_COLLECT = 0.50;
-    final double CLAWTILT_DEPOSIT = .55;
+    final double CLAWTILT_DEPOSIT = .61;
 
     boolean switchvar = false;
     boolean epic = true;
@@ -201,12 +202,12 @@ public class AUTOExtendingMeetLeft extends OpMode {
     double distance_seen = 0.0; // telemetry of the distance sensor
 
     final int SLIDE_LOW = 0; // the low encoder position for the lift
-    int SLIDE_COLLECT = 555; // the high encoder position for the lift
+    int SLIDE_COLLECT = 535; // the high encoder position for the lift
     final int SLIDE_DROPOFF = 370;
     final int SLIDE_MOVEMENT = 1125; // the slide retraction for when rotating
 
     // TODO: find encoder values for tilt
-    int TILT_LOW = -50;
+    int TILT_LOW = 30;
     final int TILT_HIGH = -1570;
     //public int TILT_DECREMENT = 435;
 
@@ -227,7 +228,7 @@ public class AUTOExtendingMeetLeft extends OpMode {
 
         FailSafe = true;
         liftTimer.reset();
-        //PhotonCore.enable();
+        PhotonCore.enable();
 
 
         drive = new SampleMecanumDrive(hardwareMap);
@@ -247,7 +248,7 @@ public class AUTOExtendingMeetLeft extends OpMode {
 
         sensor_servo = hardwareMap.get(Servo.class, "sensor_servo");
         odometry_forward.setPosition(0.54);
-        odometry_strafe.setPosition(0.25);
+        odometry_strafe.setPosition(0);
 
         //VoltageSensor voltageSensor = hardwareMap.voltageSensor.iterator().next();
 
@@ -265,7 +266,7 @@ public class AUTOExtendingMeetLeft extends OpMode {
         rotate_arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
         claw.setPosition(CLAW_HOLD);
-        tilt_claw.setPosition(0.0);
+        tilt_claw.setPosition(0.06);
 
         rotate_arm.setPower(1);
         tilt_arm.setPower(1);
@@ -418,7 +419,7 @@ public class AUTOExtendingMeetLeft extends OpMode {
                     distance_seen = colorsensor1.getDistance(DistanceUnit.INCH);
                     if (distance_seen <= 10) {
                         liftTimer.reset();
-                        RotateArmPosition = RotateArmPosition + 30;
+                        RotateArmPosition = RotateArmPosition;
                         RotateArmFinalPosition = RotateArmPosition;
                         liftState = LiftState.LIFT_DUNK;
                         break;
@@ -489,7 +490,7 @@ public class AUTOExtendingMeetLeft extends OpMode {
 
             case LIFT_DROPCYCLE:
                 tilt_arm.setTargetPosition(TILT_HIGH);
-                if (tilt_arm.getCurrentPosition() <= -200) {
+                if (tilt_arm.getCurrentPosition() <= -160) {
                     slide_extension.setTargetPosition(0);
                     sensor_servo.setPosition(0);
                     if (slide_extension.getCurrentPosition() <= 50) {
@@ -527,7 +528,7 @@ public class AUTOExtendingMeetLeft extends OpMode {
                     if (liftTimer.seconds() >= 0.4) {
                         claw.setPosition(CLAW_DEPOSIT);
                         cones_dropped += 1;
-                        TILT_LOW = TILT_LOW+60;
+                        TILT_LOW = TILT_LOW+50;
                         SLIDE_COLLECT = SLIDE_COLLECT + 2;
                         liftTimer.reset();
                         liftState = LiftState.LIFT_RETRACTSLIDE;

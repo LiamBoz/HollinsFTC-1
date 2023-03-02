@@ -76,16 +76,16 @@ public class colorsensortesting extends OpMode {
     @Override
     public void loop() {
 
-        if (gamepad1.a){
+        /*if (gamepad1.a){
             poleSearch = PoleSearch.POLE_FINISH;
         }
 
         switch (poleSearch){
             case POLE_BEGIN:
-/*                PoleSearchTimer.reset();
+*//*                PoleSearchTimer.reset();
                 rotate_arm.setTargetPosition(0);
                 slide_extension.setTargetPosition(430);
-                tilt_arm.setTargetPosition(-1580);*/
+                tilt_arm.setTargetPosition(-1580);*//*
                 if (gamepad1.b){
                     poleSearch = PoleSearch.POLE_SEARCH;
                     break;
@@ -110,7 +110,7 @@ public class colorsensortesting extends OpMode {
                 rotate_arm.setTargetPosition(0);
                 tilt_arm.setTargetPosition(0);
             }
-        }
+        }*/
 
 
 

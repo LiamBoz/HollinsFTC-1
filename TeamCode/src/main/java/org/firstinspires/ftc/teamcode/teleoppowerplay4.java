@@ -1,17 +1,19 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.outoftheboxrobotics.photoncore.PhotonCore;
+import com.qualcomm.hardware.bosch.BNO055IMU;
+import com.qualcomm.hardware.rev.RevBlinkinLedDriver;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.exception.RobotCoreException;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-@TeleOp(name="teleoppowerplay3", group="Iterative Opmode")
-public class teleoppowerplay3 extends OpMode {
+@TeleOp(name="teleoppowerplay4", group="Iterative Opmode")
+public class teleoppowerplay4 extends OpMode {
 
     public enum LiftState {
         LIFT_GRABNEW_SWING,
@@ -39,6 +41,7 @@ public class teleoppowerplay3 extends OpMode {
     private static DcMotor slide_extension;
     private DcMotor rotate_arm;
     private Servo sensor_servo;
+    private CRServo lights;
 
 
 //    public int rotate_collect = 1122;
@@ -54,16 +57,16 @@ public class teleoppowerplay3 extends OpMode {
 //    final double CLAWTILT_DEPOSIT = 0.72;
 
     // Values for HPRight are in the class defaults
-    public PickPlaceOptions HPRight = new PickPlaceOptions();
-    public PickPlaceOptions MPRight = new PickPlaceOptions();
-    public PickPlaceOptions LPRight = new PickPlaceOptions();
-    public PickPlaceOptions LP2Right = new PickPlaceOptions();
-    public PickPlaceOptions HPLeft = new PickPlaceOptions();
-    public PickPlaceOptions MPLeft = new PickPlaceOptions();
-    public PickPlaceOptions LPLeft = new PickPlaceOptions();
-    public PickPlaceOptions LP2Left = new PickPlaceOptions();
-    public PickPlaceOptions HPStackLeft = new PickPlaceOptions();
-    public PickPlaceOptions HPStackRight = new PickPlaceOptions();
+    public PickPlaceOptions2 HPRight = new PickPlaceOptions2();
+    public PickPlaceOptions2 MPRight = new PickPlaceOptions2();
+    public PickPlaceOptions2 LPRight = new PickPlaceOptions2();
+    public PickPlaceOptions2 LP2Right = new PickPlaceOptions2();
+    public PickPlaceOptions2 HPLeft = new PickPlaceOptions2();
+    public PickPlaceOptions2 MPLeft = new PickPlaceOptions2();
+    public PickPlaceOptions2 LPLeft = new PickPlaceOptions2();
+    public PickPlaceOptions2 LP2Left = new PickPlaceOptions2();
+    public PickPlaceOptions2 HPStackLeft = new PickPlaceOptions2();
+    public PickPlaceOptions2 HPStackRight = new PickPlaceOptions2();
 
 
 
@@ -72,7 +75,7 @@ public class teleoppowerplay3 extends OpMode {
 
 
 
-    public PickPlaceOptions ActiveOptions = HPRight;
+    public PickPlaceOptions2 ActiveOptions = HPRight;
 
     // set the values for LPRight
 
@@ -143,76 +146,86 @@ public class teleoppowerplay3 extends OpMode {
 
 
         MPRight.rotate_drop = -315;
-        MPRight.tilt_drop = -1100;
-        MPRight.slide_drop = 200;
-        MPRight.rotate_collect = 1122;
-        MPRight.slide_collect = 400;
-        MPRight.tilt_collect = 568;
-        MPRight.CLAWTILT_COLLECT = 0.55;
+        MPRight.tilt_drop = -1180;
+        MPRight.slide_drop = 235;
+        MPRight.rotate_collect = 1200;
+        MPRight.slide_collect = 500;
+        MPRight.tilt_collect = 458;
+        MPRight.CLAWTILT_COLLECT = 0.53;
+        MPRight.CLAWTILT_DROPHIGH = 0.61;
 
         LPRight.rotate_drop = -966;
-        LPRight.tilt_drop = -430;
+        LPRight.tilt_drop = -600;
         LPRight.slide_drop = 30;
-        LPRight.rotate_collect = 1122;
-        LPRight.slide_collect = 400;
-        LPRight.tilt_collect = 568;
-        LPRight.CLAWTILT_COLLECT = 0.55;
+        LPRight.rotate_collect = 1200;
+        LPRight.slide_collect = 500;
+        LPRight.tilt_collect = 458;
+        LPRight.CLAWTILT_COLLECT = 0.53;
+        LPRight.CLAWTILT_DROPHIGH = 0.46;
 
         LP2Right.rotate_drop = -312;
-        LP2Right.tilt_drop = -430;
+        LP2Right.tilt_drop = -600;
         LP2Right.slide_drop = 120;
-        LP2Right.rotate_collect = 1122;
-        LP2Right.slide_collect = 400;
-        LP2Right.tilt_collect = 568;
-        LP2Right.CLAWTILT_COLLECT = 0.55;
+        LP2Right.rotate_collect = 1200;
+        LP2Right.slide_collect = 500;
+        LP2Right.tilt_collect = 458;
+        LP2Right.CLAWTILT_COLLECT = 0.53;
+        LP2Right.CLAWTILT_DROPHIGH = 0.46;
 
         HPLeft.rotate_drop = -350;
-        HPLeft.tilt_drop = -1403;
+        HPLeft.tilt_drop = -1483;
         HPLeft.slide_drop = 402;
-        HPLeft.rotate_collect = -1182;
-        HPLeft.slide_collect = 400;
-        HPLeft.tilt_collect = 568;
-        HPLeft.CLAWTILT_COLLECT = 0.55;
+        HPLeft.rotate_collect = -1270;
+        HPLeft.slide_collect = 500;
+        HPLeft.tilt_collect = 458;
+        HPLeft.CLAWTILT_COLLECT = 0.53;
+        HPLeft.CLAWTILT_DROPHIGH = 0.61;
 
-        HPStackLeft.rotate_drop = -350;
-        HPStackLeft.tilt_drop = -1403;
+        HPStackLeft.rotate_drop = 220;
+        HPStackLeft.tilt_drop = -1520;
         HPStackLeft.slide_drop = 402;
         HPStackLeft.rotate_collect = -1286;
         HPStackLeft.slide_collect = 514;
         HPStackLeft.tilt_collect = 118;
-        HPStackLeft.CLAWTILT_COLLECT = 0.65;
+        HPStackLeft.CLAWTILT_COLLECT = 0.58;
+        HPStackLeft.CLAWTILT_DROPHIGH = 0.61;
 
-        HPStackRight.rotate_drop = -350;
-        HPStackRight.tilt_drop = -1403;
+        HPStackRight.rotate_drop = 220;
+        HPStackRight.tilt_drop = -1520;
         HPStackRight.slide_drop = 402;
         HPStackRight.rotate_collect = 1223;
         HPStackRight.slide_collect = 514;
         HPStackRight.tilt_collect = 118;
-        HPStackRight.CLAWTILT_COLLECT = 0.65;
+        HPStackRight.CLAWTILT_COLLECT = 0.58;
+        HPStackRight.CLAWTILT_DROPHIGH = 0.61;
+
 
         MPLeft.rotate_drop = 230;
-        MPLeft.tilt_drop = -972;
-        MPLeft.slide_drop = 200;
-        MPLeft.rotate_collect = -1182;
-        MPLeft.slide_collect = 400;
-        MPLeft.tilt_collect = 568;
-        MPLeft.CLAWTILT_COLLECT = 0.55;
+        MPLeft.tilt_drop = -1180;
+        MPLeft.slide_drop = 270;
+        MPLeft.rotate_collect = -1270;
+        MPLeft.slide_collect = 500;
+        MPLeft.tilt_collect = 458;
+        MPLeft.CLAWTILT_COLLECT = 0.53;
+        MPLeft.CLAWTILT_DROPHIGH = 0.61;
 
-        LPLeft.rotate_drop = 850;
-        LPLeft.tilt_drop = -489;
+        LPLeft.rotate_drop = 800;
+        LPLeft.tilt_drop = -600;
         LPLeft.slide_drop = 50;
-        LPLeft.rotate_collect = -1182;
-        LPLeft.slide_collect = 400;
-        LPLeft.tilt_collect = 568;
-        LPLeft.CLAWTILT_COLLECT = 0.55;
+        LPLeft.rotate_collect = -1270;
+        LPLeft.slide_collect = 500;
+        LPLeft.tilt_collect = 458;
+        LPLeft.CLAWTILT_COLLECT = 0.53;
+        LPLeft.CLAWTILT_DROPHIGH = 0.46;
 
         LP2Left.rotate_drop = 252;
-        LP2Left.tilt_drop = -489;
+        LP2Left.tilt_drop = -600;
         LP2Left.slide_drop = 126;
-        LP2Left.rotate_collect = -1182;
-        LP2Left.slide_collect = 400;
-        LP2Left.tilt_collect = 568;
-        LP2Left.CLAWTILT_COLLECT = 0.55;
+        LP2Left.rotate_collect = -1270;
+        LP2Left.slide_collect = 500;
+        LP2Left.tilt_collect = 458;
+        LP2Left.CLAWTILT_COLLECT = 0.53;
+        LP2Left.CLAWTILT_DROPHIGH = 0.46;
 
 /*        ElevatorBot.rotate_drop = -50;
         ElevatorBot.rotate_collect = -1244;
@@ -237,6 +250,7 @@ public class teleoppowerplay3 extends OpMode {
         odometry_forward = hardwareMap.get(Servo.class, "odometry_forward");
         odometry_strafe = hardwareMap.get(Servo.class, "odometry_strafe");
         sensor_servo = hardwareMap.get(Servo.class, "sensor_servo");
+        lights = hardwareMap.get(CRServo.class, "lights");
         slide_extension.setDirection(DcMotor.Direction.REVERSE);
 
         slide_extension.setTargetPosition(MinPositionTicks);
@@ -272,6 +286,7 @@ public class teleoppowerplay3 extends OpMode {
     public void loop() {
         //&& ActiveOptions.tilt_collect >= -50
         //&& ActiveOptions.tilt_collect <= 568
+            //lights.setPower(1);
 
 
         try {
@@ -431,17 +446,36 @@ public class teleoppowerplay3 extends OpMode {
                 liftState = LiftState.LIFT_GRABNEW_SWING;
 
             case LIFT_GRABNEW_SWING:
-                tilt_arm.setTargetPosition(ActiveOptions.tilt_collect);
-                ActiveOptions.slide_var = 0;
-                if (slide_extension.getCurrentPosition() <= 50) {
-                    claw.setPosition(ActiveOptions.CLAW_DEPOSIT);
-                    if (gamepad1.a){
-                        rotate_arm.setTargetPosition(ActiveOptions.rotate_collect);
-                        tilt_arm.setTargetPosition(ActiveOptions.tilt_collect);
-                        if (Math.abs(rotate_arm.getCurrentPosition() - ActiveOptions.rotate_collect) <= 30){
+                if (ActiveOptions == HPStackRight || ActiveOptions == HPStackLeft){
+                    tilt_arm.setTargetPosition(ActiveOptions.tilt_collect);
+                    ActiveOptions.slide_var = 0;
+                    if (slide_extension.getCurrentPosition() <= 50) {
+                        claw.setPosition(ActiveOptions.CLAW_DEPOSIT);
+                        if (gamepad1.a){
+                            rotate_arm.setTargetPosition(ActiveOptions.rotate_collect);
+                            tilt_arm.setTargetPosition(ActiveOptions.tilt_collect);
                             tilt_claw.setPosition(ActiveOptions.CLAWTILT_COLLECT);
-                            slide_extension.setTargetPosition(ActiveOptions.slide_collect);
-                            liftState = LiftState.LIFT_GRABNEW_GRAB;
+                            if (Math.abs(rotate_arm.getCurrentPosition() - ActiveOptions.rotate_collect) <= 30){
+                                slide_extension.setTargetPosition(ActiveOptions.slide_collect);
+                                liftState = LiftState.LIFT_GRABNEW_GRAB;
+                            }
+                        }
+                    }
+
+                }
+                else {
+                    tilt_arm.setTargetPosition(ActiveOptions.tilt_collect);
+                    ActiveOptions.slide_var = 0;
+                    if (slide_extension.getCurrentPosition() <= 50) {
+                        claw.setPosition(ActiveOptions.CLAW_DEPOSIT);
+                        if (gamepad1.a) {
+                            rotate_arm.setTargetPosition(ActiveOptions.rotate_collect);
+                            tilt_arm.setTargetPosition(ActiveOptions.tilt_collect);
+                            if (Math.abs(rotate_arm.getCurrentPosition() - ActiveOptions.rotate_collect) <= 30) {
+                                tilt_claw.setPosition(ActiveOptions.CLAWTILT_COLLECT);
+                                slide_extension.setTargetPosition(ActiveOptions.slide_collect);
+                                liftState = LiftState.LIFT_GRABNEW_GRAB;
+                            }
                         }
                     }
                 }
@@ -568,33 +602,44 @@ public class teleoppowerplay3 extends OpMode {
 
             case LIFT_DROPCONE:
                 if (ActiveOptions == HPStackRight || ActiveOptions == HPStackLeft) {
-                    tilt_arm.setTargetPosition(ActiveOptions.tilt_collect - 200);
-                    if (Math.abs(tilt_arm.getCurrentPosition() - (ActiveOptions.tilt_collect - 200)) <= 30){
+                    tilt_arm.setTargetPosition(ActiveOptions.tilt_collect - 300);
+                    tilt_claw.setPosition(0.4);
+                    if (Math.abs(tilt_arm.getCurrentPosition() - (ActiveOptions.tilt_collect - 300)) <= 30){
                     slide_extension.setTargetPosition(SLIDE_SWING);
-                    tilt_claw.setPosition(0.36);
-                    if (slide_extension.getCurrentPosition() <= 30) {
-                        tilt_arm.setTargetPosition(ActiveOptions.tilt_drop);
-                        rotate_arm.setTargetPosition(ActiveOptions.rotate_drop);
-                        if (Math.abs(tilt_arm.getCurrentPosition() - ActiveOptions.tilt_drop) <= 100 && Math.abs(rotate_arm.getCurrentPosition() - ActiveOptions.rotate_drop) <= 100 && gamepad1.a) {
-                            tilt_claw.setPosition(ActiveOptions.CLAWTILT_DEPOSIT);
-                            liftState = LiftState.LIFT_EXTENDSLIDE;
-                        }
-                    }
+                    //tilt_claw.setPosition(ActiveOptions.CLAWTILT_DROPHIGH);
+                    liftState = LiftState.LIFT_DROPCONEMEDIUM;
                 }
                 }
                 else{
                         slide_extension.setTargetPosition(SLIDE_SWING);
                         tilt_arm.setTargetPosition(ActiveOptions.tilt_drop);
-                    tilt_claw.setPosition(0.36);
+                    //tilt_claw.setPosition(ActiveOptions.CLAWTILT_DEPOSIT);
                         if (slide_extension.getCurrentPosition() <= 30) {
                             tilt_arm.setTargetPosition(ActiveOptions.tilt_drop);
                             rotate_arm.setTargetPosition(ActiveOptions.rotate_drop);
+                            tilt_claw.setPosition(ActiveOptions.CLAWTILT_DROPHIGH);
+/*                            if (Math.abs(tilt_arm.getCurrentPosition() - ActiveOptions.tilt_drop) <= 100 && Math.abs(rotate_arm.getCurrentPosition() - ActiveOptions.rotate_drop) <= 100){
+                                tilt_claw.setPosition(ActiveOptions.CLAWTILT_DEPOSIT);*/
                             if (Math.abs(tilt_arm.getCurrentPosition() - ActiveOptions.tilt_drop) <= 100 && Math.abs(rotate_arm.getCurrentPosition() - ActiveOptions.rotate_drop) <= 100 && gamepad1.a) {
                                 liftState = LiftState.LIFT_EXTENDSLIDE;
+                            //}
                             }
                         }
                     }
                 break;
+
+            case LIFT_DROPCONEMEDIUM:
+                if (slide_extension.getCurrentPosition() <= 30) {
+                    tilt_claw.setPosition(ActiveOptions.CLAWTILT_DEPOSIT);
+                    tilt_arm.setTargetPosition(ActiveOptions.tilt_drop);
+                    rotate_arm.setTargetPosition(ActiveOptions.rotate_drop);
+                    if (Math.abs(tilt_arm.getCurrentPosition() - ActiveOptions.tilt_drop) <= 100 && Math.abs(rotate_arm.getCurrentPosition() - ActiveOptions.rotate_drop) <= 100 && gamepad1.a) {
+                        tilt_claw.setPosition(ActiveOptions.CLAWTILT_DEPOSIT);
+                        liftState = LiftState.LIFT_EXTENDSLIDE;
+                    }
+                }
+                break;
+
             case LIFT_EXTENDSLIDE:
                 slide_extension.setTargetPosition(ActiveOptions.slide_drop);
                 rotate_arm.setTargetPosition(ActiveOptions.rotate_drop);
