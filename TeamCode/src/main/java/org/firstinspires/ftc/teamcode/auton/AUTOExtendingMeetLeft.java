@@ -185,11 +185,11 @@ public class AUTOExtendingMeetLeft extends OpMode {
     boolean FailSafe2 = true;
 
     final double CLAW_HOLD = 0.0; // the idle position for the dump servo
-    final double CLAW_DEPOSIT = 0.35; // the dumping position for the dump servo
+    final double CLAW_DEPOSIT = 0.2; // the dumping position for the dump servo
 
     final double CLAWTILT_END = 0.19;
-    final double CLAWTILT_COLLECT = 0.50;
-    final double CLAWTILT_DEPOSIT = .61;
+    final double CLAWTILT_COLLECT = 0.53;
+    final double CLAWTILT_DEPOSIT = .55;
 
     boolean switchvar = false;
     boolean epic = true;
@@ -315,7 +315,7 @@ public class AUTOExtendingMeetLeft extends OpMode {
                 //.strafeLeft(3.7)
                 .build();
 
-        sensor_servo.setPosition(0.6);
+        sensor_servo.setPosition(0.7);
 
         init_loop();
         drive.followTrajectorySequenceAsync(BlueOnRedGoCycle);
@@ -417,7 +417,7 @@ public class AUTOExtendingMeetLeft extends OpMode {
                     rotate_arm.setTargetPosition((int) RotateArmPosition);
                     // add 0.3 second pause
                     distance_seen = colorsensor1.getDistance(DistanceUnit.INCH);
-                    if (distance_seen <= 10) {
+                    if (distance_seen <= 4) {
                         liftTimer.reset();
                         RotateArmPosition = RotateArmPosition;
                         RotateArmFinalPosition = RotateArmPosition;
@@ -444,9 +444,9 @@ public class AUTOExtendingMeetLeft extends OpMode {
                     RotateArmOffset = 100 * PoleSearchTimer.seconds();
                     RotateArmPosition = RotateArmBegin - RotateArmOffset;
                     distance_seen = colorsensor1.getDistance(DistanceUnit.INCH);
-                    if (distance_seen <= 15) {
+                    if (distance_seen <= 10) {
                         liftTimer.reset();
-                        RotateArmPosition = RotateArmPosition - 30;
+                        RotateArmPosition = RotateArmPosition;
                         RotateArmFinalPosition = RotateArmPosition;
                         liftState = LiftState.LIFT_DUNK;
                         break;
@@ -503,7 +503,7 @@ public class AUTOExtendingMeetLeft extends OpMode {
                 if (Math.abs(rotate_arm.getCurrentPosition()) - ROTATE_COLLECT <= 50 && Math.abs(tilt_arm.getCurrentPosition() - TILT_LOW) <= 50) {
                     slide_extension.setTargetPosition(SLIDE_COLLECT);
                     //tilt_claw.setPosition(0.50);
-                    if (slide_extension.getCurrentPosition() >= (SLIDE_COLLECT - 120)) {
+                    if (slide_extension.getCurrentPosition() >= (SLIDE_COLLECT - 10)) {
                         claw.setPosition(CLAW_HOLD);
                         liftTimer.reset();
                         liftState = LiftState.LIFT_HOLD;
@@ -513,7 +513,7 @@ public class AUTOExtendingMeetLeft extends OpMode {
 
             case LIFT_HOLD:
 
-                if (liftTimer.seconds() >= 0.4) {
+                if (liftTimer.seconds() >= 0.2) {
                     slide_extension.setTargetPosition(SLIDE_COLLECT - 30);
                     //tilt_claw.setPosition(0.40);
                     liftState = LiftState.LIFT_DROPCYCLE;
@@ -543,7 +543,7 @@ public class AUTOExtendingMeetLeft extends OpMode {
                 }
                 break;
             case LIFT_RETRACTSLIDE:
-                tilt_claw.setPosition(CLAWTILT_DEPOSIT);
+                tilt_claw.setPosition(CLAWTILT_COLLECT);
                 slide_extension.setTargetPosition(SLIDE_LOW);
                 if (slide_extension.getCurrentPosition() <= 150) {
                     liftTimer.reset();

@@ -189,11 +189,11 @@ public class AUTOExtendingMeetRight extends OpMode {
     boolean FailSafe2 = true;
 
     final double CLAW_HOLD = 0.0; // the idle position for the dump servo
-    final double CLAW_DEPOSIT = 0.35; // the dumping position for the dump servo
+    final double CLAW_DEPOSIT = 0.22; // the dumping position for the dump servo
 
     final double CLAWTILT_END = 0.19;
-    public static final double CLAWTILT_COLLECT = 0.59;
-    public static final double CLAWTILT_DEPOSIT = .61;
+    public static final double CLAWTILT_COLLECT = 0.53;
+    public static final double CLAWTILT_DEPOSIT = .55;
 
     boolean switchvar = false;
     boolean epic = true;
@@ -210,7 +210,7 @@ public class AUTOExtendingMeetRight extends OpMode {
     public static int SLIDE_DROPOFF = 410;
 
     // TODO: find encoder values for tilt
-    private int TILT_LOW = 10;
+    private int TILT_LOW = 50;
     public static int TILT_HIGH = -1570;
     //public int TILT_DECREMENT = 435;
 
@@ -270,7 +270,7 @@ public class AUTOExtendingMeetRight extends OpMode {
         rotate_arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
         claw.setPosition(CLAW_HOLD);
-        tilt_claw.setPosition(0.06);
+        tilt_claw.setPosition(0.00);
 
         rotate_arm.setPower(1);
         tilt_arm.setPower(1);
@@ -526,7 +526,7 @@ public class AUTOExtendingMeetRight extends OpMode {
                 break;
 
             case LIFT_HOLD:
-                if (liftTimer.seconds() >= 0.4) {
+                if (liftTimer.seconds() >= 0.2) {
                     slide_extension.setTargetPosition(SLIDE_COLLECT - 40);
                     liftState = LiftState.LIFT_DROPCYCLE;
                 }
@@ -597,7 +597,7 @@ public class AUTOExtendingMeetRight extends OpMode {
                 FailSafeTimer.reset();
                 drive.update();
                 slide_extension.setTargetPosition(0);
-                tilt_claw.setPosition(0.34);
+                tilt_claw.setPosition(0.3);
                 if (liftTimer.seconds() >= 0.5) {
                     rotate_arm.setPower(1);
                     rotate_arm.setTargetPosition(0);

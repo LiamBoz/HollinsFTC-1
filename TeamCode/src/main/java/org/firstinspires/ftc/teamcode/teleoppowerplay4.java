@@ -151,8 +151,8 @@ public class teleoppowerplay4 extends OpMode {
         MPRight.rotate_collect = 1200;
         MPRight.slide_collect = 500;
         MPRight.tilt_collect = 458;
-        MPRight.CLAWTILT_COLLECT = 0.53;
-        MPRight.CLAWTILT_DROPHIGH = 0.61;
+        MPRight.CLAWTILT_COLLECT = 0.48;
+        MPRight.CLAWTILT_DROPHIGH = 0.57;
 
         LPRight.rotate_drop = -966;
         LPRight.tilt_drop = -600;
@@ -160,8 +160,8 @@ public class teleoppowerplay4 extends OpMode {
         LPRight.rotate_collect = 1200;
         LPRight.slide_collect = 500;
         LPRight.tilt_collect = 458;
-        LPRight.CLAWTILT_COLLECT = 0.53;
-        LPRight.CLAWTILT_DROPHIGH = 0.46;
+        LPRight.CLAWTILT_COLLECT = 0.48;
+        LPRight.CLAWTILT_DROPHIGH = 0.41;
 
         LP2Right.rotate_drop = -312;
         LP2Right.tilt_drop = -600;
@@ -169,8 +169,8 @@ public class teleoppowerplay4 extends OpMode {
         LP2Right.rotate_collect = 1200;
         LP2Right.slide_collect = 500;
         LP2Right.tilt_collect = 458;
-        LP2Right.CLAWTILT_COLLECT = 0.53;
-        LP2Right.CLAWTILT_DROPHIGH = 0.46;
+        LP2Right.CLAWTILT_COLLECT = 0.48;
+        LP2Right.CLAWTILT_DROPHIGH = 0.41;
 
         HPLeft.rotate_drop = -350;
         HPLeft.tilt_drop = -1483;
@@ -178,8 +178,8 @@ public class teleoppowerplay4 extends OpMode {
         HPLeft.rotate_collect = -1270;
         HPLeft.slide_collect = 500;
         HPLeft.tilt_collect = 458;
-        HPLeft.CLAWTILT_COLLECT = 0.53;
-        HPLeft.CLAWTILT_DROPHIGH = 0.61;
+        HPLeft.CLAWTILT_COLLECT = 0.48;
+        HPLeft.CLAWTILT_DROPHIGH = 0.57;
 
         HPStackLeft.rotate_drop = 220;
         HPStackLeft.tilt_drop = -1520;
@@ -187,8 +187,8 @@ public class teleoppowerplay4 extends OpMode {
         HPStackLeft.rotate_collect = -1286;
         HPStackLeft.slide_collect = 514;
         HPStackLeft.tilt_collect = 118;
-        HPStackLeft.CLAWTILT_COLLECT = 0.58;
-        HPStackLeft.CLAWTILT_DROPHIGH = 0.61;
+        HPStackLeft.CLAWTILT_COLLECT = 0.54;
+        HPStackLeft.CLAWTILT_DROPHIGH = 0.57;
 
         HPStackRight.rotate_drop = 220;
         HPStackRight.tilt_drop = -1520;
@@ -196,8 +196,8 @@ public class teleoppowerplay4 extends OpMode {
         HPStackRight.rotate_collect = 1223;
         HPStackRight.slide_collect = 514;
         HPStackRight.tilt_collect = 118;
-        HPStackRight.CLAWTILT_COLLECT = 0.58;
-        HPStackRight.CLAWTILT_DROPHIGH = 0.61;
+        HPStackRight.CLAWTILT_COLLECT = 0.54;
+        HPStackRight.CLAWTILT_DROPHIGH = 0.57;
 
 
         MPLeft.rotate_drop = 230;
@@ -206,8 +206,8 @@ public class teleoppowerplay4 extends OpMode {
         MPLeft.rotate_collect = -1270;
         MPLeft.slide_collect = 500;
         MPLeft.tilt_collect = 458;
-        MPLeft.CLAWTILT_COLLECT = 0.53;
-        MPLeft.CLAWTILT_DROPHIGH = 0.61;
+        MPLeft.CLAWTILT_COLLECT = 0.48;
+        MPLeft.CLAWTILT_DROPHIGH = 0.57;
 
         LPLeft.rotate_drop = 800;
         LPLeft.tilt_drop = -600;
@@ -215,8 +215,8 @@ public class teleoppowerplay4 extends OpMode {
         LPLeft.rotate_collect = -1270;
         LPLeft.slide_collect = 500;
         LPLeft.tilt_collect = 458;
-        LPLeft.CLAWTILT_COLLECT = 0.53;
-        LPLeft.CLAWTILT_DROPHIGH = 0.46;
+        LPLeft.CLAWTILT_COLLECT = 0.48;
+        LPLeft.CLAWTILT_DROPHIGH = 0.41;
 
         LP2Left.rotate_drop = 252;
         LP2Left.tilt_drop = -600;
@@ -224,8 +224,8 @@ public class teleoppowerplay4 extends OpMode {
         LP2Left.rotate_collect = -1270;
         LP2Left.slide_collect = 500;
         LP2Left.tilt_collect = 458;
-        LP2Left.CLAWTILT_COLLECT = 0.53;
-        LP2Left.CLAWTILT_DROPHIGH = 0.46;
+        LP2Left.CLAWTILT_COLLECT = 0.48;
+        LP2Left.CLAWTILT_DROPHIGH = 0.41;
 
 /*        ElevatorBot.rotate_drop = -50;
         ElevatorBot.rotate_collect = -1244;

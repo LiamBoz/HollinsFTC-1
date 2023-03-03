@@ -21,7 +21,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.colorsensortesting;
-import org.firstinspires.ftc.teamcode.drive.SampleMecanumDriveTwo;
+import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 import org.openftc.apriltag.AprilTagDetection;
 import org.openftc.easyopencv.OpenCvCamera;
@@ -33,10 +33,9 @@ import java.util.ArrayList;
 
 // adb connect 192.168.43.1:5555
 
-
 @Config
-@Autonomous(name="RightSideOnePlusTen")
-public class RightSideOnePlusTen extends OpMode {
+@Autonomous(name="MediumPoleRight")
+public class MediumPoleRight extends OpMode {
 
     public void init_loop(){
         {
@@ -160,8 +159,6 @@ public class RightSideOnePlusTen extends OpMode {
     TrajectorySequence BlueOnRedGoRight;
     TrajectorySequence BlueOnRedGoLeft;
     TrajectorySequence BlueOnRedGoCycle;
-    TrajectorySequence GoForward;
-    TrajectorySequence GoBack;
 
     DistanceSensor colorsensor1;
 
@@ -183,7 +180,7 @@ public class RightSideOnePlusTen extends OpMode {
     ElapsedTime FailSafeTimer = new ElapsedTime();
     ElapsedTime PoleSearchTimer = new ElapsedTime();
 
-    SampleMecanumDriveTwo drive;
+    SampleMecanumDrive drive;
 
     int cones_dropped = 0;
     int CONES_DESIRED = 4;
@@ -192,11 +189,11 @@ public class RightSideOnePlusTen extends OpMode {
     boolean FailSafe2 = true;
 
     final double CLAW_HOLD = 0.0; // the idle position for the dump servo
-    final double CLAW_DEPOSIT = 0.2; // the dumping position for the dump servo
+    final double CLAW_DEPOSIT = 0.22; // the dumping position for the dump servo
 
     final double CLAWTILT_END = 0.19;
-    final double CLAWTILT_COLLECT = 0.53;
-    final double CLAWTILT_DEPOSIT = .55;
+    public static final double CLAWTILT_COLLECT = 0.53;
+    public static final double CLAWTILT_DEPOSIT = .55;
 
     boolean switchvar = false;
     boolean epic = true;
@@ -208,26 +205,25 @@ public class RightSideOnePlusTen extends OpMode {
 
     double distance_seen = 0.0; // telemetry of the distance sensor
 
-    final int SLIDE_LOW = 0; // the low encoder position for the lift
-    private int SLIDE_COLLECT = 504; // the high encoder position for the lift
-    public static int SLIDE_DROPOFF = 530;
-    final int SLIDE_MOVEMENT = 1125; // the slide retraction for when rotating
+    public static final int SLIDE_LOW = 0; // the low encoder position for the lift
+    private int SLIDE_COLLECT = 500; // the high encoder position for the lift
+    public static int SLIDE_DROPOFF = 253;
 
     // TODO: find encoder values for tilt
-    private int TILT_LOW = -40;
-    public static int TILT_HIGH = -1403;
+    private int TILT_LOW = 80;
+    public static int TILT_HIGH = -1084;
     //public int TILT_DECREMENT = 435;
 
     // TODO: find encoder values for rotation
-    final int ROTATE_COLLECT = -20;
+    public static int ROTATE_COLLECT = 1826;
     final int ROTATE_DROP = 587;
 
-    final int ROTATE_PAST = 375;
+    final int ROTATE_PAST = 600;
 
-    double RotateArmBegin = -1050;
+    double RotateArmBegin = 937;
     double RotateArmPosition = RotateArmBegin;
     double RotateArmOffset = 0;
-    double RotateArmFinalPosition = -1050;
+    double RotateArmFinalPosition = 937;
 
     //public TrajectorySequence VariablePath;
 
@@ -239,7 +235,7 @@ public class RightSideOnePlusTen extends OpMode {
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
 
 
-        drive = new SampleMecanumDriveTwo(hardwareMap);
+        drive = new SampleMecanumDrive(hardwareMap);
 
         drive.setPoseEstimate(new Pose2d(0, 0, Math.toRadians(270)));
 
@@ -256,7 +252,7 @@ public class RightSideOnePlusTen extends OpMode {
 
         sensor_servo = hardwareMap.get(Servo.class, "sensor_servo");
         odometry_forward.setPosition(0.54);
-        odometry_strafe.setPosition(0.25);
+        odometry_strafe.setPosition(0.0);
 
         //VoltageSensor voltageSensor = hardwareMap.voltageSensor.iterator().next();
 
@@ -274,7 +270,7 @@ public class RightSideOnePlusTen extends OpMode {
         rotate_arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
         claw.setPosition(CLAW_HOLD);
-        tilt_claw.setPosition(0.06);
+        tilt_claw.setPosition(0.00);
 
         rotate_arm.setPower(1);
         tilt_arm.setPower(1);
@@ -309,34 +305,23 @@ public class RightSideOnePlusTen extends OpMode {
         //while (tagOfInterest == null)
 
 
-        BlueOnRedGoRight = drive.trajectorySequenceBuilder(new Pose2d(0,-49, Math.toRadians(270)))
+        BlueOnRedGoRight = drive.trajectorySequenceBuilder(new Pose2d(0,-52, Math.toRadians(270)))
                 .strafeRight(26)
                 .build();
-        BlueOnRedGoLeft = drive.trajectorySequenceBuilder(new Pose2d(0,-49, Math.toRadians(270)))
+        BlueOnRedGoLeft = drive.trajectorySequenceBuilder(new Pose2d(0,-52, Math.toRadians(270)))
                 .strafeLeft(23)
-                .build();
-        GoForward = drive.trajectorySequenceBuilder(new Pose2d(16, -49, Math.toRadians(180)))
-                .forward(16)
-                .build();
-        GoBack = drive.trajectorySequenceBuilder(new Pose2d(0, -49, Math.toRadians(180)))
-                .back(16)
                 .build();
 
         BlueOnRedGoCycle = drive.trajectorySequenceBuilder(new Pose2d(0, 0, Math.toRadians(270)))
-                //.splineToConstantHeading(new Vector2d(0,42), Math.toRadians(90))
-                //.splineToSplineHeading(new Pose2d(0, 50), Math.toRadians(180))
-                //.setReversed(true)
-                //.splineToConstantHeading(new Vector2d(13, -50), Math.toRadians(90))
-                //.back(13)
-                //.build().
-                .splineToConstantHeading(new Vector2d(0, -49), Math.toRadians(270))
-                .turn(Math.toRadians(-90))
-                //.splineToLinearHeading(new Pose2d(0,-49), Math.toRadians(180))
-                .back(16)
+                //.lineTo(new Vector2d(0,-32))
+                //.lineTo(new Vector2d(0,-48))
+                .splineToConstantHeading(new Vector2d(0, -52), Math.toRadians(270))
+                .waitSeconds(30)
+                .forward(30)
+                //.strafeLeft(3.7)
                 .build();
 
-
-        sensor_servo.setPosition(0.58);
+        sensor_servo.setPosition(0.7);
 
         init_loop();
         drive.followTrajectorySequenceAsync(BlueOnRedGoCycle);
@@ -356,7 +341,7 @@ public class RightSideOnePlusTen extends OpMode {
             FailSafe = false;
         }
 
-        if (FailSafeTimer.seconds() >= 28){
+        if (FailSafeTimer.seconds() >= 27.5){
             liftState = LiftState.PARKING_STATE;
         }
 
@@ -370,13 +355,14 @@ public class RightSideOnePlusTen extends OpMode {
         //telemetry.addData("heading", poseEstimate.getHeading());
         telemetry.addData("encoder ticks for slide",slide_extension.getCurrentPosition());
         telemetry.addData("encoder ticks for tilt",tilt_arm.getCurrentPosition());
-        telemetry.addData("rotation ticks", rotate_arm.getCurrentPosition());
         telemetry.addData("claw position", claw.getPosition());
         telemetry.addData("claw tilt", tilt_claw.getPosition());
         telemetry.addData("timer",liftTimer.seconds());
         telemetry.addData("liftstate", liftState);
         telemetry.addData("cones dropped", cones_dropped);
         telemetry.addData("failsafe timer", FailSafeTimer.seconds());
+        telemetry.addData("rotation ticks", rotate_arm.getCurrentPosition());
+        telemetry.addData("rotate arm target pos",(int)RotateArmFinalPosition);
         //telemetry.addData("movedForward", movedForward);
         //telemetry.addData("tag location", tagOfInterest.id);
         telemetry.addData("drive", drive.isBusy());
@@ -419,9 +405,10 @@ public class RightSideOnePlusTen extends OpMode {
             case LIFT_STARTDROP:
                 tilt_arm.setTargetPosition(TILT_HIGH);
                 rotate_arm.setTargetPosition((int)RotateArmFinalPosition);
-                if (Math.abs(rotate_arm.getCurrentPosition() - (int)RotateArmFinalPosition) <= 50 && drive.getPoseEstimate().getX() >= 13) {
+                // 275 is pole
+                if (Math.abs(rotate_arm.getCurrentPosition() - (int)RotateArmFinalPosition) <= 50 && switchvar) {
                     slide_extension.setTargetPosition(SLIDE_DROPOFF);
-                    if ((Math.abs(slide_extension.getCurrentPosition() - SLIDE_DROPOFF) <= 100) && (Math.abs(tilt_arm.getCurrentPosition() - TILT_HIGH) <= 100)) {
+                    if ((Math.abs(slide_extension.getCurrentPosition() - SLIDE_DROPOFF) <= 10) && (Math.abs(tilt_arm.getCurrentPosition() - TILT_HIGH) <= 30)) {
                         liftTimer.reset();
                         PoleSearchTimer.reset();
                         liftState = LiftState.LIFT_POLESEARCH;
@@ -437,14 +424,14 @@ public class RightSideOnePlusTen extends OpMode {
                     rotate_arm.setTargetPosition((int) RotateArmPosition);
                     // add 0.3 second pause
                     distance_seen = colorsensor1.getDistance(DistanceUnit.INCH);
-                    if (distance_seen <= 8) {
+                    if (distance_seen <= 4) {
                         liftTimer.reset();
-                        RotateArmPosition = RotateArmPosition;
+                        RotateArmPosition = RotateArmPosition + 0;
                         RotateArmFinalPosition = RotateArmPosition;
                         liftState = LiftState.LIFT_DUNK;
                         break;
                     }
-                    if (RotateArmPosition < -1200) {
+                    if (RotateArmPosition < 600) {
                         PoleSearchTimer.reset();
                         //slide_extension.setTargetPosition(SLIDE_DROPOFF + 5);
                         RotateArmBegin = RotateArmPosition;
@@ -464,20 +451,20 @@ public class RightSideOnePlusTen extends OpMode {
                     RotateArmOffset = 100 * PoleSearchTimer.seconds();
                     RotateArmPosition = RotateArmBegin + RotateArmOffset;
                     distance_seen = colorsensor1.getDistance(DistanceUnit.INCH);
-                    if (distance_seen <= 8) {
+                    if (distance_seen <= 10) {
                         liftTimer.reset();
                         RotateArmPosition = RotateArmPosition + 0;
                         RotateArmFinalPosition = RotateArmPosition;
                         liftState = LiftState.LIFT_DUNK;
                         break;
                     }
-/*                    else if (RotateArmPosition >= ROTATE_PAST){
-                        RotateArmFinalPosition = 275;
-                        rotate_arm.setTargetPosition(275);
+                    else if (RotateArmPosition >= ROTATE_PAST){
+                        RotateArmFinalPosition = 900;
+                        rotate_arm.setTargetPosition(900);
                         CONES_DESIRED = CONES_DESIRED - 1;
                         liftState = LiftState.LIFT_DUNK;
 
-                    }*/
+                    }
 
                 }
                 else {
@@ -487,14 +474,10 @@ public class RightSideOnePlusTen extends OpMode {
                 break;
             }
             case LIFT_DUNK:
-                if ((Math.abs(rotate_arm.getCurrentPosition() - RotateArmFinalPosition) <= 8) && (Math.abs(slide_extension.getCurrentPosition() - SLIDE_DROPOFF) <= 20)) {
-                    // if (liftTimer.seconds() > 0.3){
-                    tilt_claw.setPosition(CLAWTILT_DEPOSIT + 0.2);
-                    epic = false;
-                    liftTimer.reset();
-                    liftState = LiftState.LIFT_INC;
-                    break;
-                }
+                // if (liftTimer.seconds() > 0.3){
+                tilt_claw.setPosition(CLAWTILT_DEPOSIT+0.2);
+                epic = false;
+                liftState = LiftState.LIFT_INC;
                 break;
             //   }
 
@@ -514,20 +497,27 @@ public class RightSideOnePlusTen extends OpMode {
 
             case LIFT_DROPCYCLE:
                 tilt_arm.setTargetPosition(TILT_HIGH);
+                //tilt_claw.setPosition(CLAWTILT_DEPOSIT);
                 if (tilt_arm.getCurrentPosition() <= -120) {
                     slide_extension.setTargetPosition(0);
                     sensor_servo.setPosition(0);
                     if (slide_extension.getCurrentPosition() <= 50) {
-                        drive.followTrajectorySequenceAsync(GoBack);
+                        liftState = LiftState.LIFT_TILTTHECLAW;
+                    }
+                }
+                else if (cones_dropped >= 5){
+                    slide_extension.setTargetPosition(0);
+                    sensor_servo.setPosition(0);
+                    if (slide_extension.getCurrentPosition() <= 50) {
                         liftState = LiftState.LIFT_TILTTHECLAW;
                     }
                 }
                 break;
 
             case LIFT_GETNEW:
-                if (Math.abs(rotate_arm.getCurrentPosition() - ROTATE_COLLECT) <= 50 && Math.abs(tilt_arm.getCurrentPosition() - TILT_LOW) <= 50) {
+                if (Math.abs(rotate_arm.getCurrentPosition()) - ROTATE_COLLECT <= 50 && Math.abs(tilt_arm.getCurrentPosition() - TILT_LOW) <= 50) {
                     slide_extension.setTargetPosition(SLIDE_COLLECT);
-                    if (slide_extension.getCurrentPosition() >= (SLIDE_COLLECT - 50)) {
+                    if (slide_extension.getCurrentPosition() >= (SLIDE_COLLECT - 10)) {
                         claw.setPosition(CLAW_HOLD);
                         liftTimer.reset();
                         liftState = LiftState.LIFT_HOLD;
@@ -536,8 +526,10 @@ public class RightSideOnePlusTen extends OpMode {
                 break;
 
             case LIFT_HOLD:
+                if (liftTimer.seconds() >= 0.2) {
                     slide_extension.setTargetPosition(SLIDE_COLLECT - 40);
                     liftState = LiftState.LIFT_DROPCYCLE;
+                }
                 break;
 
             case LIFT_INC:
@@ -545,26 +537,25 @@ public class RightSideOnePlusTen extends OpMode {
                     if (liftTimer.seconds() >= 0.4) {
                         claw.setPosition(CLAW_DEPOSIT);
                         cones_dropped += 1;
-                        TILT_LOW = TILT_LOW+60;
-                        SLIDE_COLLECT = SLIDE_COLLECT + 2;
-                        drive.followTrajectorySequenceAsync(GoForward);
+                        TILT_LOW = TILT_LOW+50;
+                        SLIDE_COLLECT = SLIDE_COLLECT + 7;
+                        liftTimer.reset();
                         liftState = LiftState.LIFT_RETRACTSLIDE;
                     }
                 }
                 else {
                     if (liftTimer.seconds() >= 0.4) {
                         claw.setPosition(CLAW_DEPOSIT);
+                        liftTimer.reset();
                         liftState = LiftState.PARKING_STATE;
                     }
                 }
                 break;
             case LIFT_RETRACTSLIDE:
-                liftTimer.reset();
-                tilt_claw.setPosition(CLAWTILT_DEPOSIT);
                 slide_extension.setTargetPosition(SLIDE_LOW);
-                //drive.update();
                 if (slide_extension.getCurrentPosition() <= 150) {
                     liftTimer.reset();
+                    tilt_claw.setPosition(CLAWTILT_COLLECT);
                     tilt_arm.setTargetPosition(TILT_LOW);
                     rotate_arm.setTargetPosition(ROTATE_COLLECT);
                     liftState = LiftState.LIFT_GETNEW;
@@ -574,7 +565,7 @@ public class RightSideOnePlusTen extends OpMode {
                 liftTimer.reset();
                 FailSafeTimer.reset();
                 slide_extension.setTargetPosition(0);
-                tilt_claw.setPosition(0.34);
+                tilt_claw.setPosition(CLAWTILT_END);
                 // Use the parkingTag here - it must be at least LEFT if no tag was seen
                 if (parkingTag == LEFT){ //&& cones_dropped >= CONES_DESIRED) {
 
@@ -606,7 +597,7 @@ public class RightSideOnePlusTen extends OpMode {
                 FailSafeTimer.reset();
                 drive.update();
                 slide_extension.setTargetPosition(0);
-                tilt_claw.setPosition(0.34);
+                tilt_claw.setPosition(0.3);
                 if (liftTimer.seconds() >= 0.5) {
                     rotate_arm.setPower(1);
                     rotate_arm.setTargetPosition(0);
