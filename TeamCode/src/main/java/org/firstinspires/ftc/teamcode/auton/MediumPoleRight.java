@@ -207,10 +207,10 @@ public class MediumPoleRight extends OpMode {
 
     public static final int SLIDE_LOW = 0; // the low encoder position for the lift
     private int SLIDE_COLLECT = 500; // the high encoder position for the lift
-    public static int SLIDE_DROPOFF = 253;
+    public static int SLIDE_DROPOFF = 230;
 
     // TODO: find encoder values for tilt
-    private int TILT_LOW = 80;
+    private int TILT_LOW = 30;
     public static int TILT_HIGH = -1084;
     //public int TILT_DECREMENT = 435;
 
@@ -321,7 +321,7 @@ public class MediumPoleRight extends OpMode {
                 //.strafeLeft(3.7)
                 .build();
 
-        sensor_servo.setPosition(0.7);
+        sensor_servo.setPosition(0.68);
 
         init_loop();
         drive.followTrajectorySequenceAsync(BlueOnRedGoCycle);
@@ -424,7 +424,7 @@ public class MediumPoleRight extends OpMode {
                     rotate_arm.setTargetPosition((int) RotateArmPosition);
                     // add 0.3 second pause
                     distance_seen = colorsensor1.getDistance(DistanceUnit.INCH);
-                    if (distance_seen <= 4) {
+                    if (distance_seen <= 5) {
                         liftTimer.reset();
                         RotateArmPosition = RotateArmPosition + 0;
                         RotateArmFinalPosition = RotateArmPosition;
@@ -569,7 +569,7 @@ public class MediumPoleRight extends OpMode {
                 // Use the parkingTag here - it must be at least LEFT if no tag was seen
                 if (parkingTag == LEFT){ //&& cones_dropped >= CONES_DESIRED) {
 
-                    drive.followTrajectorySequenceAsync(BlueOnRedGoLeft);
+                    //drive.followTrajectorySequenceAsync(BlueOnRedGoLeft);
                     liftTimer.reset();
                     telemetry.addData("left", 1);
                     liftState = LiftState.FINISH;
@@ -577,7 +577,7 @@ public class MediumPoleRight extends OpMode {
 
                 } else if (parkingTag == RIGHT){ //&& cones_dropped >= CONES_DESIRED) {
 
-                    drive.followTrajectorySequenceAsync(BlueOnRedGoRight);
+                    //drive.followTrajectorySequenceAsync(BlueOnRedGoRight);
                     liftTimer.reset();
                     telemetry.addData("right", 2);
                     liftState = LiftState.FINISH;
@@ -595,9 +595,9 @@ public class MediumPoleRight extends OpMode {
                 break;
             case FINISH:
                 FailSafeTimer.reset();
-                drive.update();
+                //drive.update();
                 slide_extension.setTargetPosition(0);
-                tilt_claw.setPosition(0.3);
+                tilt_claw.setPosition(0.27);
                 if (liftTimer.seconds() >= 0.5) {
                     rotate_arm.setPower(1);
                     rotate_arm.setTargetPosition(0);

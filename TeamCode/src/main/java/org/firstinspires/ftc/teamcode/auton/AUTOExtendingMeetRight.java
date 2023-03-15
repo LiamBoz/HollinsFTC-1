@@ -569,7 +569,7 @@ public class AUTOExtendingMeetRight extends OpMode {
                 // Use the parkingTag here - it must be at least LEFT if no tag was seen
                 if (parkingTag == LEFT){ //&& cones_dropped >= CONES_DESIRED) {
 
-                    drive.followTrajectorySequenceAsync(BlueOnRedGoLeft);
+                    //drive.followTrajectorySequenceAsync(BlueOnRedGoLeft);
                     liftTimer.reset();
                     telemetry.addData("left", 1);
                     liftState = LiftState.FINISH;
@@ -577,7 +577,7 @@ public class AUTOExtendingMeetRight extends OpMode {
 
                 } else if (parkingTag == RIGHT){ //&& cones_dropped >= CONES_DESIRED) {
 
-                    drive.followTrajectorySequenceAsync(BlueOnRedGoRight);
+                    //drive.followTrajectorySequenceAsync(BlueOnRedGoRight);
                     liftTimer.reset();
                     telemetry.addData("right", 2);
                     liftState = LiftState.FINISH;
@@ -595,9 +595,9 @@ public class AUTOExtendingMeetRight extends OpMode {
                 break;
             case FINISH:
                 FailSafeTimer.reset();
-                drive.update();
+                //drive.update();
                 slide_extension.setTargetPosition(0);
-                tilt_claw.setPosition(0.3);
+                tilt_claw.setPosition(0.27);
                 if (liftTimer.seconds() >= 0.5) {
                     rotate_arm.setPower(1);
                     rotate_arm.setTargetPosition(0);

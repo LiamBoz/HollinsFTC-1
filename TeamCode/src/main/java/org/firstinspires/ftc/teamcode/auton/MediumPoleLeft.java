@@ -205,7 +205,7 @@ public class MediumPoleLeft extends OpMode {
     final int SLIDE_MOVEMENT = 1125; // the slide retraction for when rotating
 
     // TODO: find encoder values for tilt
-    int TILT_LOW = 10;
+    int TILT_LOW = -20;
     final int TILT_HIGH = -1070;
     //public int TILT_DECREMENT = 435;
 
@@ -313,8 +313,7 @@ public class MediumPoleLeft extends OpMode {
                 //.strafeLeft(3.7)
                 .build();
 
-        sensor_servo.setPosition(0.7);
-
+        sensor_servo.setPosition(0.68);
         init_loop();
         drive.followTrajectorySequenceAsync(BlueOnRedGoCycle);
 
@@ -415,7 +414,7 @@ public class MediumPoleLeft extends OpMode {
                     rotate_arm.setTargetPosition((int) RotateArmPosition);
                     // add 0.3 second pause
                     distance_seen = colorsensor1.getDistance(DistanceUnit.INCH);
-                    if (distance_seen <= 4) {
+                    if (distance_seen <= 5) {
                         liftTimer.reset();
                         RotateArmPosition = RotateArmPosition;
                         RotateArmFinalPosition = RotateArmPosition;
@@ -498,7 +497,7 @@ public class MediumPoleLeft extends OpMode {
                 break;
 
             case LIFT_GETNEW:
-                if (Math.abs(rotate_arm.getCurrentPosition() - ROTATE_COLLECT) <= 50 && Math.abs(tilt_arm.getCurrentPosition() - TILT_LOW) <= 50) {
+                if (Math.abs(rotate_arm.getCurrentPosition() - ROTATE_COLLECT) <= 50 && Math.abs(tilt_arm.getCurrentPosition() - TILT_LOW) <= 10) {
                     slide_extension.setTargetPosition(SLIDE_COLLECT);
                     //tilt_claw.setPosition(0.50);
                     if (slide_extension.getCurrentPosition() >= (SLIDE_COLLECT - 10)) {
@@ -526,7 +525,7 @@ public class MediumPoleLeft extends OpMode {
                     if (liftTimer.seconds() >= 0.4) {
                         claw.setPosition(CLAW_DEPOSIT);
                         cones_dropped += 1;
-                        TILT_LOW = TILT_LOW+50;
+                        TILT_LOW = TILT_LOW+55;
                         SLIDE_COLLECT = SLIDE_COLLECT + 2;
                         liftTimer.reset();
                         liftState = LiftState.LIFT_RETRACTSLIDE;

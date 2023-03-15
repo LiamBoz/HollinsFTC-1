@@ -41,7 +41,7 @@ public class teleoppowerplay4 extends OpMode {
     private static DcMotor slide_extension;
     private DcMotor rotate_arm;
     private Servo sensor_servo;
-    private CRServo lights;
+   // private CRServo lights;
 
 
 //    public int rotate_collect = 1122;
@@ -151,8 +151,8 @@ public class teleoppowerplay4 extends OpMode {
         MPRight.rotate_collect = 1200;
         MPRight.slide_collect = 500;
         MPRight.tilt_collect = 458;
-        MPRight.CLAWTILT_COLLECT = 0.48;
-        MPRight.CLAWTILT_DROPHIGH = 0.57;
+        MPRight.CLAWTILT_COLLECT = 0.55;
+        MPRight.CLAWTILT_DROPHIGH = 0.62;
 
         LPRight.rotate_drop = -966;
         LPRight.tilt_drop = -600;
@@ -160,8 +160,8 @@ public class teleoppowerplay4 extends OpMode {
         LPRight.rotate_collect = 1200;
         LPRight.slide_collect = 500;
         LPRight.tilt_collect = 458;
-        LPRight.CLAWTILT_COLLECT = 0.48;
-        LPRight.CLAWTILT_DROPHIGH = 0.41;
+        LPRight.CLAWTILT_COLLECT = 0.55;
+        LPRight.CLAWTILT_DROPHIGH = 0.62;
 
         LP2Right.rotate_drop = -312;
         LP2Right.tilt_drop = -600;
@@ -169,8 +169,8 @@ public class teleoppowerplay4 extends OpMode {
         LP2Right.rotate_collect = 1200;
         LP2Right.slide_collect = 500;
         LP2Right.tilt_collect = 458;
-        LP2Right.CLAWTILT_COLLECT = 0.48;
-        LP2Right.CLAWTILT_DROPHIGH = 0.41;
+        LP2Right.CLAWTILT_COLLECT = 0.55;
+        LP2Right.CLAWTILT_DROPHIGH = 0.62;
 
         HPLeft.rotate_drop = -350;
         HPLeft.tilt_drop = -1483;
@@ -178,8 +178,8 @@ public class teleoppowerplay4 extends OpMode {
         HPLeft.rotate_collect = -1270;
         HPLeft.slide_collect = 500;
         HPLeft.tilt_collect = 458;
-        HPLeft.CLAWTILT_COLLECT = 0.48;
-        HPLeft.CLAWTILT_DROPHIGH = 0.57;
+        HPLeft.CLAWTILT_COLLECT = 0.55;
+        HPLeft.CLAWTILT_DROPHIGH = 0.62;
 
         HPStackLeft.rotate_drop = 220;
         HPStackLeft.tilt_drop = -1520;
@@ -206,17 +206,17 @@ public class teleoppowerplay4 extends OpMode {
         MPLeft.rotate_collect = -1270;
         MPLeft.slide_collect = 500;
         MPLeft.tilt_collect = 458;
-        MPLeft.CLAWTILT_COLLECT = 0.48;
-        MPLeft.CLAWTILT_DROPHIGH = 0.57;
+        MPLeft.CLAWTILT_COLLECT = 0.55;
+        MPLeft.CLAWTILT_DROPHIGH = 0.62;
 
-        LPLeft.rotate_drop = 800;
+        LPLeft.rotate_drop = 850;
         LPLeft.tilt_drop = -600;
-        LPLeft.slide_drop = 50;
+        LPLeft.slide_drop = 70;
         LPLeft.rotate_collect = -1270;
         LPLeft.slide_collect = 500;
         LPLeft.tilt_collect = 458;
-        LPLeft.CLAWTILT_COLLECT = 0.48;
-        LPLeft.CLAWTILT_DROPHIGH = 0.41;
+        LPLeft.CLAWTILT_COLLECT = 0.55;
+        LPLeft.CLAWTILT_DROPHIGH = 0.62;
 
         LP2Left.rotate_drop = 252;
         LP2Left.tilt_drop = -600;
@@ -224,8 +224,8 @@ public class teleoppowerplay4 extends OpMode {
         LP2Left.rotate_collect = -1270;
         LP2Left.slide_collect = 500;
         LP2Left.tilt_collect = 458;
-        LP2Left.CLAWTILT_COLLECT = 0.48;
-        LP2Left.CLAWTILT_DROPHIGH = 0.41;
+        LP2Left.CLAWTILT_COLLECT = 0.55;
+        LP2Left.CLAWTILT_DROPHIGH = 0.62;
 
 /*        ElevatorBot.rotate_drop = -50;
         ElevatorBot.rotate_collect = -1244;
@@ -250,7 +250,7 @@ public class teleoppowerplay4 extends OpMode {
         odometry_forward = hardwareMap.get(Servo.class, "odometry_forward");
         odometry_strafe = hardwareMap.get(Servo.class, "odometry_strafe");
         sensor_servo = hardwareMap.get(Servo.class, "sensor_servo");
-        lights = hardwareMap.get(CRServo.class, "lights");
+        //lights = hardwareMap.get(CRServo.class, "lights");
         slide_extension.setDirection(DcMotor.Direction.REVERSE);
 
         slide_extension.setTargetPosition(MinPositionTicks);

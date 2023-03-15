@@ -16,9 +16,9 @@ public class PickPlaceOptions2 {
     public int slide_var = 0;
     public double CLAW_HOLD = 0.0;
     public double CLAW_DEPOSIT = 0.22;
-    public double CLAWTILT_COLLECT = 0.48;
-    public double CLAWTILT_DEPOSIT = 0.57;
-    public double CLAWTILT_DROPHIGH = 0.57;
+    public double CLAWTILT_COLLECT = 0.55;
+    public double CLAWTILT_DEPOSIT = 0.62;
+    public double CLAWTILT_DROPHIGH = 0.62;
 
 
 
