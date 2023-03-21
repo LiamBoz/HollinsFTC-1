@@ -15,6 +15,9 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 @TeleOp(name="teleoppowerplay4", group="Iterative Opmode")
 public class teleoppowerplay4 extends OpMode {
 
+    ElapsedTime timeRunning = new ElapsedTime();
+    double loops;
+
     public enum LiftState {
         LIFT_GRABNEW_SWING,
         LIFT_GRABNEW_GRAB,
@@ -26,10 +29,12 @@ public class teleoppowerplay4 extends OpMode {
         LIFT_CLAWOPEN,
         LIFT_MANUAL_CONTROL,
         LIFT_TILTTHECLAW,
+        PLAYER2_START,
         FINISH
     }
 
     ElapsedTime liftTimer = new ElapsedTime();
+
 
     LiftState liftState = LiftState.LIFT_TILTTHECLAW;
 
@@ -67,6 +72,7 @@ public class teleoppowerplay4 extends OpMode {
     public PickPlaceOptions2 LP2Left = new PickPlaceOptions2();
     public PickPlaceOptions2 HPStackLeft = new PickPlaceOptions2();
     public PickPlaceOptions2 HPStackRight = new PickPlaceOptions2();
+    public PickPlaceOptions2 GJ = new PickPlaceOptions2();
 
 
 
@@ -135,6 +141,8 @@ public class teleoppowerplay4 extends OpMode {
     public void init() {
 
         PhotonCore.enable();
+        loops = 0.0;
+
 
         // Retrieve the IMU from the hardware map
         imu = hardwareMap.get(BNO055IMU.class, "imu");
@@ -145,87 +153,96 @@ public class teleoppowerplay4 extends OpMode {
         imu.initialize(parameters);
 
 
-        MPRight.rotate_drop = -315;
+        MPRight.rotate_drop = -217;
         MPRight.tilt_drop = -1180;
         MPRight.slide_drop = 235;
-        MPRight.rotate_collect = 1200;
-        MPRight.slide_collect = 500;
-        MPRight.tilt_collect = 458;
+        MPRight.rotate_collect = 875;
+        MPRight.slide_collect = 540;
+        MPRight.tilt_collect = 400;
         MPRight.CLAWTILT_COLLECT = 0.55;
-        MPRight.CLAWTILT_DROPHIGH = 0.62;
+        MPRight.CLAWTILT_DROPHIGH = 0.61;
 
-        LPRight.rotate_drop = -966;
-        LPRight.tilt_drop = -600;
+        LPRight.rotate_drop = -693;
+        LPRight.tilt_drop = -700;
         LPRight.slide_drop = 30;
-        LPRight.rotate_collect = 1200;
-        LPRight.slide_collect = 500;
-        LPRight.tilt_collect = 458;
+        LPRight.rotate_collect = 875;
+        LPRight.slide_collect = 540;
+        LPRight.tilt_collect = 400;
         LPRight.CLAWTILT_COLLECT = 0.55;
-        LPRight.CLAWTILT_DROPHIGH = 0.62;
+        LPRight.CLAWTILT_DROPHIGH = 0.61;
 
-        LP2Right.rotate_drop = -312;
-        LP2Right.tilt_drop = -600;
+        LP2Right.rotate_drop = -224;
+        LP2Right.tilt_drop = -700;
         LP2Right.slide_drop = 120;
-        LP2Right.rotate_collect = 1200;
-        LP2Right.slide_collect = 500;
-        LP2Right.tilt_collect = 458;
+        LP2Right.rotate_collect = 890;
+        LP2Right.slide_collect = 540;
+        LP2Right.tilt_collect = 400;
         LP2Right.CLAWTILT_COLLECT = 0.55;
-        LP2Right.CLAWTILT_DROPHIGH = 0.62;
+        LP2Right.CLAWTILT_DROPHIGH = 0.61;
 
-        HPLeft.rotate_drop = -350;
-        HPLeft.tilt_drop = -1483;
+        HPLeft.rotate_drop = -217;
+        HPLeft.tilt_drop = -1550;
         HPLeft.slide_drop = 402;
-        HPLeft.rotate_collect = -1270;
-        HPLeft.slide_collect = 500;
-        HPLeft.tilt_collect = 458;
+        HPLeft.rotate_collect = -875;
+        HPLeft.slide_collect = 540;
+        HPLeft.tilt_collect = 400;
         HPLeft.CLAWTILT_COLLECT = 0.55;
-        HPLeft.CLAWTILT_DROPHIGH = 0.62;
+        HPLeft.CLAWTILT_DROPHIGH = 0.61;
 
-        HPStackLeft.rotate_drop = 220;
+        HPStackLeft.rotate_drop = 158;
         HPStackLeft.tilt_drop = -1520;
         HPStackLeft.slide_drop = 402;
-        HPStackLeft.rotate_collect = -1286;
+        HPStackLeft.rotate_collect = -922;
         HPStackLeft.slide_collect = 514;
         HPStackLeft.tilt_collect = 118;
         HPStackLeft.CLAWTILT_COLLECT = 0.54;
         HPStackLeft.CLAWTILT_DROPHIGH = 0.57;
 
-        HPStackRight.rotate_drop = 220;
+        HPStackRight.rotate_drop = 158;
         HPStackRight.tilt_drop = -1520;
         HPStackRight.slide_drop = 402;
-        HPStackRight.rotate_collect = 1223;
+        HPStackRight.rotate_collect = 877;
         HPStackRight.slide_collect = 514;
         HPStackRight.tilt_collect = 118;
         HPStackRight.CLAWTILT_COLLECT = 0.54;
         HPStackRight.CLAWTILT_DROPHIGH = 0.57;
 
 
-        MPLeft.rotate_drop = 230;
+        MPLeft.rotate_drop = 174;
         MPLeft.tilt_drop = -1180;
         MPLeft.slide_drop = 270;
-        MPLeft.rotate_collect = -1270;
-        MPLeft.slide_collect = 500;
-        MPLeft.tilt_collect = 458;
+        MPLeft.rotate_collect = -875;
+        MPLeft.slide_collect = 540;
+        MPLeft.tilt_collect = 400;
         MPLeft.CLAWTILT_COLLECT = 0.55;
-        MPLeft.CLAWTILT_DROPHIGH = 0.62;
+        MPLeft.CLAWTILT_DROPHIGH = 0.61;
 
-        LPLeft.rotate_drop = 850;
-        LPLeft.tilt_drop = -600;
+        LPLeft.rotate_drop = 609;
+        LPLeft.tilt_drop = -700;
         LPLeft.slide_drop = 70;
-        LPLeft.rotate_collect = -1270;
-        LPLeft.slide_collect = 500;
-        LPLeft.tilt_collect = 458;
+        LPLeft.rotate_collect = -875;
+        LPLeft.slide_collect = 540;
+        LPLeft.tilt_collect = 400;
         LPLeft.CLAWTILT_COLLECT = 0.55;
-        LPLeft.CLAWTILT_DROPHIGH = 0.62;
+        LPLeft.CLAWTILT_DROPHIGH = 0.61;
 
-        LP2Left.rotate_drop = 252;
-        LP2Left.tilt_drop = -600;
+        LP2Left.rotate_drop = 181;
+        LP2Left.tilt_drop = -700;
         LP2Left.slide_drop = 126;
-        LP2Left.rotate_collect = -1270;
-        LP2Left.slide_collect = 500;
-        LP2Left.tilt_collect = 458;
+        LP2Left.rotate_collect = -875;
+        LP2Left.slide_collect = 540;
+        LP2Left.tilt_collect = 400;
         LP2Left.CLAWTILT_COLLECT = 0.55;
-        LP2Left.CLAWTILT_DROPHIGH = 0.62;
+        LP2Left.CLAWTILT_DROPHIGH = 0.61;
+
+        /*GJ.rotate_drop = -911;
+        GJ.tilt_drop = 500;
+        GJ.slide_drop = 126;
+        GJ.rotate_collect = -911;
+        GJ.slide_collect = 500;
+        GJ.tilt_collect = 458;
+        GJ.CLAWTILT_COLLECT = 0.55;
+        GJ.CLAWTILT_DROPHIGH = 0.55;*/
 
 /*        ElevatorBot.rotate_drop = -50;
         ElevatorBot.rotate_collect = -1244;
@@ -397,6 +414,30 @@ public class teleoppowerplay4 extends OpMode {
 
         }
 
+        //Driver 2 Stuff
+        //Ground Junction
+        //goes to a set distance for extension, also goes in the direction of the button (forward is y, back is a, left is x, right is b)
+        else if(gamepad2.a){
+            GJ.rotate_drop = -911;
+            ActiveOptions = GJ;
+
+        }
+        else if(gamepad2.x){
+            GJ.rotate_drop = -911/2;
+            ActiveOptions = GJ;
+
+        }
+        else if(gamepad2.y){
+            GJ.rotate_drop = 0;
+            ActiveOptions = GJ;
+
+        }
+        else if(gamepad2.b){
+            GJ.rotate_drop = 911/2;
+            ActiveOptions = GJ;
+
+        }
+
 
         if (currentGamepad1.dpad_up && !previousGamepad1.dpad_up){
             HPStackLeft.tilt_collect -= 60;
@@ -446,6 +487,7 @@ public class teleoppowerplay4 extends OpMode {
                 liftState = LiftState.LIFT_GRABNEW_SWING;
 
             case LIFT_GRABNEW_SWING:
+                sensor_servo.setPosition(0.82);
                 if (ActiveOptions == HPStackRight || ActiveOptions == HPStackLeft){
                     tilt_arm.setTargetPosition(ActiveOptions.tilt_collect);
                     ActiveOptions.slide_var = 0;
@@ -644,6 +686,7 @@ public class teleoppowerplay4 extends OpMode {
                 slide_extension.setTargetPosition(ActiveOptions.slide_drop);
                 rotate_arm.setTargetPosition(ActiveOptions.rotate_drop);
                 tilt_arm.setTargetPosition(ActiveOptions.tilt_drop);
+                sensor_servo.setPosition(0.15);
                 if (gamepad1.y){
                     claw.setPosition(0.09);
                 }
@@ -759,6 +802,8 @@ public class teleoppowerplay4 extends OpMode {
         back_left.setPower(backLeftPower);
         front_right.setPower(frontRightPower);
         back_right.setPower(backRightPower);
+
+
 
     }
 }

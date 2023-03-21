@@ -11,7 +11,6 @@ import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.outoftheboxrobotics.photoncore.PhotonCore;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
-import com.qualcomm.robotcore.hardware.ColorRangeSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
@@ -20,7 +19,6 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-import org.firstinspires.ftc.teamcode.colorsensortesting;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDriveTwo;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 import org.openftc.apriltag.AprilTagDetection;
@@ -35,8 +33,8 @@ import java.util.ArrayList;
 
 
 @Config
-@Autonomous(name="RightSideOnePlusTen")
-public class RightSideOnePlusTen extends OpMode {
+@Autonomous(name="RightSubStationHighPoleNoSensor")
+public class RightSubStationHighPoleNoSensor extends OpMode {
 
     public void init_loop(){
         {

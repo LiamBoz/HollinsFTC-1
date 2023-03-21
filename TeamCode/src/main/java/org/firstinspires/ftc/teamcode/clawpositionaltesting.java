@@ -59,13 +59,13 @@ public class clawpositionaltesting extends OpMode {
 
         telemetry.addData("servo position",servo_position);
 
-        claw.setPosition(servo_position);
+        sensor_servo.setPosition(servo_position);
 
         if (currentGamepad1.dpad_up && !previousGamepad1.dpad_up) {
-            servo_position = servo_position + 0.05;
+            servo_position = servo_position + 0.02;
         }
         else if (currentGamepad1.dpad_down && !previousGamepad1.dpad_down){
-            servo_position = servo_position - 0.05;
+            servo_position = servo_position - 0.02;
         }
     }
 }
