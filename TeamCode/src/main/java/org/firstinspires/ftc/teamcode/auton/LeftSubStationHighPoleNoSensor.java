@@ -207,18 +207,18 @@ public class LeftSubStationHighPoleNoSensor extends OpMode {
     double distance_seen = 0.0; // telemetry of the distance sensor
 
     final int SLIDE_LOW = 0; // the low encoder position for the lift
-    private int SLIDE_COLLECT = 550; // the high encoder position for the lift
-    public static int SLIDE_DROPOFF = 530;
+    private int SLIDE_COLLECT = 525; // the high encoder position for the lift
+    public static int SLIDE_DROPOFF = 540;
     final int SLIDE_MOVEMENT = 1125; // the slide retraction for when rotating
 
     // TODO: find encoder values for tilt
-    private int TILT_LOW = -70;
-    public static int TILT_HIGH = -1403;
+    private int TILT_LOW = -60;
+    public static int TILT_HIGH = -1413;
     //public int TILT_DECREMENT = 435;
 
     // TODO: find encoder values for rotation
-    final int ROTATE_COLLECT = 0;
-    final int ROTATE_DROP = 695;
+    final int ROTATE_COLLECT = -10;
+    final int ROTATE_DROP = 700;
 
     //public TrajectorySequence VariablePath;
 
@@ -467,9 +467,9 @@ public class LeftSubStationHighPoleNoSensor extends OpMode {
                 break;
 
             case LIFT_GETNEW:
-                if (Math.abs(rotate_arm.getCurrentPosition() - ROTATE_COLLECT) <= 25 && Math.abs(tilt_arm.getCurrentPosition() - TILT_LOW) <= 30) {
+                if (Math.abs(rotate_arm.getCurrentPosition() - ROTATE_COLLECT) <= 25 && Math.abs(tilt_arm.getCurrentPosition() - TILT_LOW) <= 20) {
                     slide_extension.setTargetPosition(SLIDE_COLLECT);
-                    if (slide_extension.getCurrentPosition() >= (SLIDE_COLLECT - 20) && drive.getPoseEstimate().getX() >= 1.2) {
+                    if (slide_extension.getCurrentPosition() >= (SLIDE_COLLECT - 30) && drive.getPoseEstimate().getX() >= 1) {
                         claw.setPosition(CLAW_HOLD);
                         liftTimer.reset();
                         liftState = LiftState.LIFT_HOLD;
