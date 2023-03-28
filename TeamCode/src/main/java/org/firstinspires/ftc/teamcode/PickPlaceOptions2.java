@@ -19,6 +19,8 @@ public class PickPlaceOptions2 {
     public double CLAWTILT_COLLECT = 0.55;
     public double CLAWTILT_DEPOSIT = 0.61;
     public double CLAWTILT_DROPHIGH = 0.61;
+    public double POLEGUIDE_DEPOSIT = 0.54;
+    public double POLEGUIDE_REST = 0.1;
 
 
 

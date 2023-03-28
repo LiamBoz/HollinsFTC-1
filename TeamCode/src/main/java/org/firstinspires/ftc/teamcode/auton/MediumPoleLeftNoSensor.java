@@ -173,6 +173,7 @@ public class MediumPoleLeftNoSensor extends OpMode {
     ElapsedTime liftTimer = new ElapsedTime();
     ElapsedTime FailSafeTimer = new ElapsedTime();
     ElapsedTime PoleSearchTimer = new ElapsedTime();
+    ElapsedTime PathAutoCorrectionTimer = new ElapsedTime();
 
     SampleMecanumDrive drive;
 
@@ -186,8 +187,8 @@ public class MediumPoleLeftNoSensor extends OpMode {
     final double CLAW_DEPOSIT = 0.2; // the dumping position for the dump servo
 
     final double CLAWTILT_END = 0.19;
-    final double CLAWTILT_COLLECT = 0.53;
-    final double CLAWTILT_DEPOSIT = .55;
+    final double CLAWTILT_COLLECT = 0.57;
+    final double CLAWTILT_DEPOSIT = .59;
 
     boolean switchvar = false;
     boolean epic = true;
@@ -200,18 +201,18 @@ public class MediumPoleLeftNoSensor extends OpMode {
     double distance_seen = 0.0; // telemetry of the distance sensor
 
     final int SLIDE_LOW = 0; // the low encoder position for the lift
-    int SLIDE_COLLECT = 535; // the high encoder position for the lift
-    final int SLIDE_DROPOFF = 220;
+    int SLIDE_COLLECT = 545; // the high encoder position for the lift
+    final int SLIDE_DROPOFF = 170;
     final int SLIDE_MOVEMENT = 1125; // the slide retraction for when rotating
 
     // TODO: find encoder values for tilt
-    int TILT_LOW = -20;
-    final int TILT_HIGH = -1070;
+    int TILT_LOW = 40;
+    final int TILT_HIGH = -1200;
     //public int TILT_DECREMENT = 435;
 
     // TODO: find encoder values for rotation
-    final int ROTATE_COLLECT = -1855;
-    final int ROTATE_DROP = 721;
+    final int ROTATE_COLLECT = -1340;
+    final int ROTATE_DROP = -640;
 
     final int ROTATE_PAST = -700;
 
@@ -260,7 +261,7 @@ public class MediumPoleLeftNoSensor extends OpMode {
         rotate_arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
         claw.setPosition(CLAW_HOLD);
-        tilt_claw.setPosition(0.06);
+        tilt_claw.setPosition(0.15);
 
         rotate_arm.setPower(1);
         tilt_arm.setPower(1);
@@ -302,10 +303,10 @@ public class MediumPoleLeftNoSensor extends OpMode {
                 .strafeLeft(25)
                 .build();
 
-        BlueOnRedGoCycle = drive.trajectorySequenceBuilder(new Pose2d(0, 0, Math.toRadians(270)))
+        BlueOnRedGoCycle = drive.trajectorySequenceBuilder(new Pose2d(drive.getPoseEstimate().getX(), drive.getPoseEstimate().getY(), drive.getPoseEstimate().getHeading()))
                 //.lineTo(new Vector2d(0,-32))
                 //.lineTo(new Vector2d(0,-48))
-                .splineToConstantHeading(new Vector2d(0, -52), Math.toRadians(270))
+                .splineToConstantHeading(new Vector2d(0, -48), Math.toRadians(270))
                 //.strafeLeft(3.7)
                 .build();
 
@@ -322,6 +323,16 @@ public class MediumPoleLeftNoSensor extends OpMode {
             drive.setPoseEstimate(new Pose2d(0, poseEstimate.getY(), poseEstimate.getHeading()));
         }*/
 
+        /*if (!drive.isBusy() && PathAutoCorrectionTimer.seconds() >= 0.75 && ((Math.abs(drive.getPoseEstimate().getX())>0.5)||(Math.abs(drive.getPoseEstimate().getX()+52.0)>0.5))){
+            BlueOnRedGoCycle = drive.trajectorySequenceBuilder(new Pose2d(drive.getPoseEstimate().getX(), drive.getPoseEstimate().getY(), drive.getPoseEstimate().getHeading()))
+                    //.lineTo(new Vector2d(0,-32))
+                    //.lineTo(new Vector2d(0,-48))
+                    .splineToConstantHeading(new Vector2d(0, -52), Math.toRadians(270))
+                    //.strafeLeft(3.7)
+                    .build();
+            drive.followTrajectorySequenceAsync(BlueOnRedGoCycle);
+            PathAutoCorrectionTimer.reset();
+        }*/
 
         if (FailSafe){
             FailSafeTimer.reset();
@@ -354,7 +365,7 @@ public class MediumPoleLeftNoSensor extends OpMode {
         telemetry.addData("drive", drive.isBusy());
         telemetry.addData("distance", colorsensor1.getDistance(DistanceUnit.INCH));
         telemetry.addData("Sensor seen",distance_seen);
-        if (drive.getPoseEstimate().getY() < -50){
+        if (drive.getPoseEstimate().getY() < -42){
             switchvar = true;
         }
 
@@ -436,10 +447,10 @@ public class MediumPoleLeftNoSensor extends OpMode {
                 break;
 
             case LIFT_GETNEW:
-                if (Math.abs(rotate_arm.getCurrentPosition() - ROTATE_COLLECT) <= 50 && Math.abs(tilt_arm.getCurrentPosition() - TILT_LOW) <= 10) {
+                if (Math.abs(rotate_arm.getCurrentPosition() - ROTATE_COLLECT) <= 50 && Math.abs(tilt_arm.getCurrentPosition() - TILT_LOW) <= 30) {
                     slide_extension.setTargetPosition(SLIDE_COLLECT);
                     //tilt_claw.setPosition(0.50);
-                    if (slide_extension.getCurrentPosition() >= (SLIDE_COLLECT - 10)) {
+                    if (slide_extension.getCurrentPosition() >= (SLIDE_COLLECT - 30)) {
                         claw.setPosition(CLAW_HOLD);
                         liftTimer.reset();
                         liftState = LiftState.LIFT_HOLD;
