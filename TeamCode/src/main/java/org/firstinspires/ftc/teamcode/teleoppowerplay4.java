@@ -316,7 +316,7 @@ public class teleoppowerplay4 extends OpMode {
         rotate.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         slide_extension.setDirection(DcMotor.Direction.REVERSE);
         slide_extension.setTargetPosition(variable_slide_ticks);
-        slide_extension.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        //slide_extension.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         slide_extension.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         slide_extension.setPower(1);
 
