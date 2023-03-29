@@ -224,14 +224,14 @@ public class LeftSubStationHighPoleNoSensor extends OpMode {
 
     final int SLIDE_LOW = 0; // the low encoder position for the lift
     private int SLIDE_COLLECT = 455; // the high encoder position for the lift
-    public static int SLIDE_DROPOFF = 540;
+    public static int SLIDE_DROPOFF = 530;
     final int SLIDE_MOVEMENT = 1125; // the slide retraction for when rotating
 
     // TODO: find encoder values for tilt
     private int TILT_LOW = -20;
     public static int TILT_HIGH = -1450;
 
-    public double POLEGUIDE_DEPOSIT = 0.47;
+    public double POLEGUIDE_DEPOSIT = 0.5;
     public double POLEGUIDE_REST = 0.13;
     //public int TILT_DECREMENT = 435;
 
@@ -329,12 +329,12 @@ public class LeftSubStationHighPoleNoSensor extends OpMode {
         BlueOnRedGoLeft = drive.trajectorySequenceBuilder(new Pose2d(0,-49, Math.toRadians(270)))
                 .strafeLeft(23)
                 .build();
-        GoForward = drive.trajectorySequenceBuilder(new Pose2d(-20.5, -49, Math.toRadians(360)))
+        GoForward = drive.trajectorySequenceBuilder(new Pose2d(-20, -49, Math.toRadians(360)))
                 .setReversed(false)
-                .forward(22.5)
+                .forward(22)
                 .build();
-        GoBack = drive.trajectorySequenceBuilder(new Pose2d(2.5, -49, Math.toRadians(360)))
-                .back(22.5)
+        GoBack = drive.trajectorySequenceBuilder(new Pose2d(2, -49, Math.toRadians(360)))
+                .back(22)
                 .build();
 
         BlueOnRedGoCycle = drive.trajectorySequenceBuilder(new Pose2d(0, 0, Math.toRadians(270)))
@@ -351,7 +351,7 @@ public class LeftSubStationHighPoleNoSensor extends OpMode {
                 .splineToLinearHeading(new Pose2d(0,-49, Math.toRadians(360)), Math.toRadians(270))
                 //.splineToLinearHeading(new Pose2d(0,-49), Math.toRadians(180))
                 .setReversed(true)
-                .splineToLinearHeading(new Pose2d(-20.5, -49), Math.toRadians(180))
+                .splineToLinearHeading(new Pose2d(-20, -49), Math.toRadians(180))
                 .build();
 
 
