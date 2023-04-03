@@ -5,17 +5,17 @@ public class PickPlaceOptions2 {
 
     // HP LEft Values
     public int rotate_collect = 875;
-    public int tilt_collect = 420;
+    public int tilt_collect = 350;
     public int slide_collect = 540;
     public int rotate_drop = 174;
     public int tilt_drop = -1550;
-    public int slide_drop = 402;
+    public int slide_drop = 420;
     public int slide_drop_medium = 150;
     public int slide_drop_low = 0;
     public int slide_drop_high = 210;
     public int slide_var = 0;
     public double CLAW_HOLD = 0.0;
-    public double CLAW_DEPOSIT = 0.22;
+    public double CLAW_DEPOSIT = 0.12;
     public double CLAWTILT_COLLECT = 0.55;
     public double CLAWTILT_DEPOSIT = 0.61;
     public double CLAWTILT_DROPHIGH = 0.61;

@@ -20,16 +20,18 @@ public class MeepMeepTesting{
                 .setConstraints(88, 88, Math.toRadians(480), Math.toRadians(480), 11.5)
                 .followTrajectorySequence(drive ->
                         drive.trajectorySequenceBuilder(new Pose2d(0, 0, Math.toRadians(270)))
-                                //.lineTo(new Vector2d(36,60))
-                                //.lineTo(new Vector2d(36,24))
-                                .lineToSplineHeading(new Pose2d(0,-49, Math.toRadians(360)))
-                                //.splineToLinearHeading(new Pose2d(0,-49), Math.toRadians(180))
+/*
+                                .splineTo(new Vector2d(0,-30), Math.toRadians(270))
+                                .splineTo(new Vector2d(0,-49), Math.toRadians(360))
                                 .setReversed(true)
-                                .splineTo(new Vector2d(-16, -49), Math.toRadians(180))
-                                //.back(22)
-                                //.lineToConstantHeading(new Vector2d(57,14))
-                                //.lineToConstantHeading(new Vector2d(60,14))
-                                //.lineToConstantHeading(new Vector2d(60,38))
+                                .splineTo(new Vector2d(-26, -49), Math.toRadians(180))*/
+                                .splineToLinearHeading(new Pose2d(2,-49, Math.toRadians(180)), Math.toRadians(270))
+                                .setReversed(true)
+                                .splineToLinearHeading(new Pose2d(70, -49, Math.toRadians(180)), Math.toRadians(180))
+                                /*        .splineToLinearHeading(new Pose2d(0,-15, Math.toRadians(270)), Math.toRadians(270))
+                                .splineToLinearHeading(new Pose2d(0,-49, Math.toRadians(360)), Math.toRadians(270))
+                                //.setReversed(true)
+                                .splineToConstantHeading(new Vector2d(-26, -49), Math.toRadians(180))*/
                                 .build()
                 );
         // Declare out second bot

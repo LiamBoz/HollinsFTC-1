@@ -201,12 +201,12 @@ public class MediumPoleLeftNoSensorNewPath extends OpMode {
     double distance_seen = 0.0; // telemetry of the distance sensor
 
     final int SLIDE_LOW = 0; // the low encoder position for the lift
-    int SLIDE_COLLECT = 545; // the high encoder position for the lift
+    int SLIDE_COLLECT = 525; // the high encoder position for the lift
     final int SLIDE_DROPOFF = 180;
     final int SLIDE_MOVEMENT = 1125; // the slide retraction for when rotating
 
     // TODO: find encoder values for tilt
-    int TILT_LOW = 40;
+    int TILT_LOW = 10;
     final int TILT_HIGH = -1200;
     //public int TILT_DECREMENT = 435;
 

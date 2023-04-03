@@ -22,7 +22,7 @@ public class tiltPIDTuning extends OpMode{
 
     public Servo tilt_claw;
 
-    public static double tiltP = 0.002, tiltI = 0, tiltD = 0.0002;
+    public static double tiltP = 0.002, tiltI = 0.00, tiltD = 0.0002;
     //public static double rotateP = 0, rotateI = 0, rotateD = 0;
     //public static double tiltP = 0, tiltI = 0, tiltD = 0;
 
