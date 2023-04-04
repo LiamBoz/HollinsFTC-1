@@ -1,6 +1,10 @@
 package org.firstinspires.ftc.teamcode;
 
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.variable_slide_ticks;
+import static org.firstinspires.ftc.teamcode.slidePIDTuning.slideD;
+import static org.firstinspires.ftc.teamcode.slidePIDTuning.slideF;
+import static org.firstinspires.ftc.teamcode.slidePIDTuning.slideI;
+import static org.firstinspires.ftc.teamcode.slidePIDTuning.slideP;
 import static org.firstinspires.ftc.teamcode.turretPIDTuning.rotateD;
 import static org.firstinspires.ftc.teamcode.turretPIDTuning.rotateI;
 import static org.firstinspires.ftc.teamcode.turretPIDTuning.rotateP;
@@ -334,6 +338,7 @@ public class teleoppowerplay4slidepid extends OpMode {
         PhotonCore.enable();
 
         rotate_arm = new TurretMotor(rotateP, rotateI,rotateD, rotate);
+        slide_extension = new TurretMotor(slideP, slideI, slideD, slide);
         //slide_extension = new TurretMotor(slideP, slideI,slideD, slide);
 
         currentGamepad1 = new Gamepad();
@@ -347,6 +352,8 @@ public class teleoppowerplay4slidepid extends OpMode {
             //lights.setPower(1);
 
         rotate_arm.toPosition();
+        slide_extension.updateF(slideF);
+        slide_extension.toPosition();
         //slide_extension.setPower(1);
         //slide_extension.toPosition();
 
