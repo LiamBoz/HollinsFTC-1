@@ -25,7 +25,10 @@ public class slidePIDTuning extends OpMode{
 
     public Servo tilt_claw;
 
-    public static double slideP = 0.011, slideI = 0.0005, slideD = 0.0005;
+
+    public static double slideF = 0.3;
+
+    public static double slideP = 0.14, slideI = 0.000, slideD = 0.0004;
     //public static double rotateP = 0, rotateI = 0, rotateD = 0;
     //public static double tiltP = 0, tiltI = 0, tiltD = 0;
 
@@ -44,7 +47,7 @@ public class slidePIDTuning extends OpMode{
         //rotate_arm = new TurretMotor(rotateP, rotateI, rotateD, rotate);
 
         slide.setDirection(DcMotorSimple.Direction.REVERSE);
-        slide.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        slide.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         slide_extension = new TurretMotor(slideP, slideI,slideD, slide);
 
         tilt_claw.setPosition(0.59);
@@ -70,6 +73,7 @@ public class slidePIDTuning extends OpMode{
 
         //tilt_arm.toPosition();
         //rotate_arm.toPosition();
+        slide_extension.updateF(slideF);
         slide_extension.toPosition();
 
         //telemetry.addData("tilt pos ", tilt.getCurrentPosition());
