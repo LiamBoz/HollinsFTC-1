@@ -9,7 +9,7 @@ public class TurretMotor{
     private PIDController pidController;
     PIDFController pidfController;
     private DcMotor motor;
-    private double F = 0.1;
+    private double F = -0.3;
 
     public TurretMotor(double P, double I, double D, DcMotor Motor){
         pidController = new PIDController(P,I,D);

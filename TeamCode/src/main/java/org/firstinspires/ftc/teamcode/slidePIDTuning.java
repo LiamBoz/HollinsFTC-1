@@ -26,9 +26,9 @@ public class slidePIDTuning extends OpMode{
     public Servo tilt_claw;
 
 
-    public static double slideF = 0.3;
+    public static double slideF = -0.3;
 
-    public static double slideP = 0.14, slideI = 0.000, slideD = 0.0004;
+    public static double slideP = 0.015, slideI = 0.001, slideD = 0.003;
     //public static double rotateP = 0, rotateI = 0, rotateD = 0;
     //public static double tiltP = 0, tiltI = 0, tiltD = 0;
 
