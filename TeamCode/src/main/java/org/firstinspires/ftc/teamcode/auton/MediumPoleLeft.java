@@ -193,7 +193,7 @@ public class MediumPoleLeft extends OpMode {
     public TurretMotor tilt_arm;
     public TurretMotor rotate_arm;
 
-    public DcMotor slide_extension;
+    public DcMotorEx slide_extension;
     public DcMotor rotate;
     public DcMotor tilt;
 
@@ -239,7 +239,7 @@ public class MediumPoleLeft extends OpMode {
     public double POLEGUIDE_REST = 0.13;
 
     final int SLIDE_LOW = 0; // the low encoder position for the lift
-    int SLIDE_COLLECT = 510; // the high encoder position for the lift
+    int SLIDE_COLLECT = 540; // the high encoder position for the lift
     final int SLIDE_DROPOFF = 235;
     final int SLIDE_MOVEMENT = 1125; // the slide retraction for when rotating
 
@@ -528,7 +528,7 @@ public class MediumPoleLeft extends OpMode {
                 if (Math.abs(rotate.getCurrentPosition() - ROTATE_COLLECT) <= 25 && Math.abs(tilt.getCurrentPosition() - TILT_LOW) <= 20) {
                     slide_extension.setTargetPosition(SLIDE_COLLECT); /* ret here */
                     tilt_arm.updateConstants(0.005,0,0.0002);
-                    if (slide_extension.getCurrentPosition() >= (SLIDE_COLLECT - 40)) {
+                    if (slide_extension.getCurrentPosition() >= (SLIDE_COLLECT - 10)) {
                         claw.setPosition(CLAW_HOLD);
 
                         //drive.breakFollowing();
@@ -584,7 +584,7 @@ public class MediumPoleLeft extends OpMode {
                 liftTimer.reset();
                 FailSafeTimer.reset();
                 slide_extension.setTargetPosition(0);
-                tilt_claw.setPosition(0.32);
+                tilt_claw.setPosition(0.2);
                 // Use the parkingTag here - it must be at least LEFT if no tag was seen
                 if (parkingTag == LEFT){ //&& cones_dropped >= CONES_DESIRED) {
 

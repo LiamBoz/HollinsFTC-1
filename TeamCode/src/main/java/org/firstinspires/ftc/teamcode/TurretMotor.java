@@ -9,7 +9,7 @@ public class TurretMotor{
     private PIDController pidController;
     PIDFController pidfController;
     private DcMotor motor;
-    private double F = -0.3;
+    private double F = 0;
 
     public TurretMotor(double P, double I, double D, DcMotor Motor){
         pidController = new PIDController(P,I,D);
@@ -38,7 +38,7 @@ public class TurretMotor{
 
         //if(!(pidController.atSetPoint())){
             if (pidController.calculate(motor.getCurrentPosition(), targetPosition)+F <= 0){
-            motor.setPower((output+F)/4);
+            motor.setPower((output+F));
         }
             else{
             motor.setPower(output+F);
@@ -51,6 +51,20 @@ public class TurretMotor{
         //double output = 0;
         //motor.setPower(output);
         // }
+
+    }
+
+    public void toPositionSlide(){
+
+        double output = pidController.calculate(motor.getCurrentPosition(), targetPosition);
+
+        //if(!(pidController.atSetPoint())){
+        if (pidController.calculate(motor.getCurrentPosition(), targetPosition)+F <= 0){
+            motor.setPower((output+F/4));
+        }
+        else{
+            motor.setPower(output+F);
+        }
 
     }
 

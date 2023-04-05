@@ -172,8 +172,8 @@ public class teleoppowerplay4slidepid extends OpMode {
         MPRight.slide_drop = 235;
         MPRight.rotate_collect = 875;
         MPRight.slide_collect = 540;
-        MPRight.tilt_collect = 350;
-        MPRight.CLAWTILT_COLLECT = 0.55;
+        MPRight.tilt_collect = 400;
+        MPRight.CLAWTILT_COLLECT = 0.54;
         MPRight.CLAWTILT_DROPHIGH = 0.61;
 
         LPRight.rotate_drop = -693;
@@ -181,8 +181,8 @@ public class teleoppowerplay4slidepid extends OpMode {
         LPRight.slide_drop = 30;
         LPRight.rotate_collect = 875;
         LPRight.slide_collect = 540;
-        LPRight.tilt_collect = 350;
-        LPRight.CLAWTILT_COLLECT = 0.55;
+        LPRight.tilt_collect = 400;
+        LPRight.CLAWTILT_COLLECT = 0.54;
         LPRight.CLAWTILT_DROPHIGH = 0.4;
 
         LP2Right.rotate_drop = -224;
@@ -190,17 +190,17 @@ public class teleoppowerplay4slidepid extends OpMode {
         LP2Right.slide_drop = 120;
         LP2Right.rotate_collect = 890;
         LP2Right.slide_collect = 540;
-        LP2Right.tilt_collect = 350;
-        LP2Right.CLAWTILT_COLLECT = 0.55;
+        LP2Right.tilt_collect = 400;
+        LP2Right.CLAWTILT_COLLECT = 0.54;
         LP2Right.CLAWTILT_DROPHIGH = 0.4;
 
         HPLeft.rotate_drop = -217;
         HPLeft.tilt_drop = -1550;
-        HPLeft.slide_drop = 420;
+        HPLeft.slide_drop = 435;
         HPLeft.rotate_collect = -875;
         HPLeft.slide_collect = 540;
-        HPLeft.tilt_collect = 350;
-        HPLeft.CLAWTILT_COLLECT = 0.55;
+        HPLeft.tilt_collect = 400;
+        HPLeft.CLAWTILT_COLLECT = 0.54;
         HPLeft.CLAWTILT_DROPHIGH = 0.61;
 
         HPStackLeft.rotate_drop = 158;
@@ -226,8 +226,8 @@ public class teleoppowerplay4slidepid extends OpMode {
         MPLeft.slide_drop = 270;
         MPLeft.rotate_collect = -875;
         MPLeft.slide_collect = 540;
-        MPLeft.tilt_collect = 350;
-        MPLeft.CLAWTILT_COLLECT = 0.55;
+        MPLeft.tilt_collect = 400;
+        MPLeft.CLAWTILT_COLLECT = 0.54;
         MPLeft.CLAWTILT_DROPHIGH = 0.61;
 
         LPLeft.rotate_drop = 609;
@@ -235,8 +235,8 @@ public class teleoppowerplay4slidepid extends OpMode {
         LPLeft.slide_drop = 70;
         LPLeft.rotate_collect = -875;
         LPLeft.slide_collect = 540;
-        LPLeft.tilt_collect = 350;
-        LPLeft.CLAWTILT_COLLECT = 0.55;
+        LPLeft.tilt_collect = 400;
+        LPLeft.CLAWTILT_COLLECT = 0.54;
         LPLeft.CLAWTILT_DROPHIGH = 0.4;
 
         LP2Left.rotate_drop = 181;
@@ -244,8 +244,8 @@ public class teleoppowerplay4slidepid extends OpMode {
         LP2Left.slide_drop = 126;
         LP2Left.rotate_collect = -875;
         LP2Left.slide_collect = 540;
-        LP2Left.tilt_collect = 350;
-        LP2Left.CLAWTILT_COLLECT = 0.55;
+        LP2Left.tilt_collect = 400;
+        LP2Left.CLAWTILT_COLLECT = 0.54;
         LP2Left.CLAWTILT_DROPHIGH = 0.4;
 
         TopLeftTerminal.rotate_drop = 181;
@@ -253,8 +253,8 @@ public class teleoppowerplay4slidepid extends OpMode {
         TopLeftTerminal.slide_drop = 540;
         TopLeftTerminal.rotate_collect = -875;
         TopLeftTerminal.slide_collect = 540;
-        TopLeftTerminal.tilt_collect = 350;
-        TopLeftTerminal.CLAWTILT_COLLECT = 0.55;
+        TopLeftTerminal.tilt_collect = 400;
+        TopLeftTerminal.CLAWTILT_COLLECT = 0.54;
         TopLeftTerminal.POLEGUIDE_DEPOSIT = 0.1;
 
         TopRightTerminal.rotate_drop = -174;
@@ -319,6 +319,7 @@ public class teleoppowerplay4slidepid extends OpMode {
         tilt_arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         tilt_arm.setPower(1);
 
+        //rotate.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         rotate.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         slide.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
@@ -333,7 +334,7 @@ public class teleoppowerplay4slidepid extends OpMode {
         tilt_claw.setPosition(0.26);
         odometry_forward.setPosition(0.55);
         odometry_strafe.setPosition(0.5);
-        sensor_servo.setPosition(0);
+        sensor_servo.setPosition(ActiveOptions.POLEGUIDE_DEPOSIT);
         //claw         = hardwareMap.get(Servo.class,"claw");
         front_right.setDirection(DcMotor.Direction.REVERSE);
         back_right.setDirection(DcMotor.Direction.REVERSE);
@@ -546,12 +547,12 @@ public class teleoppowerplay4slidepid extends OpMode {
             case LIFT_TILTTHECLAW:
                 tilt_claw.setPosition(0.30);
                 slide_extension.updateF(-0.3);
-                slide_extension.updateConstants(0.015, 0.001, 0.003);
+                slide_extension.updateConstants(0.015, 0.001, 0.0003);
                 liftState = LiftState.LIFT_GRABNEW_SWING;
 
             case LIFT_GRABNEW_SWING:
                 slide_extension.updateF(-0.3);
-                slide_extension.updateConstants(0.015, 0.001, 0.003);
+                slide_extension.updateConstants(0.015, 0.001, 0.0003);
                 sensor_servo.setPosition(ActiveOptions.POLEGUIDE_REST);
                 if (ActiveOptions == HPStackRight || ActiveOptions == HPStackLeft){
                     tilt_arm.setTargetPosition(ActiveOptions.tilt_collect);
@@ -575,20 +576,19 @@ public class teleoppowerplay4slidepid extends OpMode {
                     ActiveOptions.slide_var = 0;
                     if (slide.getCurrentPosition() <= 50) {
                         claw.setPosition(ActiveOptions.CLAW_DEPOSIT);
-                        if (gamepad1.a) {
                             rotate_arm.setTargetPosition(ActiveOptions.rotate_collect);
                             tilt_arm.setTargetPosition(ActiveOptions.tilt_collect);
-                            if (Math.abs(rotate.getCurrentPosition() - ActiveOptions.rotate_collect) <= 30) {
+                            if (Math.abs(rotate.getCurrentPosition() - ActiveOptions.rotate_collect) <= 30 && gamepad1.a) {
                                 tilt_claw.setPosition(ActiveOptions.CLAWTILT_COLLECT);
                                 slide_extension.setTargetPosition(ActiveOptions.slide_collect);
                                 liftState = LiftState.LIFT_GRABNEW_GRAB;
-                            }
+
                         }
                     }
                 }
                 break;
             case LIFT_GRABNEW_GRAB:
-                slide_extension.updateConstants(0.015, 0.001, 0.003);
+                slide_extension.updateConstants(0.015, 0.001, 0.0003);
                 tilt_arm.setTargetPosition(ActiveOptions.tilt_collect);
                 if (Math.abs(slide.getCurrentPosition() - ActiveOptions.slide_collect) <= 30 && gamepad1.x) {
                     claw.setPosition(ActiveOptions.CLAW_HOLD);
@@ -703,14 +703,14 @@ public class teleoppowerplay4slidepid extends OpMode {
 
                 break;
             case LIFT_CLAWCLOSE:
-                slide_extension.updateConstants(0.015, 0.001, 0.003);
+                slide_extension.updateConstants(0.015, 0.001, 0.0003);
                 if (liftTimer.seconds() >= 0.23) {
                     liftState = LiftState.LIFT_DROPCONE;
                 }
                 break;
 
             case LIFT_DROPCONE:
-                slide_extension.updateConstants(0.015, 0.001, 0.003);
+                slide_extension.updateConstants(0.015, 0.001, 0.0003);
                 if (ActiveOptions == HPStackRight || ActiveOptions == HPStackLeft) {
                     tilt_arm.setTargetPosition(ActiveOptions.tilt_collect - 300);
                     tilt_claw.setPosition(0.4);
@@ -732,8 +732,6 @@ public class teleoppowerplay4slidepid extends OpMode {
 /*                            if (Math.abs(tilt_arm.getCurrentPosition() - ActiveOptions.tilt_drop) <= 100 && Math.abs(rotate_arm.getCurrentPosition() - ActiveOptions.rotate_drop) <= 100){
                                 tilt_claw.setPosition(ActiveOptions.CLAWTILT_DEPOSIT);*/
                             if (Math.abs(tilt_arm.getCurrentPosition() - ActiveOptions.tilt_drop) <= 100 && Math.abs(rotate.getCurrentPosition() - ActiveOptions.rotate_drop) <= 100 && gamepad1.a) {
-                                slide_extension.updateF(0.3);
-                                slide_extension.updateConstants(0.14,0.000,0.0004);
                                 liftState = LiftState.LIFT_EXTENDSLIDE;
                             //}
                             }
@@ -742,7 +740,8 @@ public class teleoppowerplay4slidepid extends OpMode {
                 break;
 
             case LIFT_DROPCONEMEDIUM:
-                slide_extension.updateConstants(0.015, 0.001, 0.003);
+
+                slide_extension.updateConstants(0.015, 0.001, 0.0003);
                 if (slide.getCurrentPosition() <= 30) {
                     tilt_claw.setPosition(ActiveOptions.CLAWTILT_DEPOSIT);
                     tilt_arm.setTargetPosition(ActiveOptions.tilt_drop);
@@ -755,12 +754,22 @@ public class teleoppowerplay4slidepid extends OpMode {
                 break;
 
             case LIFT_EXTENDSLIDE:
-                slide_extension.updateConstants(0.14,0.000,0.0004);
+                if (ActiveOptions == LP2Left || ActiveOptions == LPLeft || ActiveOptions == LP2Right || ActiveOptions == LPRight){
+                    slide_extension.updateF(-0);
+                    slide_extension.updateConstants(0.015, 0.001, 0.0003);
+
+                }
+                else{
+                    slide_extension.updateF(0.2);
+                    slide_extension.updateConstants(0.02, 0.000,0.0005);
+
+                }
+
                 slide_extension.setTargetPosition(ActiveOptions.slide_drop);
                 rotate_arm.setTargetPosition(ActiveOptions.rotate_drop);
                 tilt_arm.setTargetPosition(ActiveOptions.tilt_drop);
                 if (gamepad1.y){
-                    claw.setPosition(0.09);
+                    claw.setPosition(0.7);
                 }
                 else {
                     claw.setPosition(0.0);
@@ -778,7 +787,8 @@ public class teleoppowerplay4slidepid extends OpMode {
                 }
                 break;
             case LIFT_RETRACTSLIDE:
-                slide_extension.updateConstants(0.14,0.000,0.0004);
+                slide_extension.updateF(0.2);
+                slide_extension.updateConstants(0.02,0.000,0.0005);
                 tilt_claw.setPosition(0.4);
                 slide_extension.setTargetPosition(0);
                 tilt_arm.setTargetPosition(ActiveOptions.tilt_collect);
@@ -790,7 +800,7 @@ public class teleoppowerplay4slidepid extends OpMode {
                 slide_extension.setTargetPosition(0);
                 tilt_claw.setPosition(CLAWTILT_END);
 
-                slide_extension.updateConstants(0.015, 0.001, 0.003);
+                slide_extension.updateConstants(0.015, 0.001, 0.0003);
 
                 if (liftTimer.seconds() >= 0.5) {
                     //rotate_arm.setPower(1);
@@ -803,7 +813,7 @@ public class teleoppowerplay4slidepid extends OpMode {
 
 
         rotate_arm.toPosition();
-        slide_extension.toPosition();
+        slide_extension.toPositionSlide();
 
 
 

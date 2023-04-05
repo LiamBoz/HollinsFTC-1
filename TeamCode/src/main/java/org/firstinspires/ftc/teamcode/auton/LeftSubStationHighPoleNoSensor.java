@@ -238,7 +238,7 @@ public class LeftSubStationHighPoleNoSensor extends OpMode {
     double distance_seen = 0.0; // telemetry of the distance sensor
 
     final int SLIDE_LOW = 0; // the low encoder position for the lift
-    private int SLIDE_COLLECT = 445; // the high encoder position for the lift
+    private int SLIDE_COLLECT = 495; // the high encoder position for the lift
     public static int SLIDE_DROPOFF = 440;
 
     // TODO: find encoder values for tilt
@@ -378,10 +378,10 @@ public class LeftSubStationHighPoleNoSensor extends OpMode {
                 //.addTrajectory()
                 //.splineToLinearHeading(new Pose2d(0,-16, Math.toRadians(270)), Math.toRadians(270))
                 //.splineToLinearHeading(new Pose2d(0,-49, Math.toRadians(360)), Math.toRadians(270))
-                .splineToLinearHeading(new Pose2d(0,-49, Math.toRadians(270)), Math.toRadians(270))
+                .splineToLinearHeading(new Pose2d(0,-49, Math.toRadians(360)), Math.toRadians(270))
                 //.splineToLinearHeading(new Pose2d(0,-49), Math.toRadians(180))
                 .setReversed(true)
-                .splineToLinearHeading(new Pose2d(-26, -49, Math.toRadians(360)), Math.toRadians(180))
+                .splineToLinearHeading(new Pose2d(-26, -49, Math.toRadians(360)), Math.toRadians(360))
                 .build();
 
 
@@ -624,7 +624,7 @@ public class LeftSubStationHighPoleNoSensor extends OpMode {
                 FailSafeTimer.reset();
                 drive.update();
                 slide_extension.setTargetPosition(0);
-                tilt_claw.setPosition(0.32);
+                tilt_claw.setPosition(0.2);
                 if (liftTimer.seconds() >= 0.5) {
                     //rotate_arm.setPower(1);
                     rotate_arm.setTargetPosition(0);

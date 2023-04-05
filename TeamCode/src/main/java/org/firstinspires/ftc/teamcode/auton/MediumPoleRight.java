@@ -15,6 +15,7 @@ import static org.firstinspires.ftc.teamcode.turretPIDTuning.rotateP;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
+import com.acmerobotics.roadrunner.followers.HolonomicPIDVAFollower;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
@@ -184,6 +185,7 @@ public class MediumPoleRight extends OpMode {
     TrajectorySequence BlueOnRedStayStill;
     TrajectorySequence GoForward;
     TrajectorySequence GoBack;
+    TrajectorySequence BlueOnRedGoCycleMore;
 
     DistanceSensor colorsensor1;
 
@@ -193,7 +195,7 @@ public class MediumPoleRight extends OpMode {
     public TurretMotor tilt_arm;
     public TurretMotor rotate_arm;
 
-    public DcMotor slide_extension;
+    public DcMotorEx slide_extension;
     public DcMotor rotate;
     public DcMotor tilt;
 
@@ -236,8 +238,8 @@ public class MediumPoleRight extends OpMode {
     double distance_seen = 0.0; // telemetry of the distance sensor
 
     final int SLIDE_LOW = 0; // the low encoder position for the lift
-    private int SLIDE_COLLECT = 475; // the high encoder position for the lift
-    public static int SLIDE_DROPOFF = 225;
+    private int SLIDE_COLLECT = 525; // the high encoder position for the lift
+    public static int SLIDE_DROPOFF = 235;
 
     // TODO: find encoder values for tilt
     private int TILT_LOW = -20;
@@ -364,10 +366,14 @@ public class MediumPoleRight extends OpMode {
                 //.splineTo(new Vector2d(0, -49), Math.toRadians(270))
                 //.strafeRight(49)
                 //.turn(Math.toRadians(90))
-                .splineToLinearHeading(new Pose2d(-2,-49, Math.toRadians(180)), Math.toRadians(270))
+                .splineToLinearHeading(new Pose2d(0, -20, Math.toRadians(270)), Math.toRadians(270))
+                .addDisplacementMarker(() -> drive.followTrajectorySequenceAsync(BlueOnRedGoCycleMore))
                 //.splineToLinearHeading(new Pose2d(0,-49), Math.toRadians(180))
                 .build();
 
+        BlueOnRedGoCycleMore = drive.trajectorySequenceBuilder(new Pose2d(0,-20, Math.toRadians(270)))
+                .splineToLinearHeading(new Pose2d(-2,-49, Math.toRadians(180)), Math.toRadians(270))
+                .build();
 /*        BlueOnRedStayStill = drive.trajectorySequenceBuilder(new Pose2d(-2,-49, Math.toRadians(270)))
                 .splineToLinearHeading(new Pose2d(-2,-49, Math.toRadians(180)), Math.toRadians(270))
                 .build();*/
@@ -466,7 +472,8 @@ public class MediumPoleRight extends OpMode {
                 tilt_arm.setTargetPosition(TILT_HIGH);
                 rotate_arm.setTargetPosition(ROTATE_DROP);
                 sensor_servo.setPosition(POLEGUIDE_DEPOSIT);
-                if ((Math.abs(rotate.getCurrentPosition() - ROTATE_DROP) <= 35) && (drive.getPoseEstimate().getY() <= -47)) {
+                if ((Math.abs(rotate.getCurrentPosition() - ROTATE_DROP) <= 35) && (drive.getPoseEstimate().getY() <= -48) && (Math.abs(tilt.getCurrentPosition() - TILT_HIGH) <= 20)) {
+
                     slide_extension.setTargetPosition(SLIDE_DROPOFF);
                     if ((Math.abs(slide_extension.getCurrentPosition() - SLIDE_DROPOFF) <= 40) && (Math.abs(tilt.getCurrentPosition() - TILT_HIGH) <= 50)) {
                         liftTimer.reset();
@@ -526,7 +533,7 @@ public class MediumPoleRight extends OpMode {
                 if (Math.abs(rotate.getCurrentPosition() - ROTATE_COLLECT) <= 25 && Math.abs(tilt.getCurrentPosition() - TILT_LOW) <= 20) {
                     slide_extension.setTargetPosition(SLIDE_COLLECT); /* ret here */
                     tilt_arm.updateConstants(0.005,0,0.0002);
-                    if (slide_extension.getCurrentPosition() >= (SLIDE_COLLECT - 40)) {
+                    if (slide_extension.getCurrentPosition() >= (SLIDE_COLLECT - 10)) {
                         claw.setPosition(CLAW_HOLD);
 
                         //drive.breakFollowing();
@@ -614,7 +621,7 @@ public class MediumPoleRight extends OpMode {
                 FailSafeTimer.reset();
                 drive.update();
                 slide_extension.setTargetPosition(0);
-                tilt_claw.setPosition(0.32);
+                tilt_claw.setPosition(0.2);
                 if (liftTimer.seconds() >= 0.5) {
                     //rotate_arm.setPower(1);
                     rotate_arm.setTargetPosition(0);

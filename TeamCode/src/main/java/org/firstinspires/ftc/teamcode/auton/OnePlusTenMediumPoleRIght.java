@@ -613,7 +613,7 @@ public class OnePlusTenMediumPoleRIght extends OpMode {
                 FailSafeTimer.reset();
                 drive.update();
                 slide_extension.setTargetPosition(0);
-                tilt_claw.setPosition(0.32);
+                tilt_claw.setPosition(0.2);
                 if (liftTimer.seconds() >= 0.5) {
                     //rotate_arm.setPower(1);
                     rotate_arm.setTargetPosition(0);

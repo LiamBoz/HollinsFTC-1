@@ -1,6 +1,12 @@
 package org.firstinspires.ftc.teamcode;
 
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.variable_slide_ticks;
+
+import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.config.Config;
+import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import static org.firstinspires.ftc.teamcode.slidePIDTuning.slideD;
 import static org.firstinspires.ftc.teamcode.slidePIDTuning.slideI;
 import static org.firstinspires.ftc.teamcode.slidePIDTuning.slideP;
@@ -23,6 +29,8 @@ import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+
+@Config
 @TeleOp(name="teleoppowerplay4", group="Iterative Opmode")
 public class teleoppowerplay4 extends OpMode {
 
@@ -55,7 +63,7 @@ public class teleoppowerplay4 extends OpMode {
     private DcMotor back_right  = null;
     private TurretMotor rotate_arm;
     public DcMotor tilt_arm;
-    public DcMotor slide_extension;
+    public DcMotorEx slide_extension;
     public DcMotor rotate;
     private Servo sensor_servo;
    // private CRServo lights;
@@ -120,6 +128,8 @@ public class teleoppowerplay4 extends OpMode {
 
     boolean slidevar = true;
 
+    public PIDFCoefficients pidfNewSlide;
+
     int tilt_position = 1;
     int slide_position = 0;
 
@@ -150,6 +160,13 @@ public class teleoppowerplay4 extends OpMode {
     double Kp = 0.015;
     double leftPow;
     double rightPow;
+
+    public static double NEW_P = 0;
+    public static double NEW_I = 0;
+    public static double NEW_D = 0;
+    public static double NEW_F = 0;
+
+
 
     //final double CLAWTILT_SWING = 0.5;
     @Override
@@ -275,8 +292,6 @@ public class teleoppowerplay4 extends OpMode {
         BottomRightTerminal.POLEGUIDE_DEPOSIT = 0.1;
 
 
-
-
         /*GJ.rotate_drop = -911;
         GJ.tilt_drop = 500;
         GJ.slide_drop = 126;
@@ -301,7 +316,7 @@ public class teleoppowerplay4 extends OpMode {
         front_right  = hardwareMap.get(DcMotor.class, "front_right");
         back_left    = hardwareMap.get(DcMotor.class, "back_left");
         back_right   = hardwareMap.get(DcMotor.class, "back_right");
-        slide_extension  = hardwareMap.get(DcMotor.class,"slide_extension");
+        slide_extension  = hardwareMap.get(DcMotorEx.class,"slide_extension");
         tilt_arm = hardwareMap.get(DcMotor.class,"tilt_arm");
         claw = hardwareMap.get(Servo.class,"claw");
         tilt_claw = hardwareMap.get(Servo.class,"tilt_claw");
@@ -311,6 +326,10 @@ public class teleoppowerplay4 extends OpMode {
         sensor_servo = hardwareMap.get(Servo.class, "sensor_servo");
         //lights = hardwareMap.get(CRServo.class, "lights");
         slide_extension.setDirection(DcMotor.Direction.REVERSE);
+
+        slide_extension.setTargetPosition(0);
+        slide_extension.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        slide_extension.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
 /*        slide_extension.setTargetPosition(MinPositionTicks);
         tilt_arm.setTargetPosition(MinPositionTicks);
@@ -348,6 +367,18 @@ public class teleoppowerplay4 extends OpMode {
 
         currentGamepad1 = new Gamepad();
         previousGamepad1 = new Gamepad();
+
+
+        PIDFCoefficients pidfOrigSlide = slide_extension.getPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        pidfNewSlide = new PIDFCoefficients(NEW_P,NEW_I,NEW_D,NEW_F);
+
+        slide_extension.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, pidfNewSlide);
+
+        PIDFCoefficients pidfModified = slide_extension.getPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
+
     }
 
     @Override
@@ -358,6 +389,12 @@ public class teleoppowerplay4 extends OpMode {
 
         rotate_arm.toPosition();
         slide_extension.setPower(1);
+
+        pidfNewSlide = new PIDFCoefficients(NEW_P,NEW_I,NEW_D,NEW_F);
+
+        slide_extension.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, pidfNewSlide);
+
+
         //slide_extension.setPower(1);
         //slide_extension.toPosition();
 

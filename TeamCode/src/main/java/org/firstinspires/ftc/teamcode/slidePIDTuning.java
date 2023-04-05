@@ -28,7 +28,7 @@ public class slidePIDTuning extends OpMode{
 
     public static double slideF = -0.3;
 
-    public static double slideP = 0.015, slideI = 0.001, slideD = 0.003;
+    public static double slideP = 0.015, slideI = 0.001, slideD = 0.0003;
     //public static double rotateP = 0, rotateI = 0, rotateD = 0;
     //public static double tiltP = 0, tiltI = 0, tiltD = 0;
 
