@@ -4,6 +4,11 @@ public class PickPlaceOptions2 {
 
 
     // HP LEft Values
+    // I HATE Liam Bozarth!!
+    //-jOSHUA
+
+    //i LOVE LIAM BOZARTH
+    //-HENRY AND THOM
     public int rotate_collect = 875;
     public int tilt_collect = 400;
     public int slide_collect = 540;
@@ -20,7 +25,8 @@ public class PickPlaceOptions2 {
     public double CLAWTILT_DEPOSIT = 0.61;
     public double CLAWTILT_DROPHIGH = 0.61;
     public double POLEGUIDE_DEPOSIT = 0.54;
-    public double POLEGUIDE_REST = 0.1;
+    public double POLEGUIDE_REST = 0.08;
+
 
 
 

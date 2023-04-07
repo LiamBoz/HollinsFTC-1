@@ -24,7 +24,7 @@ public class tiltPIDTuning extends OpMode{
 
 
 
-    public static double tiltP = 0.002, tiltI = 0.00, tiltD = 0.0002;
+    public static double tiltP = 0.015, tiltI = 0.08, tiltD = 0.00035;
     //public static double rotateP = 0, rotateI = 0, rotateD = 0;
     //public static double tiltP = 0, tiltI = 0, tiltD = 0;
 
@@ -42,7 +42,7 @@ public class tiltPIDTuning extends OpMode{
         //tilt_arm = new TurretMotor(tiltP, tiltI, tiltD, tilt);
         //rotate_arm = new TurretMotor(rotateP, rotateI, rotateD, rotate);
 
-        tilt.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        tilt.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         tilt_arm = new TurretMotor(tiltP, tiltI,tiltD, tilt);
 
         tilt_claw.setPosition(0.59);
