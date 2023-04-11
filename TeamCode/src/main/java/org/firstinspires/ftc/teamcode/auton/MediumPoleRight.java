@@ -194,9 +194,11 @@ public class MediumPoleRight extends OpMode {
 
 
     //public TurretMotor slide_extension;
-    public DcMotorEx tilt_arm;
-    public DcMotorEx rotate_arm;
 
+    TurretMotor tilt_arm;
+
+    public DcMotorEx tilt;
+    public DcMotorEx rotate_arm;
     public DcMotorEx slide_extension;
 
     public Servo claw;
@@ -238,8 +240,8 @@ public class MediumPoleRight extends OpMode {
     double distance_seen = 0.0; // telemetry of the distance sensor
 
     final int SLIDE_LOW = 0; // the low encoder position for the lift
-    private int SLIDE_COLLECT = 535; // the high encoder position for the lift
-    public static int SLIDE_DROPOFF = 250;
+    private int SLIDE_COLLECT = 530; // the high encoder position for the lift
+    public static int SLIDE_DROPOFF = 275;
 
     // TODO: find encoder values for tilt
     private int TILT_LOW = -50;
@@ -252,8 +254,11 @@ public class MediumPoleRight extends OpMode {
     //public int TILT_DECREMENT = 435;
 
     // TODO: find encoder values for rotation
-    final int ROTATE_COLLECT =-2;
-    final int ROTATE_DROP = -705;
+    final int ROTATE_COLLECT = -10;
+    final int ROTATE_DROP = -695;
+
+
+    public static double TILT_P = 0.012, TILT_D = 0.00035, TILT_I = 0.05;
 
 
     //public TrajectorySequence VariablePath;
@@ -271,7 +276,7 @@ public class MediumPoleRight extends OpMode {
         drive.setPoseEstimate(new Pose2d(0, 0, Math.toRadians(270)));
 
         slide_extension = hardwareMap.get(DcMotorEx.class,"slide_extension");
-        tilt_arm = hardwareMap.get(DcMotorEx.class,"tilt_arm");
+        tilt = hardwareMap.get(DcMotorEx.class,"tilt_arm");
         rotate_arm = hardwareMap.get(DcMotorEx.class,"rotate_arm");
         claw = hardwareMap.get(Servo.class,"claw");
         tilt_claw = hardwareMap.get(Servo.class,"tilt_claw");
@@ -296,10 +301,8 @@ public class MediumPoleRight extends OpMode {
 
         slide_extension.setPower(1);
 
-        tilt_arm.setTargetPosition(0);
-        tilt_arm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-
-        tilt_arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        tilt.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        tilt.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         rotate_arm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         //slide.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -398,9 +401,12 @@ public class MediumPoleRight extends OpMode {
 
         sensor_servo.setPosition(POLEGUIDE_REST);
         slide_extension.setPower(1);
-        tilt_arm.setPower(1);
         rotate_arm.setPower(1);
         PreloadTimer.reset();
+
+        tilt_arm = new TurretMotor(tiltP, tiltI,tiltD, tilt);
+
+        tilt_arm.updateConstants(TILT_P, TILT_I, TILT_D);
 
         //slide_extension = new TurretMotor(slideP, slideI,slideD, slide);
 
@@ -417,6 +423,7 @@ public class MediumPoleRight extends OpMode {
             drive.setPoseEstimate(new Pose2d(0, poseEstimate.getY(), poseEstimate.getHeading()));
         }*/
 
+        tilt_arm.toPosition();
 
 
         if (FailSafe){
@@ -437,7 +444,7 @@ public class MediumPoleRight extends OpMode {
         //telemetry.addData("y2", poseEstimate.getY());
         //telemetry.addData("heading", poseEstimate.getHeading());
         telemetry.addData("encoder ticks for slide",slide_extension.getCurrentPosition());
-        telemetry.addData("encoder ticks for tilt",tilt_arm.getCurrentPosition());
+        telemetry.addData("encoder ticks for tilt",tilt.getCurrentPosition());
         telemetry.addData("rotation ticks", rotate_arm.getCurrentPosition());
         telemetry.addData("claw position", claw.getPosition());
         telemetry.addData("claw tilt", tilt_claw.getPosition());
@@ -451,14 +458,14 @@ public class MediumPoleRight extends OpMode {
         telemetry.addData("distance", colorsensor1.getDistance(DistanceUnit.INCH));
         telemetry.addData("Sensor seen",distance_seen);
 
-        if (drive.getPoseEstimate().getY() <= 48.8){
+        if (drive.getPoseEstimate().getY() <= -48.5){
             switchvar = true;
         }
         else{
             PreloadTimer.reset();
         }
 
-        if (PreloadTimer.seconds() >= 0.5){
+        if (PreloadTimer.seconds() >= 0){
             drop_preload = true;
 
         }
@@ -490,18 +497,19 @@ public class MediumPoleRight extends OpMode {
 
         switch (liftState) {
             case LIFT_TILTTHECLAW:
-                tilt_claw.setPosition(CLAWTILT_DEPOSIT);
-                sensor_servo.setPosition(POLEGUIDE_DEPOSIT);
-                liftState = LiftState.LIFT_STARTDROP;
+                    tilt_claw.setPosition(CLAWTILT_DEPOSIT);
+                    sensor_servo.setPosition(POLEGUIDE_DEPOSIT);
+                    liftState = LiftState.LIFT_STARTDROP;
+
                 break;
             case LIFT_STARTDROP:
                 tilt_arm.setTargetPosition(TILT_HIGH);
                 rotate_arm.setTargetPosition(ROTATE_DROP);
                 sensor_servo.setPosition(POLEGUIDE_DEPOSIT);
-                if ((Math.abs(rotate_arm.getCurrentPosition() - ROTATE_DROP) <= 20) && (switchvar) && drop_preload && (Math.abs(tilt_arm.getCurrentPosition() - TILT_HIGH) <= 30)) {
+                if ((Math.abs(rotate_arm.getCurrentPosition() - ROTATE_DROP) <= 35) && switchvar && drop_preload && (Math.abs(tilt.getCurrentPosition() - TILT_HIGH) <= 35)) {
 
                     slide_extension.setTargetPosition(SLIDE_DROPOFF);
-                    if ((Math.abs(slide_extension.getCurrentPosition() - SLIDE_DROPOFF) <= 40) && (Math.abs(tilt_arm.getCurrentPosition() - TILT_HIGH) <= 50)) {
+                    if ((Math.abs(slide_extension.getCurrentPosition() - SLIDE_DROPOFF) <= 20) && (Math.abs(tilt.getCurrentPosition() - TILT_HIGH) <= 50)) {
                         liftTimer.reset();
                         liftState = LiftState.LIFT_DUNK;
                         break;
@@ -538,7 +546,7 @@ public class MediumPoleRight extends OpMode {
 
             case LIFT_DROPCYCLE:
                 tilt_arm.setTargetPosition(TILT_HIGH);
-                if (tilt_arm.getCurrentPosition() <= (TILT_LOW - 200)) {
+                if (tilt.getCurrentPosition() <= (TILT_LOW - 220)) {
                     slide_extension.setTargetPosition(50);
                     //drive.followTrajectorySequenceAsync(GoBack);
                     if (slide_extension.getCurrentPosition() <= 250) {
@@ -555,7 +563,7 @@ public class MediumPoleRight extends OpMode {
                 break;
 
             case LIFT_GETNEW:
-                if (Math.abs(rotate_arm.getCurrentPosition() - ROTATE_COLLECT) <= 20 && Math.abs(tilt_arm.getCurrentPosition() - TILT_LOW) <= 30) {
+                if (Math.abs(rotate_arm.getCurrentPosition() - ROTATE_COLLECT) <= 20 && Math.abs(tilt.getCurrentPosition() - TILT_LOW) <= 30) {
                     slide_extension.setTargetPosition(SLIDE_COLLECT); /* ret here */
                     if (slide_extension.getCurrentPosition() >= (SLIDE_COLLECT - 35)) {
                         claw.setPosition(CLAW_HOLD);
@@ -569,7 +577,7 @@ public class MediumPoleRight extends OpMode {
 
             case LIFT_HOLD:
                 if (liftTimer.seconds() >= 0.25) {
-                    slide_extension.setTargetPosition(SLIDE_COLLECT - 30);
+                    slide_extension.setTargetPosition(SLIDE_COLLECT - 40);
                     //slide_extension.setTargetPosition(SLIDE_COLLECT - 40);
                     liftState = LiftState.LIFT_DROPCYCLE;
                     break;

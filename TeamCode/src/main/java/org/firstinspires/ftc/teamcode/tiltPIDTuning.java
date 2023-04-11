@@ -24,7 +24,7 @@ public class tiltPIDTuning extends OpMode{
 
 
 
-    public static double tiltP = 0.015, tiltI = 0.08, tiltD = 0.00035;
+    public static double tiltP = 0.012, tiltI = 0.07, tiltD = 0.00035;
     //public static double rotateP = 0, rotateI = 0, rotateD = 0;
     //public static double tiltP = 0, tiltI = 0, tiltD = 0;
 

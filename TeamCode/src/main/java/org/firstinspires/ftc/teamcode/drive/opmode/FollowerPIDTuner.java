@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
+import org.firstinspires.ftc.teamcode.drive.SampleMecanumDriveTwo;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 
 /*
@@ -28,7 +29,7 @@ public class FollowerPIDTuner extends LinearOpMode {
 
     @Override
     public void runOpMode() throws InterruptedException {
-        SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
+        SampleMecanumDriveTwo drive = new SampleMecanumDriveTwo(hardwareMap);
 
         Pose2d startPose = new Pose2d(-DISTANCE / 2, -DISTANCE / 2, 0);
 
@@ -41,13 +42,37 @@ public class FollowerPIDTuner extends LinearOpMode {
         while (!isStopRequested()) {
             TrajectorySequence trajSeq = drive.trajectorySequenceBuilder(startPose)
                     .forward(DISTANCE)
-                    .turn(Math.toRadians(90))
+                    .back(DISTANCE)
                     .forward(DISTANCE)
-                    .turn(Math.toRadians(90))
+                    .back(DISTANCE)
                     .forward(DISTANCE)
-                    .turn(Math.toRadians(90))
+                    .back(DISTANCE)
                     .forward(DISTANCE)
-                    .turn(Math.toRadians(90))
+                    .back(DISTANCE)
+                    .forward(DISTANCE)
+                    .back(DISTANCE)
+                    .forward(DISTANCE)
+                    .back(DISTANCE)
+                    .forward(DISTANCE)
+                    .back(DISTANCE)
+                    .forward(DISTANCE)
+                    .back(DISTANCE)
+                    .forward(DISTANCE)
+                    .back(DISTANCE)
+                    .forward(DISTANCE)
+                    .back(DISTANCE)
+                    .forward(DISTANCE)
+                    .back(DISTANCE)
+                    .forward(DISTANCE)
+                    .back(DISTANCE)
+                    .forward(DISTANCE)
+                    .back(DISTANCE)
+                    .forward(DISTANCE)
+                    .back(DISTANCE)
+                    .forward(DISTANCE)
+                    .back(DISTANCE)
+                    .forward(DISTANCE)
+                    .back(DISTANCE)
                     .build();
             drive.followTrajectorySequence(trajSeq);
         }
