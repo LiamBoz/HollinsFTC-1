@@ -240,12 +240,12 @@ public class MediumPoleRight extends OpMode {
     double distance_seen = 0.0; // telemetry of the distance sensor
 
     final int SLIDE_LOW = 0; // the low encoder position for the lift
-    private int SLIDE_COLLECT = 555; // the high encoder position for the lift
-    public static int SLIDE_DROPOFF = 275;
+    private int SLIDE_COLLECT = 523; // the high encoder position for the lift
+    public static int SLIDE_DROPOFF = 280;
 
     // TODO: find encoder values for tilt
     private int TILT_LOW = -50;
-    public static int TILT_HIGH = -1130;
+    public static int TILT_HIGH = -1180;
 
     public double POLEGUIDE_DEPOSIT = 0.5;
     public double POLEGUIDE_REST = 0.13;
@@ -566,9 +566,9 @@ public class MediumPoleRight extends OpMode {
             case LIFT_GETNEW:
                 if (Math.abs(rotate_arm.getCurrentPosition() - ROTATE_COLLECT) <= 200) {
                     tilt_claw.setPosition(CLAWTILT_DEPOSIT);
-                    if (Math.abs(rotate_arm.getCurrentPosition() - ROTATE_COLLECT) <= 3 && Math.abs(tilt.getCurrentPosition() - TILT_LOW) <= 25) {
+                    if (Math.abs(rotate_arm.getCurrentPosition() - ROTATE_COLLECT) <= 3 && Math.abs(tilt.getCurrentPosition() - TILT_LOW) <= 15) {
                         slide_extension.setTargetPosition(SLIDE_COLLECT); /* ret here */
-                        if (slide_extension.getCurrentPosition() >= (SLIDE_COLLECT - 10)) {
+                        if (slide_extension.getCurrentPosition() >= (SLIDE_COLLECT - 5)) {
                             claw.setPosition(CLAW_HOLD);
 
                             //drive.breakFollowing();
