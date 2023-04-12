@@ -563,7 +563,7 @@ public class teleoppowerplay4slidepid extends OpMode {
 
         switch (liftState) {
             case LIFT_TILTTHECLAW:
-                tilt_claw.setPosition(0.30);
+                tilt_claw.setPosition(0.25);
                 slide_extension.updateF(-0.3);
                 slide_extension.updateConstants(0.015, 0.001, 0.0003);
                 liftState = LiftState.LIFT_GRABNEW_SWING;
@@ -594,12 +594,14 @@ public class teleoppowerplay4slidepid extends OpMode {
                     ActiveOptions.slide_var = 0;
                     if (slide.getCurrentPosition() <= 50) {
                         claw.setPosition(ActiveOptions.CLAW_DEPOSIT);
+                        tilt_arm.setTargetPosition(ActiveOptions.tilt_collect);
+                        if (gamepad1.a){
                             rotate_arm.setTargetPosition(ActiveOptions.rotate_collect);
-                            tilt_arm.setTargetPosition(ActiveOptions.tilt_collect);
                             if (Math.abs(rotate.getCurrentPosition() - ActiveOptions.rotate_collect) <= 30 && gamepad1.a) {
                                 tilt_claw.setPosition(ActiveOptions.CLAWTILT_COLLECT);
                                 slide_extension.setTargetPosition(ActiveOptions.slide_collect);
                                 liftState = LiftState.LIFT_GRABNEW_GRAB;
+                            }
 
                         }
                     }
@@ -787,7 +789,7 @@ public class teleoppowerplay4slidepid extends OpMode {
                 rotate_arm.setTargetPosition(ActiveOptions.rotate_drop);
                 tilt_arm.setTargetPosition(ActiveOptions.tilt_drop);
                 if (gamepad1.y){
-                    claw.setPosition(0.4);
+                    claw.setPosition(0.1);
                 }
                 else {
                     claw.setPosition(0.0);

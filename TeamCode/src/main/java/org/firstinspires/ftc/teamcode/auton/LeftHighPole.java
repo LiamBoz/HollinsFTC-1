@@ -33,6 +33,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.TurretMotor;
+import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDriveTwo;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 import org.opencv.core.Mat;
@@ -48,8 +49,8 @@ import java.util.ArrayList;
 
 
 @Config
-@Autonomous(name="LeftSubStationHighPoleNoSensor")
-public class LeftSubStationHighPoleNoSensor extends OpMode {
+@Autonomous(name="LeftHighPole")
+public class LeftHighPole extends OpMode {
 
     public void init_loop(){
         {
@@ -129,7 +130,8 @@ public class LeftSubStationHighPoleNoSensor extends OpMode {
         LIFT_STARTDROP,
         LIFT_POLESEARCH,
         LIFT_POLESEARCH_REVERSE,
-        LIFT_GETNEW,
+        LIFT_GETNEWTILT,
+        LIFT_GETNEWSLIDE,
         LIFT_RETRACTSLIDE,
         LIFT_HOLD,
         LIFT_LETGO,
@@ -182,10 +184,11 @@ public class LeftSubStationHighPoleNoSensor extends OpMode {
     TrajectorySequence BlueOnRedGoRight;
     TrajectorySequence BlueOnRedGoLeft;
     TrajectorySequence BlueOnRedGoCycle;
+    TrajectorySequence BlueOnRedStayStill;
     TrajectorySequence GoForward;
     TrajectorySequence GoBack;
     TrajectorySequence BlueOnRedGoCycleMore;
-    TrajectorySequence BlueOnRedGoBack;
+    TrajectorySequence ParkMiddle;
 
     //Trajectory initialDriveForward = new
 
@@ -212,9 +215,10 @@ public class LeftSubStationHighPoleNoSensor extends OpMode {
 
     ElapsedTime liftTimer = new ElapsedTime();
     ElapsedTime FailSafeTimer = new ElapsedTime();
-    ElapsedTime PoleSearchTimer = new ElapsedTime();
+    ElapsedTime PreloadTimer = new ElapsedTime();
+    ElapsedTime TiltRestTimer = new ElapsedTime();
 
-    SampleMecanumDriveTwo drive;
+    SampleMecanumDrive drive;
 
     int cones_dropped = 0;
     int CONES_DESIRED = 4;
@@ -242,11 +246,11 @@ public class LeftSubStationHighPoleNoSensor extends OpMode {
     double distance_seen = 0.0; // telemetry of the distance sensor
 
     final int SLIDE_LOW = 0; // the low encoder position for the lift
-    private int SLIDE_COLLECT = 452; // the high encoder position for the lift
+    private int SLIDE_COLLECT = 500; // the high encoder position for the lift
     public static int SLIDE_DROPOFF = 500;
 
     // TODO: find encoder values for tilt
-    private int TILT_LOW = -30;
+    private int TILT_LOW = -50;
     public static int TILT_HIGH = -1540;
 
     public double POLEGUIDE_DEPOSIT = 0.5;
@@ -254,11 +258,16 @@ public class LeftSubStationHighPoleNoSensor extends OpMode {
     //public int TILT_DECREMENT = 435;
 
     // TODO: find encoder values for rotation
-    final int ROTATE_COLLECT = -18;
-    final int ROTATE_DROP = 645;
+    final int ROTATE_COLLECT = -8;
+    final int ROTATE_DROP = -650;
+
+    boolean TiltRestVar = true;
+
+    boolean drop_preload = false;
 
     //public static double TILT_P = 0.006, TILT_D = 0.00016, TILT_I = 0.03;
     public static double TILT_P = 0.012, TILT_D = 0.00035, TILT_I = 0.07;
+    public static double EXTENDEDTILT_P = 0.1, EXTENDEDTILT_D = 0, EXTENDEDTILT_I = 0;
 
 
     //public TrajectorySequence VariablePath;
@@ -273,7 +282,7 @@ public class LeftSubStationHighPoleNoSensor extends OpMode {
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
 
 
-        drive = new SampleMecanumDriveTwo(hardwareMap);
+        drive = new SampleMecanumDrive(hardwareMap);
 
         drive.setPoseEstimate(new Pose2d(0, 0, Math.toRadians(270)));
 
@@ -354,14 +363,17 @@ public class LeftSubStationHighPoleNoSensor extends OpMode {
         //while (tagOfInterest == null)
 
 
-        BlueOnRedGoRight = drive.trajectorySequenceBuilder(new Pose2d(-26,-49, Math.toRadians(270)))
+        BlueOnRedGoRight = drive.trajectorySequenceBuilder(new Pose2d(-2,-49, Math.toRadians(180)))
                 .splineToLinearHeading(new Pose2d(-26, -51, Math.toRadians(270)), Math.toRadians(180))
+                .back(20)
+                //.turn(Math.toRadians(90))
+                //.strafeRight(26)
                 .build();
-        BlueOnRedGoLeft = drive.trajectorySequenceBuilder(new Pose2d(-26,-49, Math.toRadians(270)))
+        BlueOnRedGoLeft = drive.trajectorySequenceBuilder(new Pose2d(-2,-49, Math.toRadians(180)))
                 .splineToLinearHeading(new Pose2d(23, -51, Math.toRadians(270)), Math.toRadians(180))
-                .build();
-        BlueOnRedGoMiddle = drive.trajectorySequenceBuilder(new Pose2d(-26,-49, Math.toRadians(270)))
-                .splineToLinearHeading(new Pose2d(0, -51, Math.toRadians(270)), Math.toRadians(180))
+                .back(20)
+                //.turn(Math.toRadians(90))
+                //.strafeLeft(26)
                 .build();
         GoForward = drive.trajectorySequenceBuilder(new Pose2d(-26, -49, Math.toRadians(360)))
                 .setReversed(false)
@@ -370,9 +382,28 @@ public class LeftSubStationHighPoleNoSensor extends OpMode {
         GoBack = drive.trajectorySequenceBuilder(new Pose2d(2, -49, Math.toRadians(360)))
                 .back(28)
                 .build();
+        ParkMiddle = drive.trajectorySequenceBuilder(new Pose2d(-2,-49, Math.toRadians(180)))
+                .turn(Math.toRadians(90))
+                .back(20)
+                .build();
 
 
 
+
+        BlueOnRedGoCycle = drive.trajectorySequenceBuilder(new Pose2d(0, 0, Math.toRadians(270)))
+                //.splineToConstantHeading(new Vector2d(0,42), Math.toRadians(90))
+                //.splineToSplineHeading(new Pose2d(0, 50), Math.toRadians(180))
+                //.setReversed(true)
+                //.splineToConstantHeading(new Vector2d(13, -50), Math.toRadians(90))
+                //.back(13)
+                //.build().
+                //.splineToSplineHeading(new Pose2d(0,-40), Math.toRadians(270))
+                //.splineTo(new Vector2d(0, -49), Math.toRadians(270))
+                //.strafeRight(49)
+                //.turn(Math.toRadians(90))
+                .splineToLinearHeading(new Pose2d(0,-20, Math.toRadians(360)), Math.toRadians(270))
+                //.splineToLinearHeading(new Pose2d(0,-49), Math.toRadians(180))
+                .build();
 
         BlueOnRedGoCycle = drive.trajectorySequenceBuilder(new Pose2d(0, 0, Math.toRadians(270)))
                 //.splineToConstantHeading(new Vector2d(0,42), Math.toRadians(90))
@@ -390,13 +421,9 @@ public class LeftSubStationHighPoleNoSensor extends OpMode {
                 //.splineToLinearHeading(new Pose2d(0,-49), Math.toRadians(180))
                 .build();
 
-        BlueOnRedGoCycleMore = drive.trajectorySequenceBuilder(new Pose2d(0,-19, Math.toRadians(270)))
+        BlueOnRedGoCycleMore = drive.trajectorySequenceBuilder(new Pose2d(0,-20, Math.toRadians(270)))
                 .splineToLinearHeading(new Pose2d(0,-49, Math.toRadians(360)), Math.toRadians(270))
-                //.setReversed(true)
-                .back(26)
-                //.splineToLinearHeading(new Pose2d(-24, -49, Math.toRadians(360)), Math.toRadians(360))
                 .build();
-
         sensor_servo.setPosition(POLEGUIDE_REST);
 
         rotate_arm = new TurretMotor(rotateP, rotateI,rotateD, rotate);
@@ -404,6 +431,7 @@ public class LeftSubStationHighPoleNoSensor extends OpMode {
         tilt_arm = new TurretMotor(tiltP, tiltI,tiltD, tilt);
 
         tilt_arm.updateConstants(TILT_P, TILT_I, TILT_D);
+        rotate_arm.updateConstants(rotateP,rotateI,rotateD);
 
         init_loop();
         //drive.followTrajectorySequenceAsync(BlueOnRedGoCycle);
@@ -414,6 +442,10 @@ public class LeftSubStationHighPoleNoSensor extends OpMode {
 
     public void loop() {
         //Pose2d poseEstimate = drive.getPoseEstimate();
+/*        if(slide_extension.getCurrentPosition()>400){
+            slide_extension.setPower(0.759);
+        }
+        else{slide_extension.setPower(1);}*/
 
 /*        if (drive.getPoseEstimate().getY() >= -47){
             drive.setPoseEstimate(new Pose2d(0, poseEstimate.getY(), poseEstimate.getHeading()));
@@ -421,6 +453,21 @@ public class LeftSubStationHighPoleNoSensor extends OpMode {
 
         rotate_arm.toPosition();
         tilt_arm.toPosition();
+
+
+
+/*        if (Math.abs(tilt.getCurrentPosition() - TILT_LOW) <= 3){
+            TiltRestVar = false;
+        }
+
+        else if (TiltRestVar){
+            TiltRestTimer.reset();
+        }
+        else{
+            TiltRestVar = true;
+        }*/
+
+
 
 
         if (FailSafe){
@@ -432,7 +479,17 @@ public class LeftSubStationHighPoleNoSensor extends OpMode {
             liftState = LiftState.PARKING_STATE;
         }
 
+        if (drive.getPoseEstimate().getY() <= -48){
+            switchvar = true;
+        }
+        else{
+            PreloadTimer.reset();
+        }
 
+        if (PreloadTimer.seconds() >= 1){
+            drop_preload = true;
+
+        }
 
 
         telemetry.addData("x", (drive.getPoseEstimate()).getX());
@@ -485,30 +542,32 @@ public class LeftSubStationHighPoleNoSensor extends OpMode {
 
         switch (liftState) {
             case LIFT_TILTTHECLAW:
-                sensor_servo.setPosition(POLEGUIDE_DEPOSIT);
-                tilt_arm.updateConstants(TILT_P, TILT_I, TILT_D);
-                tilt_claw.setPosition(CLAWTILT_DEPOSIT);
-                liftState = LiftState.LIFT_STARTDROP;
+                if (drop_preload) {
+                    tilt_claw.setPosition(CLAWTILT_DEPOSIT - 0.1);
+                    rotate_arm.updateConstants(rotateP, rotateI, rotateD);
+                    liftState = LiftState.LIFT_STARTDROP;
+                }
                 break;
             case LIFT_STARTDROP:
                 tilt_arm.setTargetPosition(TILT_HIGH);
                 rotate_arm.setTargetPosition(ROTATE_DROP);
-                if ((Math.abs(rotate.getCurrentPosition() - ROTATE_DROP) <= 400)){
+                if ((Math.abs(rotate.getCurrentPosition() - ROTATE_DROP) <= 200)){
                     sensor_servo.setPosition(POLEGUIDE_DEPOSIT);
-                if ((Math.abs(rotate.getCurrentPosition() - ROTATE_DROP) <= 35) && (drive.getPoseEstimate().getX() <= -24)) {
-                    slide_extension.setTargetPosition(SLIDE_DROPOFF);
-                    if ((Math.abs(slide_extension.getCurrentPosition() - SLIDE_DROPOFF) <= 40) && (Math.abs(tilt.getCurrentPosition() - TILT_HIGH) <= 50)) {
-                        liftTimer.reset();
-                        liftState = LiftState.LIFT_DUNK;
-                        break;
-                    }
+                    if ((Math.abs(rotate.getCurrentPosition() - ROTATE_DROP) <= 40)) {
+                        tilt_claw.setPosition(CLAWTILT_DEPOSIT);
+                        slide_extension.setTargetPosition(SLIDE_DROPOFF);
+                        if ((Math.abs(slide_extension.getCurrentPosition() - SLIDE_DROPOFF) <= 40) && (Math.abs(tilt.getCurrentPosition() - TILT_HIGH) <= 50)) {
+                            liftTimer.reset();
+                            liftState = LiftState.LIFT_DUNK;
+                            break;
+                        }
                     }
                 }
                 break;
 
 
             case LIFT_DUNK:
-                if ((Math.abs(rotate.getCurrentPosition() - ROTATE_DROP) <= 50) && (Math.abs(slide_extension.getCurrentPosition() - SLIDE_DROPOFF) <= 30)) {
+                if ((Math.abs(rotate.getCurrentPosition() - ROTATE_DROP) <= 50) && (Math.abs(slide_extension.getCurrentPosition() - SLIDE_DROPOFF) <= 40)) {
                     // if (liftTimer.seconds() > 0.3){
                     tilt_claw.setPosition(CLAWTILT_DEPOSIT + 0.1);
                     epic = false;
@@ -534,47 +593,52 @@ public class LeftSubStationHighPoleNoSensor extends OpMode {
                 rotate_arm.setTargetPosition(ROTATE_DROP);   */
 
             case LIFT_DROPCYCLE:
-                tilt_arm.updateConstants(0.15, 0.07, 0.00035);
                 tilt_arm.setTargetPosition(TILT_HIGH);
-                if (tilt.getCurrentPosition() <= (TILT_LOW - 220)) {
+                TiltRestVar = true;
+                if (tilt.getCurrentPosition() <= (TILT_LOW - 200)) {
+                    tilt_arm.updateConstants(TILT_P, TILT_I, TILT_D);
                     slide_extension.setTargetPosition(50);
                     //drive.followTrajectorySequenceAsync(GoBack);
-                    drive.followTrajectorySequenceAsync(GoBack);
                     if (slide_extension.getCurrentPosition() <= 250) {
                         liftState = LiftState.LIFT_TILTTHECLAW;
+                        break;
                     }
                 }
                 else if (cones_dropped >= 5){
                     slide_extension.setTargetPosition(0);
                     if (slide_extension.getCurrentPosition() <= 150) {
                         //drive.followTrajectorySequenceAsync(GoBack);
-                        drive.followTrajectorySequenceAsync(GoBack);
                         liftState = LiftState.LIFT_TILTTHECLAW;
+                        break;
                     }
                 }
                 break;
 
-            case LIFT_GETNEW:
+            case LIFT_GETNEWTILT:
                 if (Math.abs(rotate.getCurrentPosition() - ROTATE_COLLECT) <= 400){
                     tilt_claw.setPosition(CLAWTILT_DEPOSIT);
-                if (Math.abs(rotate.getCurrentPosition() - ROTATE_COLLECT) <= 15 && Math.abs(tilt.getCurrentPosition() - TILT_LOW) <= 10) {
-                    slide_extension.setTargetPosition(SLIDE_COLLECT); /* ret here */
-                   // tilt_arm.updateConstants(0.1, 0.1, 0);
-                    tilt_arm.setTargetPosition(TILT_LOW);
-                    if (slide_extension.getCurrentPosition() >= (SLIDE_COLLECT - 40) && drive.getPoseEstimate().getX() >= 0.5) {
-                        // updating the pid coeffs MIGHT go better here instead of down there
-                        // NEEDS TESTING!
-                        claw.setPosition(CLAW_HOLD);
-                        //drive.breakFollowing();
-                        liftTimer.reset();
-                        liftState = LiftState.LIFT_HOLD;
+                    if (Math.abs(rotate.getCurrentPosition() - ROTATE_COLLECT) <= 15 && Math.abs(tilt.getCurrentPosition() - TILT_LOW) <= 30) {
+                        //tilt_arm.updateConstants(0,0,0);
+                        liftState = LiftState.LIFT_GETNEWSLIDE;
+                        break;
                     }
-                    }
+                }
+                break;
+
+            case LIFT_GETNEWSLIDE:
+                slide_extension.setTargetPosition(SLIDE_COLLECT); /* ret here */
+                if (slide_extension.getCurrentPosition() >= (SLIDE_COLLECT - 10)) {
+                    claw.setPosition(CLAW_HOLD);
+                    //drive.breakFollowing();
+                    liftTimer.reset();
+                    liftState = LiftState.LIFT_HOLD;
+                    break;
+
                 }
                 break;
 
             case LIFT_HOLD:
-                if (liftTimer.seconds() >= 0.2) {
+                if (liftTimer.seconds() >= 0.18) {
                     //slide_extension.setTargetPosition(SLIDE_COLLECT - 40);
                     liftState = LiftState.LIFT_DROPCYCLE;
                     break;
@@ -588,15 +652,17 @@ public class LeftSubStationHighPoleNoSensor extends OpMode {
                         sensor_servo.setPosition(POLEGUIDE_REST);
                         cones_dropped += 1;
                         TILT_LOW = TILT_LOW+60;
-                        SLIDE_COLLECT = SLIDE_COLLECT + 2;
+                        SLIDE_COLLECT = SLIDE_COLLECT + 0;
                         liftTimer.reset();
                         liftState = LiftState.LIFT_RETRACTSLIDE;
+                        break;
                     }
                 }
                 else {
                     if (liftTimer.seconds() >= 0.1) {
                         claw.setPosition(CLAW_DEPOSIT);
                         liftState = LiftState.PARKING_STATE;
+                        break;
                     }
                 }
                 break;
@@ -605,17 +671,17 @@ public class LeftSubStationHighPoleNoSensor extends OpMode {
                 slide_extension.setTargetPosition(SLIDE_LOW);
                 //drive.update();
                 if (slide_extension.getCurrentPosition() <= 400) {
-                    subtract_tilt = 0.3;
                     tilt_arm.setTargetPosition(TILT_LOW);
                     tilt_claw.setPosition(CLAWTILT_DEPOSIT - subtract_tilt);
                     if (slide_extension.getCurrentPosition() <= 150) {
+                        subtract_tilt = 0.3;
                         //drive.followTrajectorySequenceAsync(GoForward);
                         tilt_claw.setPosition(CLAWTILT_DEPOSIT - subtract_tilt);
-                        drive.followTrajectorySequenceAsync(GoForward);
                         liftTimer.reset();
                         //tilt_arm.setTargetPosition(TILT_LOW);
                         rotate_arm.setTargetPosition(ROTATE_COLLECT);
-                        liftState = LiftState.LIFT_GETNEW;
+                        liftState = LiftState.LIFT_GETNEWTILT;
+                        break;
                     }
                 }
                 break;
@@ -627,7 +693,7 @@ public class LeftSubStationHighPoleNoSensor extends OpMode {
                 // Use the parkingTag here - it must be at least LEFT if no tag was seen
                 if (parkingTag == LEFT){ //&& cones_dropped >= CONES_DESIRED) {
 
-                    //drive.followTrajectorySequenceAsync(BlueOnRedGoLeft);
+                    drive.followTrajectorySequenceAsync(BlueOnRedGoLeft);
                     liftTimer.reset();
                     telemetry.addData("left", 1);
                     liftState = LiftState.FINISH;
@@ -635,7 +701,7 @@ public class LeftSubStationHighPoleNoSensor extends OpMode {
 
                 } else if (parkingTag == RIGHT){ //&& cones_dropped >= CONES_DESIRED) {
 
-                    //drive.followTrajectorySequenceAsync(BlueOnRedGoRight);
+                    drive.followTrajectorySequenceAsync(BlueOnRedGoRight);
                     liftTimer.reset();
                     telemetry.addData("right", 2);
                     liftState = LiftState.FINISH;
@@ -644,6 +710,7 @@ public class LeftSubStationHighPoleNoSensor extends OpMode {
 
                 } else if (parkingTag == MIDDLE){ //&& cones_dropped >= CONES_DESIRED) {
 
+                    drive.followTrajectorySequenceAsync(BlueOnRedGoMiddle);
                     liftTimer.reset();
                     telemetry.addData("middle", 3);
                     liftState = LiftState.FINISH;
@@ -654,6 +721,7 @@ public class LeftSubStationHighPoleNoSensor extends OpMode {
             case FINISH:
                 FailSafeTimer.reset();
                 drive.update();
+                tilt_arm.updateConstants(TILT_P, TILT_I, TILT_D);
                 slide_extension.setTargetPosition(0);
                 tilt_claw.setPosition(0.2);
                 if (liftTimer.seconds() >= 0.5) {
@@ -665,7 +733,9 @@ public class LeftSubStationHighPoleNoSensor extends OpMode {
 
 
 
+
         }
+
     }
 
     void tagToTelemetry(AprilTagDetection detection)
