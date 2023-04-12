@@ -94,7 +94,7 @@ public class SampleMecanumDriveTwo extends MecanumDrive {
         imu = hardwareMap.get(BNO055IMU.class, "imu");
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
         parameters.angleUnit = BNO055IMU.AngleUnit.RADIANS;
-        parameters.mode = BNO055IMU.SensorMode.NDOF;
+        //parameters.mode = BNO055IMU.SensorMode.NDOF;
         imu.initialize(parameters);
 
         // TODO: If the hub containing the IMU you are using is mounted so that the "REV" logo does

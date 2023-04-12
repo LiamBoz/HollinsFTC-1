@@ -243,12 +243,12 @@ public class RightHighPole extends OpMode {
     double distance_seen = 0.0; // telemetry of the distance sensor
 
     final int SLIDE_LOW = 0; // the low encoder position for the lift
-    private int SLIDE_COLLECT = 555; // the high encoder position for the lift
-    public static int SLIDE_DROPOFF = 500;
+    private int SLIDE_COLLECT = 525; // the high encoder position for the lift
+    public static int SLIDE_DROPOFF = 560;
 
     // TODO: find encoder values for tilt
     private int TILT_LOW = -50;
-    public static int TILT_HIGH = -1540;
+    public static int TILT_HIGH = -1520;
 
     public double POLEGUIDE_DEPOSIT = 0.5;
     public double POLEGUIDE_REST = 0.13;
@@ -392,7 +392,7 @@ public class RightHighPole extends OpMode {
                 //.strafeRight(49)
                 //.turn(Math.toRadians(90))
                 .splineToLinearHeading(new Pose2d(0, -30, Math.toRadians(270)), Math.toRadians(270))
-                .addDisplacementMarker(25,() -> drive.followTrajectorySequenceAsync(BlueOnRedGoCycleMore))
+                .addDisplacementMarker(10,() -> drive.followTrajectorySequenceAsync(BlueOnRedGoCycleMore))
                 //.splineToLinearHeading(new Pose2d(0,-49), Math.toRadians(180))
                 .build();
 
@@ -462,7 +462,7 @@ public class RightHighPole extends OpMode {
             PreloadTimer.reset();
         }
 
-        if (PreloadTimer.seconds() >= 1){
+        if (PreloadTimer.seconds() >= 0.3){
             drop_preload = true;
 
         }
@@ -528,7 +528,7 @@ public class RightHighPole extends OpMode {
                 rotate_arm.setTargetPosition(ROTATE_DROP);
                     if ((Math.abs(rotate.getCurrentPosition() - ROTATE_DROP) <= 20) && (Math.abs(tilt.getCurrentPosition() - TILT_HIGH) <= 40) && drop_preload) {
                         slide_extension.setTargetPosition(SLIDE_DROPOFF);
-                        if ((Math.abs(slide_extension.getCurrentPosition() - SLIDE_DROPOFF) <= 40) && (Math.abs(tilt.getCurrentPosition() - TILT_HIGH) <= 50)) {
+                        if ((Math.abs(slide_extension.getCurrentPosition() - SLIDE_DROPOFF) <= 30) && (Math.abs(tilt.getCurrentPosition() - TILT_HIGH) <= 50)) {
                             liftTimer.reset();
                             liftState = LiftState.LIFT_DUNK;
                             break;
@@ -539,7 +539,7 @@ public class RightHighPole extends OpMode {
 
 
             case LIFT_DUNK:
-                if ((Math.abs(rotate.getCurrentPosition() - ROTATE_DROP) <= 50) && (Math.abs(slide_extension.getCurrentPosition() - SLIDE_DROPOFF) <= 40)) {
+                if ((Math.abs(rotate.getCurrentPosition() - ROTATE_DROP) <= 50) && (Math.abs(slide_extension.getCurrentPosition() - SLIDE_DROPOFF) <= 25)) {
                     // if (liftTimer.seconds() > 0.3){
                     tilt_claw.setPosition(CLAWTILT_DEPOSIT + 0.1);
                     epic = false;

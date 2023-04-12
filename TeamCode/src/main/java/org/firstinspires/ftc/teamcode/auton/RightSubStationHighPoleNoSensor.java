@@ -245,7 +245,7 @@ public class RightSubStationHighPoleNoSensor extends OpMode {
     double distance_seen = 0.0; // telemetry of the distance sensor
 
     final int SLIDE_LOW = 0; // the low encoder position for the lift
-    private int SLIDE_COLLECT = 478; // the high encoder position for the lift
+    private int SLIDE_COLLECT = 525; // the high encoder position for the lift
     public static int SLIDE_DROPOFF = 500;
 
     // TODO: find encoder values for tilt
@@ -257,7 +257,7 @@ public class RightSubStationHighPoleNoSensor extends OpMode {
     //public int TILT_DECREMENT = 435;
 
     // TODO: find encoder values for rotation
-    final int ROTATE_COLLECT = 3;
+    final int ROTATE_COLLECT = 0;
     final int ROTATE_DROP = -710;
 
     boolean TiltRestVar = true;
@@ -521,11 +521,11 @@ public class RightSubStationHighPoleNoSensor extends OpMode {
                 tilt_arm.setTargetPosition(TILT_HIGH);
                 rotate_arm.setTargetPosition(ROTATE_DROP);
                 if ((Math.abs(rotate.getCurrentPosition() - ROTATE_DROP) <= 200)){
+                    tilt_claw.setPosition(CLAWTILT_DEPOSIT);
                     sensor_servo.setPosition(POLEGUIDE_DEPOSIT);
-                    if ((Math.abs(rotate.getCurrentPosition() - ROTATE_DROP) <= 40) && (drive.getPoseEstimate().getX() >= 24)) {
-                        tilt_claw.setPosition(CLAWTILT_DEPOSIT);
+                    if ((Math.abs(rotate.getCurrentPosition() - ROTATE_DROP) <= 40) && (drive.getPoseEstimate().getX() >= 24.8)) {
                         slide_extension.setTargetPosition(SLIDE_DROPOFF);
-                        if ((Math.abs(slide_extension.getCurrentPosition() - SLIDE_DROPOFF) <= 40) && (Math.abs(tilt.getCurrentPosition() - TILT_HIGH) <= 50)) {
+                        if ((Math.abs(slide_extension.getCurrentPosition() - SLIDE_DROPOFF) <= 40)) {
                             liftTimer.reset();
                             liftState = LiftState.LIFT_DUNK;
                             break;
@@ -564,7 +564,7 @@ public class RightSubStationHighPoleNoSensor extends OpMode {
             case LIFT_DROPCYCLE:
                 tilt_arm.setTargetPosition(TILT_HIGH);
                 TiltRestVar = true;
-                if (tilt.getCurrentPosition() <= (TILT_LOW - 200)) {
+                if (tilt.getCurrentPosition() <= (TILT_LOW - 240)) {
                     tilt_arm.updateConstants(TILT_P, TILT_I, TILT_D);
                     slide_extension.setTargetPosition(50);
                     //drive.followTrajectorySequenceAsync(GoBack);
@@ -588,7 +588,7 @@ public class RightSubStationHighPoleNoSensor extends OpMode {
             case LIFT_GETNEWTILT:
                 if (Math.abs(rotate.getCurrentPosition() - ROTATE_COLLECT) <= 400){
                     tilt_claw.setPosition(CLAWTILT_DEPOSIT);
-                    if (Math.abs(rotate.getCurrentPosition() - ROTATE_COLLECT) <= 15 && Math.abs(tilt.getCurrentPosition() - TILT_LOW) <= 30 && drive.getPoseEstimate().getX() <= -2.59) {
+                    if (Math.abs(rotate.getCurrentPosition() - ROTATE_COLLECT) <= 5 && Math.abs(tilt.getCurrentPosition() - TILT_LOW) <= 30 && drive.getPoseEstimate().getX() <= -2.55) {
                         //tilt_arm.updateConstants(0,0,0);
                         liftState = LiftState.LIFT_GETNEWSLIDE;
                         break;
@@ -609,7 +609,7 @@ public class RightSubStationHighPoleNoSensor extends OpMode {
                 break;
 
             case LIFT_HOLD:
-                if (liftTimer.seconds() >= 0.18) {
+                if (liftTimer.seconds() >= 0.1) {
                     //slide_extension.setTargetPosition(SLIDE_COLLECT - 40);
                     liftState = LiftState.LIFT_DROPCYCLE;
                     break;
