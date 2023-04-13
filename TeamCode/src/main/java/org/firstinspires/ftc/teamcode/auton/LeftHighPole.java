@@ -246,7 +246,7 @@ public class LeftHighPole extends OpMode {
     double distance_seen = 0.0; // telemetry of the distance sensor
 
     final int SLIDE_LOW = 0; // the low encoder position for the lift
-    private int SLIDE_COLLECT = 500; // the high encoder position for the lift
+    private int SLIDE_COLLECT = 513; // the high encoder position for the lift
     public static int SLIDE_DROPOFF = 500;
 
     // TODO: find encoder values for tilt
@@ -258,8 +258,8 @@ public class LeftHighPole extends OpMode {
     //public int TILT_DECREMENT = 435;
 
     // TODO: find encoder values for rotation
-    final int ROTATE_COLLECT = -8;
-    final int ROTATE_DROP = -650;
+    final int ROTATE_COLLECT = 2;
+    final int ROTATE_DROP = -710;
 
     boolean TiltRestVar = true;
 
@@ -362,7 +362,6 @@ public class LeftHighPole extends OpMode {
          }*/
         //while (tagOfInterest == null)
 
-
         BlueOnRedGoRight = drive.trajectorySequenceBuilder(new Pose2d(-2,-49, Math.toRadians(180)))
                 .splineToLinearHeading(new Pose2d(-26, -51, Math.toRadians(270)), Math.toRadians(180))
                 .back(20)
@@ -370,21 +369,13 @@ public class LeftHighPole extends OpMode {
                 //.strafeRight(26)
                 .build();
         BlueOnRedGoLeft = drive.trajectorySequenceBuilder(new Pose2d(-2,-49, Math.toRadians(180)))
-                .splineToLinearHeading(new Pose2d(23, -51, Math.toRadians(270)), Math.toRadians(180))
+                .splineToLinearHeading(new Pose2d(20, -51, Math.toRadians(270)), Math.toRadians(180))
                 .back(20)
                 //.turn(Math.toRadians(90))
                 //.strafeLeft(26)
                 .build();
-        GoForward = drive.trajectorySequenceBuilder(new Pose2d(-26, -49, Math.toRadians(360)))
-                .setReversed(false)
-                .forward(28)
-                .build();
-        GoBack = drive.trajectorySequenceBuilder(new Pose2d(2, -49, Math.toRadians(360)))
-                .back(28)
-                .build();
-        ParkMiddle = drive.trajectorySequenceBuilder(new Pose2d(-2,-49, Math.toRadians(180)))
-                .turn(Math.toRadians(90))
-                .back(20)
+        BlueOnRedGoMiddle = drive.trajectorySequenceBuilder(new Pose2d(25.125,-49, Math.toRadians(270)))
+                .splineToLinearHeading(new Pose2d(0, -51, Math.toRadians(270)), Math.toRadians(180))
                 .build();
 
 
@@ -416,8 +407,8 @@ public class LeftHighPole extends OpMode {
                 //.splineTo(new Vector2d(0, -49), Math.toRadians(270))
                 //.strafeRight(49)
                 //.turn(Math.toRadians(90))
-                .splineToLinearHeading(new Pose2d(0, -20, Math.toRadians(270)), Math.toRadians(270))
-                .addDisplacementMarker(() -> drive.followTrajectorySequenceAsync(BlueOnRedGoCycleMore))
+                .splineToLinearHeading(new Pose2d(0, -30, Math.toRadians(270)), Math.toRadians(270))
+                .addDisplacementMarker(10,() -> drive.followTrajectorySequenceAsync(BlueOnRedGoCycleMore))
                 //.splineToLinearHeading(new Pose2d(0,-49), Math.toRadians(180))
                 .build();
 
@@ -486,7 +477,7 @@ public class LeftHighPole extends OpMode {
             PreloadTimer.reset();
         }
 
-        if (PreloadTimer.seconds() >= 1){
+        if (PreloadTimer.seconds() >= 0.75){
             drop_preload = true;
 
         }
@@ -542,18 +533,15 @@ public class LeftHighPole extends OpMode {
 
         switch (liftState) {
             case LIFT_TILTTHECLAW:
-                if (drop_preload) {
-                    tilt_claw.setPosition(CLAWTILT_DEPOSIT - 0.1);
+                    tilt_claw.setPosition(CLAWTILT_DEPOSIT);
                     rotate_arm.updateConstants(rotateP, rotateI, rotateD);
                     liftState = LiftState.LIFT_STARTDROP;
-                }
                 break;
             case LIFT_STARTDROP:
                 tilt_arm.setTargetPosition(TILT_HIGH);
                 rotate_arm.setTargetPosition(ROTATE_DROP);
-                if ((Math.abs(rotate.getCurrentPosition() - ROTATE_DROP) <= 200)){
                     sensor_servo.setPosition(POLEGUIDE_DEPOSIT);
-                    if ((Math.abs(rotate.getCurrentPosition() - ROTATE_DROP) <= 40)) {
+                    if ((Math.abs(rotate.getCurrentPosition() - ROTATE_DROP) <= 20) && drop_preload) {
                         tilt_claw.setPosition(CLAWTILT_DEPOSIT);
                         slide_extension.setTargetPosition(SLIDE_DROPOFF);
                         if ((Math.abs(slide_extension.getCurrentPosition() - SLIDE_DROPOFF) <= 40) && (Math.abs(tilt.getCurrentPosition() - TILT_HIGH) <= 50)) {
@@ -561,7 +549,7 @@ public class LeftHighPole extends OpMode {
                             liftState = LiftState.LIFT_DUNK;
                             break;
                         }
-                    }
+
                 }
                 break;
 
@@ -595,7 +583,7 @@ public class LeftHighPole extends OpMode {
             case LIFT_DROPCYCLE:
                 tilt_arm.setTargetPosition(TILT_HIGH);
                 TiltRestVar = true;
-                if (tilt.getCurrentPosition() <= (TILT_LOW - 200)) {
+                if (tilt.getCurrentPosition() <= (TILT_LOW - 240)) {
                     tilt_arm.updateConstants(TILT_P, TILT_I, TILT_D);
                     slide_extension.setTargetPosition(50);
                     //drive.followTrajectorySequenceAsync(GoBack);
@@ -615,13 +603,12 @@ public class LeftHighPole extends OpMode {
                 break;
 
             case LIFT_GETNEWTILT:
-                if (Math.abs(rotate.getCurrentPosition() - ROTATE_COLLECT) <= 400){
                     tilt_claw.setPosition(CLAWTILT_DEPOSIT);
                     if (Math.abs(rotate.getCurrentPosition() - ROTATE_COLLECT) <= 15 && Math.abs(tilt.getCurrentPosition() - TILT_LOW) <= 30) {
                         //tilt_arm.updateConstants(0,0,0);
                         liftState = LiftState.LIFT_GETNEWSLIDE;
                         break;
-                    }
+
                 }
                 break;
 
@@ -724,7 +711,7 @@ public class LeftHighPole extends OpMode {
                 tilt_arm.updateConstants(TILT_P, TILT_I, TILT_D);
                 slide_extension.setTargetPosition(0);
                 tilt_claw.setPosition(0.2);
-                if (liftTimer.seconds() >= 0.5) {
+                if (liftTimer.seconds() >= 1) {
                     //rotate_arm.setPower(1);
                     rotate_arm.setTargetPosition(0);
                     tilt_arm.setTargetPosition(0);

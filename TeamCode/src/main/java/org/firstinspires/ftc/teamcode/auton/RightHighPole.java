@@ -243,7 +243,7 @@ public class RightHighPole extends OpMode {
     double distance_seen = 0.0; // telemetry of the distance sensor
 
     final int SLIDE_LOW = 0; // the low encoder position for the lift
-    private int SLIDE_COLLECT = 520; // the high encoder position for the lift
+    private int SLIDE_COLLECT = 525; // the high encoder position for the lift
     public static int SLIDE_DROPOFF = 560;
 
     // TODO: find encoder values for tilt
