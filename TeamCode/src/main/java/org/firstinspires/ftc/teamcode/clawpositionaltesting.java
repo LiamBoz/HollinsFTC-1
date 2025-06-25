@@ -3,14 +3,13 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.exception.RobotCoreException;
-import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.Servo;
 
-@TeleOp(name="servopositionaltest", group="Iterative Opmode")
-public class servopositionaltesting extends OpMode {
-    private CRServo claw;
+@TeleOp(name="clawpositionaltest", group="Iterative Opmode")
+public class clawpositionaltesting extends OpMode {
+    private Servo claw;
     private Servo tilt_claw;
     private Servo sensor_servo;
     private DcMotor tilt_arm;
@@ -23,7 +22,7 @@ public class servopositionaltesting extends OpMode {
 
     @Override
     public void init() {
-        claw = hardwareMap.get(CRServo.class,"claw");
+        claw = hardwareMap.get(Servo.class,"claw");
         tilt_claw = hardwareMap.get(Servo.class,"tilt_claw");
         tilt_arm = hardwareMap.get(DcMotor.class,"tilt_arm");
         sensor_servo = hardwareMap.get(Servo.class, "sensor_servo");
@@ -56,10 +55,17 @@ public class servopositionaltesting extends OpMode {
             // currentGamepad1/2 are being copied from valid Gamepads.
         }
 
+        tilt_arm.setPower(gamepad1.right_stick_y);
+
         telemetry.addData("servo position",servo_position);
 
-        claw.setPower(gamepad1.right_stick_y);
+        sensor_servo.setPosition(servo_position);
 
-
+        if (currentGamepad1.dpad_up && !previousGamepad1.dpad_up) {
+            servo_position = servo_position + 0.02;
+        }
+        else if (currentGamepad1.dpad_down && !previousGamepad1.dpad_down){
+            servo_position = servo_position - 0.02;
+        }
     }
 }

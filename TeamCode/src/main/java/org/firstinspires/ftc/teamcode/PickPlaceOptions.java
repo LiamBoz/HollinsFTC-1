@@ -10,11 +10,14 @@ public class PickPlaceOptions {
     public int rotate_drop = 220;
     public int tilt_drop = -1403;
     public int slide_drop = 402;
+    public int slide_drop_medium = 150;
+    public int slide_drop_low = 0;
+    public int slide_drop_high = 210;
     public int slide_var = 0;
     public double CLAW_HOLD = 0.0;
     public double CLAW_DEPOSIT = 0.35;
-    public double CLAWTILT_COLLECT = 0.48;
-    public double CLAWTILT_DEPOSIT = 0.55;
+    public double CLAWTILT_COLLECT = 0.55;
+    public double CLAWTILT_DEPOSIT = 0.62;
 
 
 

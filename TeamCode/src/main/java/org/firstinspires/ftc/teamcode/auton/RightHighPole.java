@@ -2,23 +2,41 @@ package org.firstinspires.ftc.teamcode.auton;
 
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.variable_slide_ticks;
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.variable_tilt_ticks;
+import static org.firstinspires.ftc.teamcode.slidePIDTuning.slideD;
+import static org.firstinspires.ftc.teamcode.slidePIDTuning.slideI;
+import static org.firstinspires.ftc.teamcode.slidePIDTuning.slideP;
+import static org.firstinspires.ftc.teamcode.tiltPIDTuning.tiltD;
+import static org.firstinspires.ftc.teamcode.tiltPIDTuning.tiltI;
+import static org.firstinspires.ftc.teamcode.tiltPIDTuning.tiltP;
+import static org.firstinspires.ftc.teamcode.turretPIDTuning.rotateD;
+import static org.firstinspires.ftc.teamcode.turretPIDTuning.rotateI;
+import static org.firstinspires.ftc.teamcode.turretPIDTuning.rotateP;
 
+import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.config.Config;
+import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
+import com.acmerobotics.roadrunner.path.Path;
+import com.acmerobotics.roadrunner.trajectory.Trajectory;
+import com.acmerobotics.roadrunner.trajectory.constraints.AngularVelocityConstraint;
+import com.outoftheboxrobotics.photoncore.PhotonCore;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
-import com.qualcomm.robotcore.hardware.ColorRangeSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-import org.firstinspires.ftc.teamcode.colorsensortesting;
+import org.firstinspires.ftc.teamcode.TurretMotor;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
+import org.firstinspires.ftc.teamcode.drive.SampleMecanumDriveTwo;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
+import org.opencv.core.Mat;
 import org.openftc.apriltag.AprilTagDetection;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
@@ -29,8 +47,10 @@ import java.util.ArrayList;
 
 // adb connect 192.168.43.1:5555
 
-@Autonomous(name="AUTOExtendingMeetRight")
-public class AUTOExtendingMeetRight extends OpMode {
+
+@Config
+@Autonomous(name="RightHighPole")
+public class RightHighPole extends OpMode {
 
     public void init_loop(){
         {
@@ -110,7 +130,8 @@ public class AUTOExtendingMeetRight extends OpMode {
         LIFT_STARTDROP,
         LIFT_POLESEARCH,
         LIFT_POLESEARCH_REVERSE,
-        LIFT_GETNEW,
+        LIFT_GETNEWTILT,
+        LIFT_GETNEWSLIDE,
         LIFT_RETRACTSLIDE,
         LIFT_HOLD,
         LIFT_LETGO,
@@ -150,18 +171,36 @@ public class AUTOExtendingMeetRight extends OpMode {
 
     AprilTagDetection tagOfInterest = null;
 
+    /*TrajectorySequence BlueOnRedGoMiddle;
+    TrajectorySequence BlueOnRedGoRight;
+    TrajectorySequence BlueOnRedGoLeft;
+    TrajectorySequence BlueOnRedGoCycle;
+    TrajectorySequence GoForward;
+    TrajectorySequence GoBack;
+    */
+
+
     TrajectorySequence BlueOnRedGoMiddle;
     TrajectorySequence BlueOnRedGoRight;
     TrajectorySequence BlueOnRedGoLeft;
     TrajectorySequence BlueOnRedGoCycle;
+    TrajectorySequence BlueOnRedGoCycleMore;
+    TrajectorySequence BlueOnRedGoBack;
+
+    //Trajectory initialDriveForward = new
 
     DistanceSensor colorsensor1;
 
 
 
-    public DcMotorEx slide_extension;
-    public DcMotorEx tilt_arm;
-    public DcMotorEx rotate_arm;
+    //public TurretMotor slide_extension;
+    public TurretMotor tilt_arm;
+    public TurretMotor rotate_arm;
+
+    public DcMotor slide_extension;
+    public DcMotor rotate;
+    public DcMotor tilt;
+
     public Servo claw;
     public Servo tilt_claw;
     public Servo odometry_forward;
@@ -173,7 +212,8 @@ public class AUTOExtendingMeetRight extends OpMode {
 
     ElapsedTime liftTimer = new ElapsedTime();
     ElapsedTime FailSafeTimer = new ElapsedTime();
-    ElapsedTime PoleSearchTimer = new ElapsedTime();
+    ElapsedTime PreloadTimer = new ElapsedTime();
+    ElapsedTime TiltRestTimer = new ElapsedTime();
 
     SampleMecanumDrive drive;
 
@@ -183,12 +223,14 @@ public class AUTOExtendingMeetRight extends OpMode {
     boolean FailSafe = true;
     boolean FailSafe2 = true;
 
-    final double CLAW_HOLD = 0.0; // the idle position for the dump servo
-    final double CLAW_DEPOSIT = 0.35; // the dumping position for the dump servo
+    final double CLAW_HOLD = 0.0;
+    final double CLAW_DEPOSIT = 0.12;
 
-    final double CLAWTILT_END = 0.13;
-    final double CLAWTILT_COLLECT = 0.50;
-    final double CLAWTILT_DEPOSIT = .55;
+    final double CLAWTILT_END = 0.19;
+    final double CLAWTILT_COLLECT = 0.53;
+    final double CLAWTILT_DEPOSIT = .59;
+
+    double subtract_tilt = 0;
 
     boolean switchvar = false;
     boolean epic = true;
@@ -201,33 +243,40 @@ public class AUTOExtendingMeetRight extends OpMode {
     double distance_seen = 0.0; // telemetry of the distance sensor
 
     final int SLIDE_LOW = 0; // the low encoder position for the lift
-    int SLIDE_COLLECT = 475; // the high encoder position for the lift
-    final int SLIDE_DROPOFF = 440;
-    final int SLIDE_MOVEMENT = 1125; // the slide retraction for when rotating
+    private int SLIDE_COLLECT = 525; // the high encoder position for the lift
+    public static int SLIDE_DROPOFF = 560;
 
     // TODO: find encoder values for tilt
-    int TILT_LOW = 30;
-    final int TILT_HIGH = -1570;
+    private int TILT_LOW = -50;
+    public static int TILT_HIGH = -1520;
+
+    public double POLEGUIDE_DEPOSIT = 0.5;
+    public double POLEGUIDE_REST = 0.13;
     //public int TILT_DECREMENT = 435;
 
     // TODO: find encoder values for rotation
-    final int ROTATE_COLLECT = -657;
-    final int ROTATE_DROP = 587;
+    final int ROTATE_COLLECT = 5;
+    final int ROTATE_DROP = 650;
 
-    final int ROTATE_PAST = 375;
+    boolean TiltRestVar = true;
 
-    double RotateArmBegin = 350;
-    double RotateArmPosition = RotateArmBegin;
-    double RotateArmOffset = 0;
-    double RotateArmFinalPosition = 350;
+    boolean drop_preload = false;
+
+    //public static double TILT_P = 0.006, TILT_D = 0.00016, TILT_I = 0.03;
+    public static double TILT_P = 0.012, TILT_D = 0.00035, TILT_I = 0.07;
+    public static double EXTENDEDTILT_P = 0.1, EXTENDEDTILT_D = 0, EXTENDEDTILT_I = 0;
+
 
     //public TrajectorySequence VariablePath;
 
     public void init() {
 
+
+
         FailSafe = true;
         liftTimer.reset();
-        //PhotonCore.enable();
+        PhotonCore.enable();
+        telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
 
 
         drive = new SampleMecanumDrive(hardwareMap);
@@ -235,8 +284,8 @@ public class AUTOExtendingMeetRight extends OpMode {
         drive.setPoseEstimate(new Pose2d(0, 0, Math.toRadians(270)));
 
         slide_extension = hardwareMap.get(DcMotorEx.class,"slide_extension");
-        tilt_arm = hardwareMap.get(DcMotorEx.class,"tilt_arm");
-        rotate_arm = hardwareMap.get(DcMotorEx.class,"rotate_arm");
+        tilt = hardwareMap.get(DcMotorEx.class,"tilt_arm");
+        rotate = hardwareMap.get(DcMotorEx.class,"rotate_arm");
         claw = hardwareMap.get(Servo.class,"claw");
         tilt_claw = hardwareMap.get(Servo.class,"tilt_claw");
 
@@ -253,23 +302,28 @@ public class AUTOExtendingMeetRight extends OpMode {
 
         //rotate_arm = hardwareMap.get(DcMotorEx.class,"rotate_arm");
 
-        slide_extension.setDirection(DcMotor.Direction.REVERSE);
+
         slide_extension.setTargetPosition(variable_slide_ticks);
         slide_extension.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         slide_extension.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        tilt_arm.setTargetPosition(variable_tilt_ticks);
-        tilt_arm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        tilt_arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        rotate_arm.setTargetPosition(0);
-        rotate_arm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        rotate_arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+        slide_extension.setPower(1);
+
+        tilt.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        rotate.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        //slide.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        tilt.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        rotate.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+        slide_extension.setDirection(DcMotorSimple.Direction.REVERSE);
 
         claw.setPosition(CLAW_HOLD);
-        tilt_claw.setPosition(0.0);
+        tilt_claw.setPosition(0.15);
 
-        rotate_arm.setPower(1);
+
+/*        rotate_arm.setPower(1);
         tilt_arm.setPower(1);
-        slide_extension.setPower(1);
+        slide_extension.setPower(1);*/
 
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         camera = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
@@ -295,40 +349,101 @@ public class AUTOExtendingMeetRight extends OpMode {
         telemetry.setMsTransmissionInterval(50);
 
 
+        Trajectory initialDriveForward = drive.trajectoryBuilder(new Pose2d(0, 0, Math.toRadians(270)))
+                .lineToSplineHeading(new Pose2d(0,-16, Math.toRadians(270)))
+                .lineToSplineHeading(new Pose2d(0,-49, Math.toRadians(360)))
+
+                .build();
+
     /*    init_loop();{
          }*/
         //while (tagOfInterest == null)
 
 
-        BlueOnRedGoRight = drive.trajectorySequenceBuilder(new Pose2d(0,-52, Math.toRadians(270)))
-                .strafeRight(26)
+        BlueOnRedGoRight = drive.trajectorySequenceBuilder(new Pose2d(-2,-49, Math.toRadians(180)))
+                .splineToLinearHeading(new Pose2d(-26, -51, Math.toRadians(270)), Math.toRadians(180))
+                .back(20)
+                //.turn(Math.toRadians(90))
+                //.strafeRight(26)
                 .build();
-        BlueOnRedGoLeft = drive.trajectorySequenceBuilder(new Pose2d(0,-52, Math.toRadians(270)))
-                .strafeLeft(23)
+        BlueOnRedGoLeft = drive.trajectorySequenceBuilder(new Pose2d(-2,-49, Math.toRadians(180)))
+                .splineToLinearHeading(new Pose2d(23, -51, Math.toRadians(270)), Math.toRadians(180))
+                .back(20)
+                //.turn(Math.toRadians(90))
+                //.strafeLeft(26)
                 .build();
+        BlueOnRedGoMiddle = drive.trajectorySequenceBuilder(new Pose2d(25.125,-49, Math.toRadians(270)))
+                .splineToLinearHeading(new Pose2d(0, -51, Math.toRadians(270)), Math.toRadians(180))
+                .build();
+
+
+
+
 
         BlueOnRedGoCycle = drive.trajectorySequenceBuilder(new Pose2d(0, 0, Math.toRadians(270)))
-                //.lineTo(new Vector2d(0,-32))
-                //.lineTo(new Vector2d(0,-48))
-                .splineToConstantHeading(new Vector2d(0, -52), Math.toRadians(270))
-                .waitSeconds(30)
-                .forward(30)
-                //.strafeLeft(3.7)
+                //.splineToConstantHeading(new Vector2d(0,42), Math.toRadians(90))
+                //.splineToSplineHeading(new Pose2d(0, 50), Math.toRadians(180))
+                //.setReversed(true)
+                //.splineToConstantHeading(new Vector2d(13, -50), Math.toRadians(90))
+                //.back(13)
+                //.build().
+                //.splineToSplineHeading(new Pose2d(0,-40), Math.toRadians(270))
+                //.splineTo(new Vector2d(0, -49), Math.toRadians(270))
+                //.strafeRight(49)
+                //.turn(Math.toRadians(90))
+                .splineToLinearHeading(new Pose2d(0, -30, Math.toRadians(270)), Math.toRadians(270))
+                .addDisplacementMarker(10,() -> drive.followTrajectorySequenceAsync(BlueOnRedGoCycleMore))
+                //.splineToLinearHeading(new Pose2d(0,-49), Math.toRadians(180))
                 .build();
 
-        sensor_servo.setPosition(0.6);
+        BlueOnRedGoCycleMore = drive.trajectorySequenceBuilder(new Pose2d(0,-20, Math.toRadians(270)))
+                .splineToLinearHeading(new Pose2d(-2,-49, Math.toRadians(180)), Math.toRadians(270))
+                .build();
+
+        sensor_servo.setPosition(POLEGUIDE_REST);
+
+        rotate_arm = new TurretMotor(rotateP, rotateI,rotateD, rotate);
+        //slide_extension = new TurretMotor(slideP, slideI,slideD, slide);
+        tilt_arm = new TurretMotor(tiltP, tiltI,tiltD, tilt);
+
+        tilt_arm.updateConstants(TILT_P, TILT_I, TILT_D);
+        rotate_arm.updateConstants(rotateP,rotateI,rotateD);
 
         init_loop();
+        //drive.followTrajectorySequenceAsync(BlueOnRedGoCycle);
+        //drive.followTrajectoryAsync(driveForward);
         drive.followTrajectorySequenceAsync(BlueOnRedGoCycle);
 
     }
 
     public void loop() {
         //Pose2d poseEstimate = drive.getPoseEstimate();
+/*        if(slide_extension.getCurrentPosition()>400){
+            slide_extension.setPower(0.759);
+        }
+        else{slide_extension.setPower(1);}*/
 
 /*        if (drive.getPoseEstimate().getY() >= -47){
             drive.setPoseEstimate(new Pose2d(0, poseEstimate.getY(), poseEstimate.getHeading()));
         }*/
+
+        rotate_arm.toPosition();
+        tilt_arm.toPosition();
+
+
+
+/*        if (Math.abs(tilt.getCurrentPosition() - TILT_LOW) <= 3){
+            TiltRestVar = false;
+        }
+
+        else if (TiltRestVar){
+            TiltRestTimer.reset();
+        }
+        else{
+            TiltRestVar = true;
+        }*/
+
+
 
 
         if (FailSafe){
@@ -336,11 +451,21 @@ public class AUTOExtendingMeetRight extends OpMode {
             FailSafe = false;
         }
 
-        if (FailSafeTimer.seconds() >= 27.5){
+        if (FailSafeTimer.seconds() >= 28){
             liftState = LiftState.PARKING_STATE;
         }
 
+        if (drive.getPoseEstimate().getY() <= -48){
+            switchvar = true;
+        }
+        else{
+            PreloadTimer.reset();
+        }
 
+        if (PreloadTimer.seconds() >= 0.3){
+            drop_preload = true;
+
+        }
 
 
         telemetry.addData("x", (drive.getPoseEstimate()).getX());
@@ -349,8 +474,9 @@ public class AUTOExtendingMeetRight extends OpMode {
         //telemetry.addData("y2", poseEstimate.getY());
         //telemetry.addData("heading", poseEstimate.getHeading());
         telemetry.addData("encoder ticks for slide",slide_extension.getCurrentPosition());
-        telemetry.addData("encoder ticks for tilt",tilt_arm.getCurrentPosition());
-        telemetry.addData("rotation ticks", rotate_arm.getCurrentPosition());
+        telemetry.addData("encoder ticks for tilt",tilt.getCurrentPosition());
+        telemetry.addData("tilt target", TILT_LOW);
+        telemetry.addData("rotation ticks", rotate.getCurrentPosition());
         telemetry.addData("claw position", claw.getPosition());
         telemetry.addData("claw tilt", tilt_claw.getPosition());
         telemetry.addData("timer",liftTimer.seconds());
@@ -362,7 +488,6 @@ public class AUTOExtendingMeetRight extends OpMode {
         telemetry.addData("drive", drive.isBusy());
         telemetry.addData("distance", colorsensor1.getDistance(DistanceUnit.INCH));
         telemetry.addData("Sensor seen",distance_seen);
-        telemetry.addData("Final drop rotate", RotateArmFinalPosition);
         if (drive.getPoseEstimate().getY() < -50){
             switchvar = true;
         }
@@ -393,89 +518,39 @@ public class AUTOExtendingMeetRight extends OpMode {
 
         switch (liftState) {
             case LIFT_TILTTHECLAW:
-                tilt_claw.setPosition(CLAWTILT_DEPOSIT);
-                liftState = LiftState.LIFT_STARTDROP;
+                    tilt_claw.setPosition(CLAWTILT_DEPOSIT);
+                    sensor_servo.setPosition(POLEGUIDE_DEPOSIT);
+                    rotate_arm.updateConstants(rotateP, rotateI, rotateD);
+                    liftState = LiftState.LIFT_STARTDROP;
                 break;
             case LIFT_STARTDROP:
                 tilt_arm.setTargetPosition(TILT_HIGH);
-                rotate_arm.setTargetPosition((int)RotateArmFinalPosition);
-                // 275 is pole
-                if (Math.abs(rotate_arm.getCurrentPosition() - (int)RotateArmFinalPosition) <= 50 && switchvar) {
-                    slide_extension.setTargetPosition(SLIDE_DROPOFF);
-                    if ((Math.abs(slide_extension.getCurrentPosition() - SLIDE_DROPOFF) <= 10) && (Math.abs(tilt_arm.getCurrentPosition() - TILT_HIGH) <= 30)) {
-                        liftTimer.reset();
-                        PoleSearchTimer.reset();
-                        liftState = LiftState.LIFT_POLESEARCH;
-                        break;
+                rotate_arm.setTargetPosition(ROTATE_DROP);
+                    if ((Math.abs(rotate.getCurrentPosition() - ROTATE_DROP) <= 20) && (Math.abs(tilt.getCurrentPosition() - TILT_HIGH) <= 40) && drop_preload) {
+                        slide_extension.setTargetPosition(SLIDE_DROPOFF);
+                        if ((Math.abs(slide_extension.getCurrentPosition() - SLIDE_DROPOFF) <= 30) && (Math.abs(tilt.getCurrentPosition() - TILT_HIGH) <= 50)) {
+                            liftTimer.reset();
+                            liftState = LiftState.LIFT_DUNK;
+                            break;
+
                     }
                 }
                 break;
 
-            case LIFT_POLESEARCH: {
-                if (epic) {
-                    RotateArmOffset = 100 * PoleSearchTimer.seconds();
-                    RotateArmPosition = RotateArmBegin - RotateArmOffset;
-                    rotate_arm.setTargetPosition((int) RotateArmPosition);
-                    // add 0.3 second pause
-                    distance_seen = colorsensor1.getDistance(DistanceUnit.INCH);
-                    if (distance_seen <= 10) {
-                        liftTimer.reset();
-                        RotateArmPosition = RotateArmPosition - 20;
-                        RotateArmFinalPosition = RotateArmPosition;
-                        liftState = LiftState.LIFT_DUNK;
-                        break;
-                    }
-                    if (RotateArmPosition < 200) {
-                        PoleSearchTimer.reset();
-                        //slide_extension.setTargetPosition(SLIDE_DROPOFF + 5);
-                        RotateArmBegin = RotateArmPosition;
-                        liftState = LiftState.LIFT_POLESEARCH_REVERSE;
-                        break;
-                    }
-                }
-                else {
-                    liftState = LiftState.LIFT_DUNK;
-                    break;
-                }
-                break;
-            }
-            case LIFT_POLESEARCH_REVERSE: {
-                if (epic) {
-                    rotate_arm.setTargetPosition((int) RotateArmPosition);
-                    RotateArmOffset = 100 * PoleSearchTimer.seconds();
-                    RotateArmPosition = RotateArmBegin + RotateArmOffset;
-                    distance_seen = colorsensor1.getDistance(DistanceUnit.INCH);
-                    if (distance_seen <= 15) {
-                        liftTimer.reset();
-                        RotateArmPosition = RotateArmPosition + 0;
-                        RotateArmFinalPosition = RotateArmPosition;
-                        liftState = LiftState.LIFT_DUNK;
-                        break;
-                    }
-                    else if (RotateArmPosition >= ROTATE_PAST){
-                        RotateArmFinalPosition = 275;
-                        rotate_arm.setTargetPosition(275);
-                        CONES_DESIRED = CONES_DESIRED - 1;
-                        liftState = LiftState.LIFT_DUNK;
 
-                    }
-
-                }
-                else {
-                    liftState = LiftState.LIFT_DUNK;
-                    break;
-                }
-                break;
-            }
             case LIFT_DUNK:
-               // if (liftTimer.seconds() > 0.3){
-                    tilt_claw.setPosition(CLAWTILT_DEPOSIT+0.2);
+                if ((Math.abs(rotate.getCurrentPosition() - ROTATE_DROP) <= 50) && (Math.abs(slide_extension.getCurrentPosition() - SLIDE_DROPOFF) <= 25)) {
+                    // if (liftTimer.seconds() > 0.3){
+                    tilt_claw.setPosition(CLAWTILT_DEPOSIT + 0.1);
                     epic = false;
+                    liftTimer.reset();
                     liftState = LiftState.LIFT_INC;
                     break;
-                 //   }
+                }
+                break;
+            //   }
 
-                //break;
+            //break;
 
 
 
@@ -491,67 +566,101 @@ public class AUTOExtendingMeetRight extends OpMode {
 
             case LIFT_DROPCYCLE:
                 tilt_arm.setTargetPosition(TILT_HIGH);
-                if (tilt_arm.getCurrentPosition() <= -120) {
-                    slide_extension.setTargetPosition(0);
-                    sensor_servo.setPosition(0);
-                    if (slide_extension.getCurrentPosition() <= 50) {
+                TiltRestVar = true;
+                if (tilt.getCurrentPosition() <= (TILT_LOW - 240)) {
+                    tilt_arm.updateConstants(TILT_P, TILT_I, TILT_D);
+                    slide_extension.setTargetPosition(50);
+                    //drive.followTrajectorySequenceAsync(GoBack);
+                    if (slide_extension.getCurrentPosition() <= 250) {
                         liftState = LiftState.LIFT_TILTTHECLAW;
+                        break;
+                    }
+                }
+                else if (cones_dropped >= 5){
+                    slide_extension.setTargetPosition(0);
+                    if (slide_extension.getCurrentPosition() <= 150) {
+                        //drive.followTrajectorySequenceAsync(GoBack);
+                        liftState = LiftState.LIFT_TILTTHECLAW;
+                        break;
                     }
                 }
                 break;
 
-            case LIFT_GETNEW:
-                if (Math.abs(rotate_arm.getCurrentPosition()) + ROTATE_COLLECT <= 50 && Math.abs(tilt_arm.getCurrentPosition() - TILT_LOW) <= 50) {
-                    slide_extension.setTargetPosition(SLIDE_COLLECT);
-                    if (slide_extension.getCurrentPosition() >= (SLIDE_COLLECT - 150)) {
-                        claw.setPosition(CLAW_HOLD);
-                        liftTimer.reset();
-                        liftState = LiftState.LIFT_HOLD;
-                    }
+            case LIFT_GETNEWTILT:
+                    tilt_claw.setPosition(CLAWTILT_DEPOSIT);
+                    if (Math.abs(rotate.getCurrentPosition() - ROTATE_COLLECT) <= 3 && Math.abs(tilt.getCurrentPosition() - TILT_LOW) <= 30) {
+                        //tilt_arm.updateConstants(0,0,0);
+                        liftState = LiftState.LIFT_GETNEWSLIDE;
+                        break;
+
+                }
+                break;
+
+            case LIFT_GETNEWSLIDE:
+                slide_extension.setTargetPosition(SLIDE_COLLECT); /* ret here */
+                if (slide_extension.getCurrentPosition() >= (SLIDE_COLLECT - 10)) {
+                    claw.setPosition(CLAW_HOLD);
+                    //drive.breakFollowing();
+                    liftTimer.reset();
+                    liftState = LiftState.LIFT_HOLD;
+                    break;
+
                 }
                 break;
 
             case LIFT_HOLD:
-                if (liftTimer.seconds() >= 0.4) {
-                    slide_extension.setTargetPosition(SLIDE_COLLECT - 40);
+                if (liftTimer.seconds() >= 0.1) {
+                    //slide_extension.setTargetPosition(SLIDE_COLLECT - 40);
                     liftState = LiftState.LIFT_DROPCYCLE;
+                    break;
                 }
                 break;
 
             case LIFT_INC:
                 if (cones_dropped <= CONES_DESIRED) {
-                    if (liftTimer.seconds() >= 0.4) {
+                    if (liftTimer.seconds() >= 0.1) {
                         claw.setPosition(CLAW_DEPOSIT);
+                        sensor_servo.setPosition(POLEGUIDE_REST);
                         cones_dropped += 1;
                         TILT_LOW = TILT_LOW+60;
-                        SLIDE_COLLECT = SLIDE_COLLECT + 2;
+                        SLIDE_COLLECT = SLIDE_COLLECT + 0;
                         liftTimer.reset();
                         liftState = LiftState.LIFT_RETRACTSLIDE;
+                        break;
                     }
                 }
                 else {
-                    if (liftTimer.seconds() >= 0.4) {
+                    if (liftTimer.seconds() >= 0.1) {
                         claw.setPosition(CLAW_DEPOSIT);
-                        liftTimer.reset();
                         liftState = LiftState.PARKING_STATE;
+                        break;
                     }
                 }
                 break;
             case LIFT_RETRACTSLIDE:
-                tilt_claw.setPosition(CLAWTILT_DEPOSIT);
+                //liftTimer.reset();
                 slide_extension.setTargetPosition(SLIDE_LOW);
-                if (slide_extension.getCurrentPosition() <= 150) {
-                    liftTimer.reset();
+                //drive.update();
+                if (slide_extension.getCurrentPosition() <= 400) {
                     tilt_arm.setTargetPosition(TILT_LOW);
-                    rotate_arm.setTargetPosition(ROTATE_COLLECT);
-                    liftState = LiftState.LIFT_GETNEW;
+                    tilt_claw.setPosition(CLAWTILT_DEPOSIT - subtract_tilt);
+                    if (slide_extension.getCurrentPosition() <= 150) {
+                        subtract_tilt = 0.3;
+                        //drive.followTrajectorySequenceAsync(GoForward);
+                        tilt_claw.setPosition(CLAWTILT_DEPOSIT - subtract_tilt);
+                        liftTimer.reset();
+                        //tilt_arm.setTargetPosition(TILT_LOW);
+                        rotate_arm.setTargetPosition(ROTATE_COLLECT);
+                        liftState = LiftState.LIFT_GETNEWTILT;
+                        break;
+                    }
                 }
                 break;
             case PARKING_STATE:
                 liftTimer.reset();
                 FailSafeTimer.reset();
                 slide_extension.setTargetPosition(0);
-                tilt_claw.setPosition(CLAWTILT_END);
+                tilt_claw.setPosition(0.32);
                 // Use the parkingTag here - it must be at least LEFT if no tag was seen
                 if (parkingTag == LEFT){ //&& cones_dropped >= CONES_DESIRED) {
 
@@ -572,6 +681,7 @@ public class AUTOExtendingMeetRight extends OpMode {
 
                 } else if (parkingTag == MIDDLE){ //&& cones_dropped >= CONES_DESIRED) {
 
+                    drive.followTrajectorySequenceAsync(BlueOnRedGoMiddle);
                     liftTimer.reset();
                     telemetry.addData("middle", 3);
                     liftState = LiftState.FINISH;
@@ -582,10 +692,11 @@ public class AUTOExtendingMeetRight extends OpMode {
             case FINISH:
                 FailSafeTimer.reset();
                 drive.update();
+                tilt_arm.updateConstants(TILT_P, TILT_I, TILT_D);
                 slide_extension.setTargetPosition(0);
-                tilt_claw.setPosition(CLAWTILT_END);
+                tilt_claw.setPosition(0.2);
                 if (liftTimer.seconds() >= 0.5) {
-                    rotate_arm.setPower(1);
+                    //rotate_arm.setPower(1);
                     rotate_arm.setTargetPosition(0);
                     tilt_arm.setTargetPosition(0);
                 }
@@ -593,7 +704,9 @@ public class AUTOExtendingMeetRight extends OpMode {
 
 
 
+
         }
+
     }
 
     void tagToTelemetry(AprilTagDetection detection)

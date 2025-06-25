@@ -171,7 +171,7 @@ public class teleoppowerplay2 extends OpMode {
         back_right.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         claw.setPosition(ActiveOptions.CLAW_DEPOSIT);
-        tilt_claw.setPosition(0.65);
+        tilt_claw.setPosition(0.57);
         odometry_forward.setPosition(0.55);
         odometry_strafe.setPosition(0.2);
         //claw         = hardwareMap.get(Servo.class,"claw");
@@ -221,9 +221,9 @@ public class teleoppowerplay2 extends OpMode {
         telemetry.addData("stuff", Math.abs(slide_extension.getCurrentPosition() - ActiveOptions.slide_collect));
         telemetry.addData("odometry_forward", odometry_forward.getPosition());
         telemetry.addData("odometry_strafe", odometry_strafe.getPosition());
-        rotate_arm.setPower(1);
-        tilt_arm.setPower(1);
-        slide_extension.setPower(1);
+        rotate_arm.setPower(0);
+        tilt_arm.setPower(0);
+        slide_extension.setPower(0);
 
         if (gamepad1.back){
             liftState = LiftState.LIFT_GRABNEW;
@@ -266,7 +266,7 @@ public class teleoppowerplay2 extends OpMode {
         switch (liftState) {
             case LIFT_GRABNEW:
                 ActiveOptions.slide_var = 0;
-                claw.setPosition(ActiveOptions.CLAW_DEPOSIT);
+                //claw.setPosition(ActiveOptions.CLAW_DEPOSIT);
                 if (gamepad1.a){
                     rotate_arm.setTargetPosition(ActiveOptions.rotate_collect);
                     tilt_arm.setTargetPosition(ActiveOptions.tilt_collect);
